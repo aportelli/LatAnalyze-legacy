@@ -2,9 +2,9 @@
 
 # Initialization
 AC_PREREQ([2.64])
-AC_INIT([LatAnalyze],[2.0rc],[antonin.portelli@gmail.com],[latan])
+AC_INIT([LatAnalyze],[2.0alpha],[antonin.portelli@gmail.com],[latan])
 AC_CONFIG_AUX_DIR([.buildutils])
-AC_CONFIG_SRCDIR([lib/analyze.c])
+AC_CONFIG_SRCDIR([latan/globals.c])
 AC_CONFIG_MACRO_DIR([.buildutils/m4])
 AM_INIT_AUTOMAKE([-Wall -Werror])
 
@@ -16,7 +16,8 @@ AM_PROG_CC_C_O
 AC_PROG_CXX
 AC_PROG_LIBTOOL
 AC_PROG_DOXYGEN
-AC_PROG_RANLIB
+
+LT_INIT
 
 # Configure parameters non-standard install prefix of libs
 AC_ARG_WITH([gsl],
@@ -62,5 +63,5 @@ AC_SUBST([LIBS])
 AC_SUBST([AM_CFLAGS])
 AC_SUBST([AM_LDFLAGS])
 
-AC_CONFIG_FILES([Makefile lib/Makefile doc/Makefile])
+AC_CONFIG_FILES([Makefile latan/Makefile])
 AC_OUTPUT

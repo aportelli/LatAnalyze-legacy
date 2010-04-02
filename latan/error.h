@@ -7,24 +7,24 @@ __BEGIN_DECLS
 
 enum
 {
-	LATAN_SUCCESS	= 0,
-	LATAN_EFAULT	= 3,	/* invalid pointer */
-	LATAN_ENOMEM	= 8,	/* malloc error */
-	LATAN_EBADLEN	= 19,	/* matrix dimension error */
-	LATAN_ENOTSQR	= 20	/* matrix is not square error */
+	LATAN_FAILURE	= -1,	/* generic failure statement			*/
+	LATAN_SUCCESS	= 0,	/* all is going well !					*/
+	LATAN_EFAULT	= 3,	/* invalid pointer						*/
+	LATAN_ENOMEM	= 8,	/* malloc error							*/
+	LATAN_EBADLEN	= 19,	/* matrix dimension error				*/
+	LATAN_ENOTSQR	= 20,	/* matrix is not square error			*/
+	LATAN_ELATSYN	= 33	/* syntax error reading input file		*/
 };
 
 typedef void latan_error_handler_t(const char*, const char*, int, int);
 
-void
-latan_error(const char* reason, const char *file, int line, \
-			int latan_errno);
+void latan_error(const char* reason, const char *file, int line, \
+				 int latan_errno);
 
-latan_error_handler_t*
+latan_error_handler_t*\
 latan_set_error_handler(latan_error_handler_t* new_handler);
 
-latan_error_handler_t*
-latan_set_error_handler_off(void);
+latan_error_handler_t* latan_set_error_handler_off(void);
 
 #define LATAN_ERROR(reason, latan_errno)\
 {\

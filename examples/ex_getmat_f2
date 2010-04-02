@@ -1,0 +1,21 @@
+lalal
+
+START_FOO id1
+51 0.1 
+3 0.6 
+4 0.55
+2 0.0
+END_FOO
+
+START_OTHER id2
+
+START_BAR testid aa
+0.123 0.1
+1.2 0.3
+14.3 0.2
+END_BAR
+
+START_TEST idid
+
+ewfwefqfwf
+

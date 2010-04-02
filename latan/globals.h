@@ -61,6 +61,14 @@
 		LATAN_ERROR("memory allocation failed",LATAN_EFAULT);\
 	}\
 }
+#define MALLOC_ERRVAL(pt,typ,size,value)\
+{\
+	pt = (typ)(malloc((size_t)(size)*sizeof(*pt)));\
+	if (pt == NULL)\
+	{\
+		LATAN_ERROR_VAL("memory allocation failed",LATAN_EFAULT,value);\
+	}\
+}
 #define MALLOC_NOERRET(pt,typ,size)\
 {\
 	pt = (typ)(malloc((size_t)(size)*sizeof(*pt)));\
@@ -84,6 +92,14 @@
 	if (pt == NULL)\
 	{\
 		LATAN_ERROR("memory allocation failed",LATAN_EFAULT);\
+	}\
+}
+#define REALLOC_ERRVAL(pt,pt_old,typ,size,value)\
+{\
+	pt = (typ)(realloc(pt_old,(size_t)(size)*sizeof(*pt)));\
+	if (pt == NULL)\
+	{\
+		LATAN_ERROR_VAL("memory allocation failed",LATAN_EFAULT,value);\
 	}\
 }
 #define REALLOC_NOERRET(pt,pt_old,typ,size)\
@@ -127,6 +143,16 @@
 		LATAN_ERROR(errmsg,LATAN_EFAULT);\
 	}\
 }
+#define FOPEN_ERRVAL(f,fname,mode,value)\
+{\
+	f = fopen(fname,mode);\
+	if (f == NULL)\
+	{\
+		stringbuf errmsg;\
+		sprintf(errmsg,"error opening file %s",fname);\
+		LATAN_ERROR_VAL(errmsg,LATAN_EFAULT,value);\
+	}\
+}
 #define FOPEN_NOERRET(f,fname,mode)\
 {\
 	f = fopen(fname,mode);\
@@ -152,15 +178,15 @@ typedef enum
  @def STRING_LENGTH
  @brief Number of characters of a string defined by the ::stringbuf type.
 */
-#define STRING_LENGTH 256
+#define STRING_LENGTH 128
 /*!
  @typedef stringbuf
  @brief String type of fixed length #STRING_LENGTH
 */
 typedef char stringbuf[STRING_LENGTH];
 
-extern const char* latan_name;
-extern const char* latan_version;
+extern const stringbuf latan_name;
+extern const stringbuf latan_version;
 
 __END_DECLS
 

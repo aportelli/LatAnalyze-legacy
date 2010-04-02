@@ -33,6 +33,7 @@
  @brief Macro for square operation.
  */
 #define SQ(x) ((x)*(x))
+#define DRATIO(a,b) (((double)(a))/((double)(b)))
 /*!
  @def C_PI
  @brief \f$\pi\f$ math constant.

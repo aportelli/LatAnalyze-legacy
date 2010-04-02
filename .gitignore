@@ -6,6 +6,7 @@
 *.dylib
 examples/ex_mat
 examples/ex_getmat
+examples/ex_rand
 
 # Apple stuffs
 *.xcodeproj

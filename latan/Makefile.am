@@ -11,12 +11,14 @@ lib_LTLIBRARIES = liblatan.la
 liblatan_la_SOURCES =	\
 	error.c				\
 	globals.c			\
+	io.c				\
 	mat.c				\
 	../config.h
 liblatan_ladir = $(includedir)/latan
 liblatan_la_HEADERS =	\
 	error.h				\
 	globals.h			\
+	io.h				\
 	mat.h		
 liblatan_la_CFLAGS = $(COM_CFLAGS)
 liblatan_la_CXXFLAGS = $(COM_CXXFLAGS)

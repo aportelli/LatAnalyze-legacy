@@ -9,7 +9,9 @@ enum
 {
 	LATAN_FAILURE	= -1,	/* generic failure statement			*/
 	LATAN_SUCCESS	= 0,	/* all is going well !					*/
+	LATAN_EDOM		= 1,	/* input domain error, e.g sqrt(-1)		*/
 	LATAN_EFAULT	= 3,	/* invalid pointer						*/
+	LATAN_EINVAL	= 4,    /* invalid argument supplied by user	*/
 	LATAN_ENOMEM	= 8,	/* malloc error							*/
 	LATAN_EBADLEN	= 19,	/* matrix dimension error				*/
 	LATAN_ENOTSQR	= 20,	/* matrix is not square error			*/

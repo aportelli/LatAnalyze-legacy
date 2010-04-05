@@ -139,9 +139,9 @@
 	f = fopen(fname,mode);\
 	if (f == NULL)\
 	{\
-		stringbuf errmsg;\
-		sprintf(errmsg,"error opening file %s",fname);\
-		LATAN_ERROR(errmsg,LATAN_EFAULT);\
+		stringbuf _errmsg;\
+		sprintf(_errmsg,"error opening file %s",fname);\
+		LATAN_ERROR(_errmsg,LATAN_EFAULT);\
 	}\
 }
 #define FOPEN_ERRVAL(f,fname,mode,value)\
@@ -149,9 +149,9 @@
 	f = fopen(fname,mode);\
 	if (f == NULL)\
 	{\
-		stringbuf errmsg;\
-		sprintf(errmsg,"error opening file %s",fname);\
-		LATAN_ERROR_VAL(errmsg,LATAN_EFAULT,value);\
+		stringbuf _errmsg;\
+		sprintf(_errmsg,"error opening file %s",fname);\
+		LATAN_ERROR_VAL(_errmsg,LATAN_EFAULT,value);\
 	}\
 }
 #define FOPEN_NOERRET(f,fname,mode)\
@@ -159,9 +159,9 @@
 	f = fopen(fname,mode);\
 	if (f == NULL)\
 	{\
-		stringbuf errmsg;\
-		sprintf(errmsg,"error opening file %s",fname);\
-		LATAN_ERROR_NORET(errmsg,LATAN_EFAULT);\
+		stringbuf _errmsg;\
+		sprintf(_errmsg,"error opening file %s",fname);\
+		LATAN_ERROR_NORET(_errmsg,LATAN_EFAULT);\
 	}\
 }
 

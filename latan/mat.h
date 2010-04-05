@@ -79,6 +79,7 @@ for (i=0;i<nrow(m);i++)\
 /* functions */
 /** allocation **/
 void mat_create(mat* m, const size_t init_nrow, const size_t init_ncol);
+void mat_create_from_mat(mat* m, const mat n);
 void mat_create_ar(mat** m, const size_t nmat, const size_t init_nrow,\
 				   const size_t init_ncol);
 void mat_destroy(mat* m);
@@ -111,6 +112,8 @@ bool mat_issquare(mat m);
 /** operations **/
 void mat_zero(mat m);
 void mat_cst(mat m, const double x);
+void mat_rand_u(mat m, const double a, const double b);
+void mat_id(mat m);
 /*!
  @fn void mat_cp(mat m, const mat n)
  @brief Copy the content of the matrix \b n in \b m.

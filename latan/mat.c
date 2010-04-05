@@ -1,5 +1,6 @@
 #include <latan/mat.h>
 #include <latan/includes.h>
+#include <latan/rand.h>
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_blas.h>
 
@@ -12,6 +13,12 @@ void mat_create(mat* m, const size_t init_nrow, const size_t init_ncol)
 	error_handler = gsl_set_error_handler(&latan_error);
 	*m = gsl_matrix_alloc(init_nrow,init_ncol);
 	gsl_set_error_handler(error_handler);
+}
+
+void mat_create_from_mat(mat* m, const mat n)
+{
+	mat_create(m,nrow(n),ncol(n));
+	mat_cp(*m,n);
 }
 
 void mat_create_ar(mat** m, const size_t nmat, const size_t init_nrow,\
@@ -139,6 +146,21 @@ void mat_zero(mat m)
 void mat_cst(mat m, const double x)
 {
 	gsl_matrix_set_all(m,x);
+}
+
+void mat_rand_u(mat m, const double a, const double b)
+{
+	size_t i,j;
+	
+	FOR_VAL(m,i,j)
+	{
+		mat_set(m,i,j,rand_u(a,b));
+	}
+}
+
+void mat_id(mat m)
+{
+	gsl_matrix_set_identity(m);
 }
 
 int mat_cp(mat m, const mat n)

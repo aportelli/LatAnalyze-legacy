@@ -138,6 +138,8 @@ int mat_eqmul_r(mat m, const mat n);
  number of columns than \b o. Fatal error will be generated if precedent conditions are not satisfied.
  */
 int mat_mul(mat m, const mat n, const mat o);
+#define mat_eqinv(m) mat_inv(m,m);
+int mat_inv(mat m, const mat n);
 /*!
  @fn void mat_eqmulp(mat m, const mat n)
  @brief Multiply \b m by \b n "coefficient by coefficient".

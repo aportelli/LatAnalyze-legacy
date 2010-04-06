@@ -34,21 +34,8 @@
  where <TT>xxx.h</TT> is the header you want to use. Eventualy use gcc <TT>-I</TT> option to indicate the LatAnalyze header files location at compilation. 
  You also need to link your final executable with LatAnalyze with the gcc <TT>-llatan</TT> option, eventualy use gcc <TT>-L</TT> option to indicate 
  the LatAnalyze library location for linking.
- d6rtdddfrdrf
  @section sec_history 3 - History
- @subsection v1_0 v1.0 (2009-11-09)
- First effective and tested version including initial features :
- \arg dynamically allocated matrix type with basic arithmetic operations (see mat.h)
- \arg I/O functions to read and save matrices in files (see io.h)
- \arg bootstrap error evaluation function using array of matrices as data (see bootstrap.h)
- @subsection v1_01 v1.01 (2009-11-10)
- \arg FIX : ::mat_meansig was calculating variance and not standard deviation
- \arg ADD : "coefficient by coefficient" square root operation on matrix added (see ::mat_sqrt and #mat_eqsqrt)
- @subsection v1_1 v1.1 (2009-11-14)
- \arg FIX : several memory leaks and allocation bugs
- \arg ADD : <A HREF=http://www.gnuplot.info/>gnuplot</A> interface based on Nicolas Devillard <A HREF=http://ndevilla.free.fr/gnuplot/>gnuplot C API</A>
- (see plot.h)
- \arg ADD : function to compute effective mass from propagator datas (see ::effmass)
+ @subsection v2_0a v2.0a (2010-??-??)
 */
 /*!
  @file mat.h
@@ -169,47 +156,7 @@ int mat_abs(mat m, const mat n);
  @warning \b m and \b n must have the same dimensions, fatal error will be generated if it is not the case.
 */
 int mat_sqrt(mat m, const mat n);
-/*!
- @fn void mat_mean(mat mean, const mat *m, const int size)
- @brief Compute the "coefficient by coefficient" mean of an array of matrices.
- @see #mat_print
- 
- @param mean matrix to store the mean
- @param m input array of matrices
- @param size number of matrices in the array
- @warning \b mean and all the elements of \b m must have the same dimensions, fatal error will be generated if it is not the case.
- */
-int mat_mean(mat mean, const mat *m, const size_t size);
-/*!
- @fn void mat_meansig(mat mean, mat sig, const mat *m, const int size)
- @brief Compute the "coefficient by coefficient" mean and standard deviation of an array of matrices.
- 
- @param mean matrix to store the mean
- @param sig matrix to store the standard deviation
- @param m input array of matrices
- @param size number of matrices in the array
- @warning \b mean, \b sig and all the elements of \b m must have the same dimensions, fatal error will be generated if it is not the case.
- */
-int mat_meansig(mat mean, mat sig, const mat *m, const size_t size);
 
-/** I/O **/
-/*!
- @fn void mat_dump(FILE *stream, mat m)
- @brief Print the coefficients of a matrix on a character stream. Columns are separated by a space character and rows 
- are separated by a new line character. Value are printed in scientific notation with 11 digits.
- 
- @param stream character stream where the matrix will be printed
- @param m matrix to print
-*/
-double mat_elsum(mat m);
-double mat_elmean(mat m);
-void mat_dump(FILE *stream, mat m);
-/*!
- @def mat_print(m)
- @brief Print \b m on the standard output.
- @see ::mat_dump
- */
-#define mat_print(m) mat_dump(stdout,m)
 
 __END_DECLS
 

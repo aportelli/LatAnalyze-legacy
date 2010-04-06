@@ -127,8 +127,8 @@ int mat_eqadd(mat m, const mat n);
 int mat_add(mat m, const mat n, const mat o);
 int mat_eqsub(mat m, const mat n);
 int mat_sub(mat m, const mat n, const mat o);
-int mat_eqmul_l(mat m, const mat n);
-int mat_eqmul_r(mat m, const mat n);
+#define mat_eqmul_l(m,n) mat_mul(m,n,m);
+#define mat_eqmul_r(m,n) mat_mul(m,m,n);
 /*!
  @fn void mat_mul(mat m, const mat n, const mat o)
  @brief Store in \b m the matrix product of \b n and \b o.

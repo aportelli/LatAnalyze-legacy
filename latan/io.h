@@ -49,6 +49,7 @@
 
 #include <latan/globals.h>
 #include <latan/mat.h>
+#include <latan/rand.h>
 
 __BEGIN_DECLS
 
@@ -132,6 +133,9 @@ int mat_save_plotdat(const mat m, const double xstart, const double xstep,\
 int mat_save_plotdaterr(const mat dat, const mat sig, const double xstart,\
 						const double xstep, const stringbuf fname);
 
+/* random generator state I/O */
+int rand_save_gen_state(const stringbuf prefname, const rand_gen_state state);
+int rand_load_gen_state(rand_gen_state state, const stringbuf prefname);
 
 __END_DECLS
 

@@ -2,6 +2,8 @@
 #include <latan/includes.h>
 #include <latan/rand.h>
 #include <gsl/gsl_errno.h>
+#include <gsl/gsl_permutation.h>
+#include <gsl/gsl_linalg.h>
 #include <gsl/gsl_blas.h>
 
 /*								allocation									*/
@@ -289,6 +291,39 @@ int mat_mul(mat m, const mat n, const mat o)
 	
 	LATAN_UPDATE_STATUS(status,gsl_blas_dgemm(CblasNoTrans,CblasNoTrans,\
 											  1.0,n,o,0.0,m));
+	
+	return status;
+}
+
+int mat_inv(mat m, const mat n)
+{
+	int status,signum;
+	mat LU;
+	size_t i;
+	gsl_permutation* perm;
+	
+	status = LATAN_SUCCESS;
+	
+	if (!mat_issquare(m))
+	{
+		LATAN_ERROR("cannot invert a non-square matrix",LATAN_ENOTSQR);
+	}
+	
+	mat_create_from_mat(&LU,n);
+	perm = gsl_permutation_alloc(nrow(n));
+	
+	LATAN_UPDATE_STATUS(status,gsl_linalg_LU_decomp(LU,perm,&signum));
+	for (i=0;i<nrow(LU);i++)
+	{
+		if (mat_get(LU,i,i) == 0.0)
+		{
+			LATAN_ERROR("trying to invert a singular matrix",LATAN_EDOM);
+		}
+	}
+	LATAN_UPDATE_STATUS(status,gsl_linalg_LU_invert(LU,perm,m));
+	
+	mat_destroy(&LU);
+	gsl_permutation_free(perm);
 	
 	return status;
 }

@@ -13,12 +13,16 @@ liblatan_la_SOURCES =	\
 	globals.c			\
 	io.c				\
 	mat.c				\
+	rand.c				\
+	statistics.c		\
 	../config.h
 liblatan_ladir = $(includedir)/latan
 liblatan_la_HEADERS =	\
 	error.h				\
 	globals.h			\
 	io.h				\
-	mat.h		
+	mat.h				\
+	statistics.h		\
+	rand.h
 liblatan_la_CFLAGS = $(COM_CFLAGS)
 liblatan_la_CXXFLAGS = $(COM_CXXFLAGS)

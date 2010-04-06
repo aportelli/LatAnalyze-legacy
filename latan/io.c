@@ -266,3 +266,46 @@ int mat_save_plotdaterr(const mat dat, const mat sig, const double xstart,\
 	
 	return LATAN_SUCCESS;
 }
+
+/*						random generator state I/O							*/
+/****************************************************************************/
+
+int rand_save_gen_state(const stringbuf prefname, const rand_gen_state state)
+{
+	stringbuf fname;
+	FILE *f;
+	int i;
+	
+	sprintf(fname,"%s.rand",prefname);
+	FOPEN(f,fname,"w");
+	for (i=0;i<RLXG_STATE_SIZE;i++)
+	{
+		fprintf(f,"%d ",state[i]);
+	}
+	fprintf(f,"\n");
+	fclose(f);
+	
+	return LATAN_SUCCESS;
+}
+
+int rand_load_gen_state(rand_gen_state state, const stringbuf prefname)
+{
+	stringbuf fname,errmsg;
+	FILE *f;
+	int i;
+	
+	sprintf(fname,"%s.rand",prefname);
+	FOPEN(f,fname,"r");
+	for (i=0;i<RLXG_STATE_SIZE;i++)
+	{
+		if(fscanf(f,"%d ",state+i)<0)
+		{
+			sprintf(errmsg,"error while reading generator state component %d in file %s",\
+					i,fname);
+			LATAN_ERROR(errmsg,LATAN_ELATSYN);
+		}
+	}
+	fclose(f);
+	
+	return LATAN_SUCCESS;
+}

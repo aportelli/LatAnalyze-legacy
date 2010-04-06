@@ -1,8 +1,62 @@
 #include <latan/io.h>
 #include <latan/includes.h>
 
-int get_nrow(const stringbuf mark, const stringbuf matid,\
-			 const stringbuf inputfname)
+/*							general I/O										*/
+/****************************************************************************/
+
+int get_nfile(const stringbuf manifestfname)
+{
+	stringbuf buf1, buf2;
+	int nfile;
+	FILE* manifest = NULL;
+	
+	nfile = 0;
+	
+	FOPEN_ERRVAL(manifest,manifestfname,"r",LATAN_FAILURE);
+	while (!feof(manifest))
+	{
+		if ((fgets(buf1,STRING_LENGTH,manifest))&&(sscanf(buf1,"%s\n",buf2)>0))
+		{
+			nfile++;
+		}
+	}
+	fclose(manifest);
+	
+	return nfile;
+}
+
+int get_firstfname(stringbuf fname, const stringbuf manifestfname)
+{
+	stringbuf buf;
+	FILE* manifest = NULL;
+	
+	FOPEN(manifest,manifestfname,"r");
+	fgets(buf,STRING_LENGTH,manifest);
+	fclose(manifest);
+	sscanf(buf,"%s\n",fname);
+	
+	return LATAN_SUCCESS;
+}
+
+/*								mat I/O										*/
+/****************************************************************************/
+
+void mat_dump(FILE* stream, const mat m)
+{
+	size_t i,j;
+	
+	for (i=0;i<nrow(m);i++)
+	{
+		for (j=0;j<ncol(m)-1;j++)
+		{
+			fprintf(stream,"%.10e ",mat_get(m,i,j));
+		}
+		fprintf(stream,"%.10e\n",mat_get(m,i,ncol(m)-1));
+	}
+}
+
+int mat_load_nrow(const stringbuf mark, const stringbuf matid,\
+				  const stringbuf inputfname)
 {
 	stringbuf buf1, buf2, startfmt, end;
 	double dumb;
@@ -69,42 +123,8 @@ int get_nrow(const stringbuf mark, const stringbuf matid,\
 	return dat_nrow;
 }
 
-int get_nfile(const stringbuf manifestfname)
-{
-	stringbuf buf1, buf2;
-	int nfile;
-	FILE* manifest = NULL;
-	
-	nfile = 0;
-	
-	FOPEN_ERRVAL(manifest,manifestfname,"r",LATAN_FAILURE);
-	while (!feof(manifest))
-	{
-		if ((fgets(buf1,STRING_LENGTH,manifest))&&(sscanf(buf1,"%s\n",buf2)>0))
-		{
-			nfile++;
-		}
-	}
-	fclose(manifest);
-	
-	return nfile;
-}
-
-int get_firstfname(stringbuf fname, const stringbuf manifestfname)
-{
-	stringbuf buf;
-	FILE* manifest = NULL;
-	
-	FOPEN(manifest,manifestfname,"r");
-	fgets(buf,STRING_LENGTH,manifest);
-	fclose(manifest);
-	sscanf(buf,"%s\n",fname);
-	
-	return LATAN_SUCCESS;
-}
-
-int get_mat(mat m, const stringbuf mark, const stringbuf matid,\
-			const stringbuf inputfname)
+int mat_load(mat m, const stringbuf mark, const stringbuf matid,\
+			 const stringbuf inputfname)
 {
 	stringbuf buf1, buf2, startfmt, datfmt, tmp, end;
 	double buf;
@@ -160,7 +180,7 @@ int get_mat(mat m, const stringbuf mark, const stringbuf matid,\
 					{
 						stringbuf errmsg;
 						
-						sprintf(errmsg,"error reading matrix %s %s (%u,%u) in file %s (trying to read a %ux%u matrix)",\
+						sprintf(errmsg,"error while reading matrix %s %s (%u,%u) in file %s (trying to read a %ux%u matrix)",\
 								mark,matid,(unsigned)(row),(unsigned)(col),	\
 								inputfname,(unsigned)(nrow(m)),				\
 								(unsigned)(ncol(m)));
@@ -187,8 +207,8 @@ int get_mat(mat m, const stringbuf mark, const stringbuf matid,\
 	return LATAN_SUCCESS;
 }
 
-int get_matn(mat* m, const stringbuf mark, const stringbuf matid,\
-			  const stringbuf manifestfname)
+int mat_load_ar(mat* m, const stringbuf mark, const stringbuf matid,\
+				const stringbuf manifestfname)
 {
 	stringbuf buf, fname;
 	int nfile, status;
@@ -205,20 +225,21 @@ int get_matn(mat* m, const stringbuf mark, const stringbuf matid,\
 		{
 			fgets(buf,STRING_LENGTH,manifest);
 		} while (sscanf(buf,"%s\n",fname)<=0);
-		LATAN_UPDATE_STATUS(status,get_mat(m[i],mark,matid,fname));
+		LATAN_UPDATE_STATUS(status,mat_load(m[i],mark,matid,fname));
 	}
 	fclose(manifest);
 	
 	return status;
 }
 
-int save_plotdat(const mat dat, const double xstart, const double xstep,\
-				 const stringbuf fname)
+int mat_save_plotdat(const mat dat, const double xstart, const double xstep,\
+					 const stringbuf fname)
 {
 	FILE* f = NULL;
 	size_t i;
 	
 	FOPEN(f,fname,"r");
+	
 	for (i=0;i<nrow(dat);i++)
 	{
 		fprintf(f,"%.10e %.10e\n",(double)(xstart+(int)(i)*xstep),\
@@ -229,7 +250,7 @@ int save_plotdat(const mat dat, const double xstart, const double xstep,\
 	return LATAN_SUCCESS;
 }
 
-int save_plotdaterr(const mat dat, const mat sig, const double xstart,\
+int mat_save_plotdaterr(const mat dat, const mat sig, const double xstart,\
 					const double xstep, const stringbuf fname)
 {
 	FILE* f = NULL;

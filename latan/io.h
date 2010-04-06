@@ -52,18 +52,7 @@
 
 __BEGIN_DECLS
 
-/*!
- @fn int get_nrow(const stringbuf mark, const stringbuf matid, const stringbuf inputfname)
- @brief Get the number of rows of a matrix stored in a file.
- 
- @param mark mark of the matrix
- @param matid name of the matrix
- @param inputfname name of the file where the matrix is stored
- 
- @return number of rows of the designed matrix.
-*/
-int get_nrow(const stringbuf mark, const stringbuf matid,\
-			 const stringbuf inputfname);
+/* general I/O */
 /*!
  @fn int get_nfile(const stringbuf manifestfname)
  @brief Get the number of files referenced in a manifest file.
@@ -83,8 +72,37 @@ int get_nfile(const stringbuf manifestfname);
  @param manifestfname name of the manifest file
  */
 int get_firstfname(stringbuf fname, const stringbuf manifestfname);
+
+/* mat I/O */
 /*!
- @fn void get_mat(mat m, const stringbuf mark, const stringbuf matid, 
+ @fn void mat_dump(FILE *stream, mat m)
+ @brief Print the coefficients of a matrix on a character stream. Columns are separated by a space character and rows 
+ are separated by a new line character. Value are printed in scientific notation with 11 digits.
+ 
+ @param stream character stream where the matrix will be printed
+ @param m matrix to print
+ */
+void mat_dump(FILE* stream, mat m);
+/*!
+ @def mat_print(m)
+ @brief Print \b m on the standard output.
+ @see ::mat_dump
+ */
+#define mat_print(m) mat_dump(stdout,m)
+/*!
+ @fn int mat_load_nrow(const stringbuf mark, const stringbuf matid, const stringbuf inputfname)
+ @brief Get the number of rows of a matrix stored in a file.
+ 
+ @param mark mark of the matrix
+ @param matid name of the matrix
+ @param inputfname name of the file where the matrix is stored
+ 
+ @return number of rows of the designed matrix.
+ */
+int mat_load_nrow(const stringbuf mark, const stringbuf matid,\
+				  const stringbuf inputfname);
+/*!
+ @fn void mat_get(mat m, const stringbuf mark, const stringbuf matid, 
  const stringbuf inputfname)
  @brief Get a matrix stored in a file.
  
@@ -93,10 +111,10 @@ int get_firstfname(stringbuf fname, const stringbuf manifestfname);
  @param matid name of the matrix
  @param inputfname name of the file where the matrix is stored
 */
-int get_mat(mat m, const stringbuf mark, const stringbuf matid,\
+int mat_load(mat m, const stringbuf mark, const stringbuf matid,\
 			 const stringbuf inputfname);
 /*!
- @fn void get_matn(mat* m, const stringbuf mark, const stringbuf matid,
+ @fn void mat_get_ar(mat* m, const stringbuf mark, const stringbuf matid,
  const stringbuf manifestfname)
  @brief Get an array of matrices from files. All matrices got the same mark an 
  name and are stored one per file.
@@ -107,12 +125,13 @@ int get_mat(mat m, const stringbuf mark, const stringbuf matid,\
  @param manifestfname name of the manifest file referencing files where matrices
  are stored
  */
-int get_matn(mat* m, const stringbuf mark, const stringbuf matid,\
-			  const stringbuf manifestfname);
-int save_plotdat(const mat m, const double xstart, const double xstep,\
-				 const stringbuf fname);
-int save_plotdaterr(const mat dat, const mat sig, const double xstart,\
-					const double xstep, const stringbuf fname);
+int mat_load_ar(mat* m, const stringbuf mark, const stringbuf matid,\
+				const stringbuf manifestfname);
+int mat_save_plotdat(const mat m, const double xstart, const double xstep,\
+					 const stringbuf fname);
+int mat_save_plotdaterr(const mat dat, const mat sig, const double xstart,\
+						const double xstep, const stringbuf fname);
+
 
 __END_DECLS
 

@@ -240,41 +240,10 @@ int mat_sub(mat m, const mat n, const mat o)
 	return status;
 }
 
-int mat_eqmul_l(mat m, const mat n)
-{
-	int status;
-	mat buf;
-	
-	status = LATAN_SUCCESS;
-	
-	mat_create(&buf,nrow(m),ncol(m));
-	
-	LATAN_UPDATE_STATUS(status,mat_mul(buf,n,m));
-	LATAN_UPDATE_STATUS(status,mat_cp(m,buf));
-	
-	return status;
-}
-
-int mat_eqmul_r(mat m, const mat n)
-{
-	int status;
-	mat buf;
-	
-	status = LATAN_SUCCESS;
-	
-	mat_create(&buf,nrow(m),ncol(m));
-	
-	LATAN_UPDATE_STATUS(status,mat_mul(buf,m,n));
-	LATAN_UPDATE_STATUS(status,mat_cp(m,buf));
-	
-	mat_destroy(&buf);
-	
-	return status;
-}
-
 int mat_mul(mat m, const mat n, const mat o)
 {
 	int status;
+	mat buf;
 	
 	status = LATAN_SUCCESS;
 	
@@ -283,14 +252,14 @@ int mat_mul(mat m, const mat n, const mat o)
 		LATAN_ERROR("operation between matrices with dimension mismatch",\
 					LATAN_EBADLEN);
 	}
-	if ((m == n)||(m == o))
-	{
-		LATAN_ERROR("output argument of mat_mul can not be also an input argument (BLAS limitation), use mat_eqmul_* functions",\
-					LATAN_EINVAL);
-	}
+
+	mat_create(&buf,nrow(m),ncol(m));
 	
 	LATAN_UPDATE_STATUS(status,gsl_blas_dgemm(CblasNoTrans,CblasNoTrans,\
-											  1.0,n,o,0.0,m));
+											  1.0,n,o,0.0,buf));
+	LATAN_UPDATE_STATUS(status,mat_cp(m,buf));
+	
+	mat_destroy(&buf);
 	
 	return status;
 }

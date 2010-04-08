@@ -11,17 +11,17 @@ int main(void)
 	int dice,hist_dice[DICE_NFACE];
 	int i,f;
 	double randd;
-	rand_gen_state state;
+	randgen_state state;
 	
 	printf("- GENERATOR STATE I/O TESTS\n");
-	rand_timeinit();
+	randgen_timeinit();
 	printf("-- generating a %d steps random sequence...\n",GENTEST_SEQ_LENGTH);
 	for (i=0;i<GENTEST_SEQ_LENGTH;i++) 
 	{
 		if (i == GENTEST_SAVE_STEP)
 		{
-			rand_get_gen_state(state);
-			rand_save_gen_state("ex_rand",state);
+			randgen_get_state(state);
+			randgen_save_state("ex_rand",state);
 			printf("generator state after step %d saved in ex_rand.rand\n",\
 				   GENTEST_SAVE_STEP-1);
 		}
@@ -29,11 +29,11 @@ int main(void)
 		printf("step %d\t: %e\n",i,randd);
 	}
 	printf("-- messing up the generator...\n");
-	rand_timeinit();
-	rand_get_gen_state(state);
+	randgen_timeinit();
+	randgen_get_state(state);
 	printf("-- reloading state from ex_rand.rand...\n");
-	rand_load_gen_state(state,"ex_rand");
-	rand_set_gen_state(state);
+	randgen_load_state(state,"ex_rand");
+	randgen_set_state(state);
 	printf("-- generating a %d steps random sequence...\n",GENTEST_SEQ_LENGTH);
 	for (i=0;i<GENTEST_SEQ_LENGTH;i++) 
 	{
@@ -41,7 +41,7 @@ int main(void)
 		printf("step %d\t: %e\n",i,randd);
 	}
 	printf("- DISTRIBUTIONS TESTS\n");
-	rand_timeinit();
+	randgen_timeinit();
 	for (f=0;f<DICE_NFACE;f++)
 	{
 		hist_dice[f] = 0;

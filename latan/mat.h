@@ -82,6 +82,8 @@ double mat_get(const mat m, const size_t i, const size_t j);
 void mat_set(mat m, const size_t i, const size_t j, const double val);
 int mat_set_subm(mat m, const mat n, const size_t k1, const size_t l1, \
 				 const size_t k2, const size_t l2);
+#define mat_inc(m,i,j,val) mat_set(m,i,j,mat_get(m,i,j)+val)
+#define mat_pp(m,i,j) mat_inc(m,i,j,1.0)
 
 /** tests **/
 /*!

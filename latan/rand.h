@@ -15,22 +15,22 @@
 
 __BEGIN_DECLS
 
-typedef int rand_gen_state[RLXG_STATE_SIZE];
+typedef int randgen_state[RLXG_STATE_SIZE];
 
 /*!
- @fn void rand_init(const int seed)
+ @fn void randgen_init(const int seed)
  @brief Initialize the generator with a given seed.
  
  @param seed a integer between \f$1\f$ and \f$2^{31}\f$
 */
-void rand_init(const int seed);
+void randgen_init(const int seed);
 /*!
- @fn void rand_timeinit(void)
+ @fn void randgen_timeinit(void)
  @brief Initialize the generator with the number of seconds since the 1st January of 1970 12:00am as a seed.
 */
-void rand_timeinit(void);
-void rand_set_gen_state(rand_gen_state state);
-void rand_get_gen_state(rand_gen_state state);
+void randgen_timeinit(void);
+void randgen_set_state(randgen_state state);
+void randgen_get_state(randgen_state state);
 double rand_u(double a, double b);
 /*!
  @fn int rand_ud(int n)

@@ -13,7 +13,7 @@ int main(int argc, char *argv[])
 	mat_create(&d,2,2);
 	mat_create(&e,3,3);
 	
-	rand_timeinit();
+	randgen_timeinit();
 	
 	mat_set(b,0,0,2.0);
 	mat_set(b,1,0,1.5);

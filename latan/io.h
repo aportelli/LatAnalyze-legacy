@@ -134,8 +134,8 @@ int mat_save_plotdaterr(const mat dat, const mat sig, const double xstart,\
 						const double xstep, const stringbuf fname);
 
 /* random generator state I/O */
-int rand_save_gen_state(const stringbuf prefname, const rand_gen_state state);
-int rand_load_gen_state(rand_gen_state state, const stringbuf prefname);
+int randgen_save_state(const stringbuf prefname, const randgen_state state);
+int randgen_load_state(randgen_state state, const stringbuf prefname);
 
 __END_DECLS
 

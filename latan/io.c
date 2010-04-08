@@ -270,7 +270,7 @@ int mat_save_plotdaterr(const mat dat, const mat sig, const double xstart,\
 /*						random generator state I/O							*/
 /****************************************************************************/
 
-int rand_save_gen_state(const stringbuf prefname, const rand_gen_state state)
+int randgen_save_state(const stringbuf prefname, const randgen_state state)
 {
 	stringbuf fname;
 	FILE *f;
@@ -288,7 +288,7 @@ int rand_save_gen_state(const stringbuf prefname, const rand_gen_state state)
 	return LATAN_SUCCESS;
 }
 
-int rand_load_gen_state(rand_gen_state state, const stringbuf prefname)
+int randgen_load_state(randgen_state state, const stringbuf prefname)
 {
 	stringbuf fname,errmsg;
 	FILE *f;

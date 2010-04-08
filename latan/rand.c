@@ -663,22 +663,22 @@ static void rlxd_reset(int state[])
 
 #define RLXD_LEVEL 1
 
-void rand_init(int seed)
+void randgen_init(int seed)
 {
 	rlxd_init(RLXD_LEVEL, seed);
 }
 
-void rand_timeinit(void)
+void randgen_timeinit(void)
 {
-	rand_init((int)time(NULL));
+	randgen_init((int)time(NULL));
 }
 
-void rand_get_gen_state(rand_gen_state state)
+void randgen_get_state(randgen_state state)
 {
 	rlxd_get(state);
 }
 
-void rand_set_gen_state(rand_gen_state state)
+void randgen_set_state(randgen_state state)
 {
 	rlxd_reset(state);
 }

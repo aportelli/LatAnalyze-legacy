@@ -40,7 +40,7 @@
  */
 #define C_PI 3.1415926535897932384626433832795028841970
 /** 1 fm = 0.005067731 MeV^(-1) **/
-#define C_FM 0.005067731
+#define C_FM_IMEV 0.005067731
 
 /* error handling */
 #include <latan/error.h>

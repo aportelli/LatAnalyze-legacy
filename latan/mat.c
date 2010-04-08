@@ -336,6 +336,35 @@ int mat_mul_tt(mat m, const mat n, const mat o)
 	return status;
 }
 
+int mat_eqtranspose(mat m)
+{
+	int status;
+	
+	if (!mat_issquare(m))
+	{
+		LATAN_ERROR("cannot auto-transpose a non-square matrix",LATAN_ENOTSQR);
+	}
+	
+	status = gsl_matrix_transpose(m);
+	
+	return status;
+}
+
+int mat_transpose(mat m, const mat n)
+{
+	int status;
+	
+	if ((nrow(m) != ncol(n))||(ncol(m) != nrow(n)))
+	{
+		LATAN_ERROR("operation between matrices with dimension mismatch",\
+					LATAN_EBADLEN);
+	}
+	
+	status = gsl_matrix_transpose_memcpy(m,n);
+	
+	return status;
+}
+
 int mat_inv(mat m, const mat n)
 {
 	int status,signum;

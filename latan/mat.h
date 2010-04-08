@@ -134,6 +134,8 @@ int mat_mul_nt(mat m, const mat n, const mat o);
 int mat_mul_tn(mat m, const mat n, const mat o);
 int mat_mul_tt(mat m, const mat n, const mat o);
 #define mat_mul(m,n,o) mat_mul_nn(m,n,o);
+int mat_eqtranspose(mat m);
+int mat_transpose(mat m, const mat n);
 #define mat_eqinv(m) mat_inv(m,m);
 int mat_inv(mat m, const mat n);
 /*!

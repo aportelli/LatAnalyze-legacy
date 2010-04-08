@@ -119,6 +119,8 @@ int mat_eqsub(mat m, const mat n);
 int mat_sub(mat m, const mat n, const mat o);
 #define mat_eqmul_l(m,n) mat_mul(m,n,m);
 #define mat_eqmul_r(m,n) mat_mul(m,m,n);
+#define mat_eqmul_l_t(m,n) mat_mul_tn(m,n,m);
+#define mat_eqmul_r_t(m,n) mat_mul_nt(m,m,n);
 /*!
  @fn void mat_mul(mat m, const mat n, const mat o)
  @brief Store in \b m the matrix product of \b n and \b o.
@@ -127,7 +129,11 @@ int mat_sub(mat m, const mat n, const mat o);
  @warning \b NCOL(n) and \b NROW(o) must be equals, \b m must have the same number of rows than \b n and the same
  number of columns than \b o. Fatal error will be generated if precedent conditions are not satisfied.
  */
-int mat_mul(mat m, const mat n, const mat o);
+int mat_mul_nn(mat m, const mat n, const mat o);
+int mat_mul_nt(mat m, const mat n, const mat o);
+int mat_mul_tn(mat m, const mat n, const mat o);
+int mat_mul_tt(mat m, const mat n, const mat o);
+#define mat_mul(m,n,o) mat_mul_nn(m,n,o);
 #define mat_eqinv(m) mat_inv(m,m);
 int mat_inv(mat m, const mat n);
 /*!

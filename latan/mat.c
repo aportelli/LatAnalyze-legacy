@@ -240,22 +240,94 @@ int mat_sub(mat m, const mat n, const mat o)
 	return status;
 }
 
-int mat_mul(mat m, const mat n, const mat o)
+int mat_mul_nn(mat m, const mat n, const mat o)
 {
 	int status;
 	mat buf;
 	
 	status = LATAN_SUCCESS;
 	
-	if (!((nrow(m) == nrow(n))&&(ncol(m) == ncol(o))&&(ncol(n) == nrow(o))))
+	if ((nrow(m) != nrow(n))||(ncol(m) != ncol(o))||(ncol(n) != nrow(o)))
 	{
 		LATAN_ERROR("operation between matrices with dimension mismatch",\
 					LATAN_EBADLEN);
 	}
 
-	mat_create(&buf,nrow(m),ncol(m));
+	mat_create_from_dim(&buf,m);
 	
 	LATAN_UPDATE_STATUS(status,gsl_blas_dgemm(CblasNoTrans,CblasNoTrans,\
+											  1.0,n,o,0.0,buf));
+	LATAN_UPDATE_STATUS(status,mat_cp(m,buf));
+	
+	mat_destroy(&buf);
+	
+	return status;
+}
+
+int mat_mul_nt(mat m, const mat n, const mat o)
+{
+	int status;
+	mat buf;
+	
+	status = LATAN_SUCCESS;
+	
+	if ((nrow(m) != nrow(n))||(ncol(m) != nrow(o))||(ncol(n) != ncol(o)))
+	{
+		LATAN_ERROR("operation between matrices with dimension mismatch",\
+					LATAN_EBADLEN);
+	}
+	
+	mat_create_from_dim(&buf,m);
+	
+	LATAN_UPDATE_STATUS(status,gsl_blas_dgemm(CblasNoTrans,CblasTrans,\
+											  1.0,n,o,0.0,buf));
+	LATAN_UPDATE_STATUS(status,mat_cp(m,buf));
+	
+	mat_destroy(&buf);
+	
+	return status;
+}
+
+int mat_mul_tn(mat m, const mat n, const mat o)
+{
+	int status;
+	mat buf;
+	
+	status = LATAN_SUCCESS;
+	
+	if ((nrow(m) != ncol(n))||(ncol(m) != ncol(o))||(nrow(n) != nrow(o)))
+	{
+		LATAN_ERROR("operation between matrices with dimension mismatch",\
+					LATAN_EBADLEN);
+	}
+	
+	mat_create_from_dim(&buf,m);
+	
+	LATAN_UPDATE_STATUS(status,gsl_blas_dgemm(CblasTrans,CblasNoTrans,\
+											  1.0,n,o,0.0,buf));
+	LATAN_UPDATE_STATUS(status,mat_cp(m,buf));
+	
+	mat_destroy(&buf);
+	
+	return status;
+}
+
+int mat_mul_tt(mat m, const mat n, const mat o)
+{
+	int status;
+	mat buf;
+	
+	status = LATAN_SUCCESS;
+	
+	if ((nrow(m) != ncol(n))||(ncol(m) != nrow(o))||(nrow(n) != ncol(o)))
+	{
+		LATAN_ERROR("operation between matrices with dimension mismatch",\
+					LATAN_EBADLEN);
+	}
+	
+	mat_create_from_dim(&buf,m);
+	
+	LATAN_UPDATE_STATUS(status,gsl_blas_dgemm(CblasTrans,CblasTrans,\
 											  1.0,n,o,0.0,buf));
 	LATAN_UPDATE_STATUS(status,mat_cp(m,buf));
 	

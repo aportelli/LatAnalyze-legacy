@@ -238,7 +238,7 @@ int mat_save_plotdat(const mat dat, const double xstart, const double xstep,\
 	FILE* f = NULL;
 	size_t i;
 	
-	FOPEN(f,fname,"r");
+	FOPEN(f,fname,"w");
 	
 	for (i=0;i<nrow(dat);i++)
 	{

@@ -26,7 +26,7 @@ double mat_elmean(mat m);
  @param size number of matrices in the array
  @warning \b mean and all the elements of \b m must have the same dimensions, fatal error will be generated if it is not the case.
  */
-int mat_mean(mat mean, const mat *m, const size_t size);
+int mat_mean(mat mean, const mat* m, const size_t size);
 /*!
  @fn void mat_meansig(mat mean, mat sig, const mat *m, const int size)
  @brief Compute the "coefficient by coefficient" mean and standard deviation of an array of matrices.
@@ -37,15 +37,21 @@ int mat_mean(mat mean, const mat *m, const size_t size);
  @param size number of matrices in the array
  @warning \b mean, \b sig and all the elements of \b m must have the same dimensions, fatal error will be generated if it is not the case.
  */
-int mat_meansig(mat mean, mat sig, const mat *m, const size_t size);
+int mat_cov(mat cov, const mat* m, const mat* n, const size_t size);
+int mat_cov_m(mat cov, const mat* m, const mat* n, const size_t size,\
+			  const mat m_mean, const mat n_mean);
+#define mat_var(var,m,size) mat_cov(var,m,m,size)
+#define mat_var_m(var,m,size,mean) mat_cov(var,m,m,size,mean,mean)
+int mat_covp(mat cov, const mat* m, const mat* n, const size_t size);
+int mat_covp_m(mat cov, const mat* m, const mat* n, const size_t size,\
+			   const mat m_mean, const mat n_mean);
+#define mat_varp(var,m,size) mat_covar(var,m,m,size)
+#define mat_varp_m(var,m,size,mean) mat_covar_m(var,m,m,size,mean,mean)
 
 /* resampling functions */
-int resamp_bootstrap(mat res, mat sigres, mat* dat, size_t ndat,\
-					 estimator_t* estimator, void* param,		\
-					 size_t nboot, const boot_io* io_param);
-int resamp_jackknife(mat res, mat sigres, mat* dat, size_t ndat,\
+int resamp_bootstrap(boot_res* res, const mat* dat, size_t ndat,\
 					 estimator_t* estimator, void* param);
-
-extern const boot_io boot_no_io;
+int resamp_jackknife(jack_res* sample, const mat* dat, size_t ndat,	\
+					 estimator_t* estimator, void* param);
 
 #endif

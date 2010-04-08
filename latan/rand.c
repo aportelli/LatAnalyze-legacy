@@ -689,7 +689,7 @@ double rand_u(double a, double b)
 	
 	ranlxd(&rx,1);
 	
-	return (b-a)*rx+a;
+	return (b-a)*rx + a;
 }
 
 int rand_ud(const int n)
@@ -699,4 +699,18 @@ int rand_ud(const int n)
 	ranlxd(&rx,1);
 	
 	return ((int)(rx*(double)(n)));
+}
+
+double rand_n(const double mean, const double sigma)
+{
+	double rx,ry,sqnrm;
+	
+	do
+	{
+		rx = rand_u(-1.0,1.0);
+		ry = rand_u(-1.0,1.0);
+		sqnrm = SQ(rx)+SQ(ry);
+	} while ((sqnrm > 1.0)||(sqnrm == 0.0));
+
+	return sigma*rx*sqrt(-2.0*log(sqnrm)/sqnrm) + mean;
 }

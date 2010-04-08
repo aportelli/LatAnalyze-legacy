@@ -39,6 +39,7 @@ double rand_u(double a, double b);
  @return a uniformly distributed random integer between \f$0\f$ and \b n.
 */
 int rand_ud(const int n);
+double rand_n(const double mean, const double sigma);
 
 __END_DECLS
 

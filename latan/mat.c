@@ -19,7 +19,7 @@ void mat_create(mat* m, const size_t init_nrow, const size_t init_ncol)
 
 void mat_create_from_mat(mat* m, const mat n)
 {
-	mat_create(m,nrow(n),ncol(n));
+	mat_create_from_dim(m,n);
 	mat_cp(*m,n);
 }
 

@@ -67,8 +67,11 @@ for (i=0;i<nrow(m);i++)\
 /** allocation **/
 void mat_create(mat* m, const size_t init_nrow, const size_t init_ncol);
 void mat_create_from_mat(mat* m, const mat n);
+#define mat_create_from_dim(m,n) mat_create(m,nrow(n),ncol(n))
+#define mat_create_from_trdim(m,n) mat_create(m,ncol(n),nrow(n))
 void mat_create_ar(mat** m, const size_t nmat, const size_t init_nrow,\
 				   const size_t init_ncol);
+#define mat_create_ar_from_dim(m,nmat,n) mat_create_ar(m,nmat,nrow(n),ncol(n))
 void mat_destroy(mat* m);
 void mat_destroy_ar(mat** m, const size_t nmat);
 

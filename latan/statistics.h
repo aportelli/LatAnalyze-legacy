@@ -2,16 +2,23 @@
 #define LATAN_STATISTICS_H_
 
 #include <latan/mat.h>
-
-typedef int estimator_t(mat res, mat* dat, size_t ndat, void* param);
+#include <latan/rand.h>
 
 typedef struct
 {
-	bool save_samples;
-	stringbuf fname;
-	stringbuf est_name;
-	mat samples_buf;
-} boot_io;
+	mat est_val;
+	mat* sample;
+} jack_res;
+
+typedef struct
+{
+	mat est_val;
+	mat* sample;
+	size_t nsample;
+	randgen_state gen_state;
+} boot_res;
+
+typedef int resamp_func(mat res, mat* dat, size_t ndat, void* param);
 
 /* elementary estimators */
 double mat_elsum(mat m);
@@ -48,10 +55,14 @@ int mat_covp_m(mat cov, const mat* m, const mat* n, const size_t size,\
 #define mat_varp(var,m,size) mat_covar(var,m,m,size)
 #define mat_varp_m(var,m,size,mean) mat_covar_m(var,m,m,size,mean,mean)
 
+/* histogram */
+int histogram(mat hist, const mat data, const double xmin, const double xmax,\
+			  const size_t nint);
+
 /* resampling functions */
 int resamp_bootstrap(boot_res* res, const mat* dat, size_t ndat,\
-					 estimator_t* estimator, void* param);
+					 resamp_func* f, void* param);
 int resamp_jackknife(jack_res* sample, const mat* dat, size_t ndat,	\
-					 estimator_t* estimator, void* param);
+					 resamp_func* f, void* param);
 
 #endif

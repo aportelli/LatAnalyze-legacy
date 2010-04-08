@@ -2,8 +2,8 @@
 #include <latan/includes.h>
 #include <latan/rand.h>
 
-const boot_io boot_no_io = {false,"","",NULL};
-
+/*						elementary estimators								*/
+/****************************************************************************/
 double mat_elsum(mat m)
 {
 	size_t i,j;
@@ -143,4 +143,37 @@ int mat_covp_m(mat cov, const mat* m, const mat* n, const size_t size,\
 	mat_destroy(&mean_prod);
 	
 	return status;
+}
+
+/*								histogram									*/
+/****************************************************************************/
+int histogram(mat hist, const mat data, const double xmin, const double xmax,\
+			  const size_t nint)
+{
+	double step,data_i;
+	size_t i,j;
+	
+	if (nrow(hist) != nint)
+	{
+		LATAN_ERROR("histogram matrix row number do not match number of histogram intervals",\
+					LATAN_EBADLEN);
+	}
+	
+	step = (xmax-xmin)/((double)(nint));
+	mat_zero(hist);
+	
+	for (i=0;i<nrow(data);i++)
+	{
+		for (j=0;j<nint;j++) 
+		{
+			data_i = mat_get(data,i,0);
+			if ((data_i>=xmin+(double)(j)*step)&&\
+				(data_i<xmin+(double)(j+1)*step))
+			{
+				mat_pp(hist,j,0);
+			}
+		}
+	}
+	
+	return LATAN_SUCCESS;
 }

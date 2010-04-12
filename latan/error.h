@@ -15,7 +15,8 @@ enum
 	LATAN_ENOMEM	= 8,	/* malloc error							*/
 	LATAN_EBADLEN	= 19,	/* matrix dimension error				*/
 	LATAN_ENOTSQR	= 20,	/* matrix is not square error			*/
-	LATAN_ELATSYN	= 33	/* syntax error reading input file		*/
+	LATAN_ELATSYN	= 33,	/* syntax error reading input file		*/
+	LATAN_ESYSTEM	= 34	/* system error							*/
 };
 
 typedef void latan_error_handler_t(const char*, const char*, int, int);
@@ -47,7 +48,7 @@ latan_error_handler_t* latan_set_error_handler_off(void);
 }
 
 #define LATAN_ERROR_NULL(reason, latan_errno)\
-LATAN_ERROR_VAL(reason,latan_errno,0)
+LATAN_ERROR_VAL(reason,latan_errno,NULL)
 
 #define LATAN_ERROR_NORET(reason, latan_errno)\
 latan_error(reason,__FILE__,__LINE__,errno)

@@ -8,6 +8,7 @@ examples/ex_mat
 examples/ex_getmat
 examples/ex_rand
 examples/ex_rand.rand
+examples/ex_plot
 
 # Apple stuffs
 *.xcodeproj

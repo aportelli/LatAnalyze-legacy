@@ -25,7 +25,7 @@ int get_nfile(const stringbuf manifestfname)
 	return nfile;
 }
 
-int get_firstfname(stringbuf fname, const stringbuf manifestfname)
+latan_errno get_firstfname(stringbuf fname, const stringbuf manifestfname)
 {
 	stringbuf buf;
 	FILE* manifest = NULL;
@@ -123,8 +123,8 @@ int mat_load_nrow(const stringbuf mark, const stringbuf matid,\
 	return dat_nrow;
 }
 
-int mat_load(mat m, const stringbuf mark, const stringbuf matid,\
-			 const stringbuf inputfname)
+latan_errno mat_load(mat m, const stringbuf mark, const stringbuf matid,\
+					 const stringbuf inputfname)
 {
 	stringbuf buf1, buf2, startfmt, datfmt, tmp, end;
 	double buf;
@@ -207,8 +207,8 @@ int mat_load(mat m, const stringbuf mark, const stringbuf matid,\
 	return LATAN_SUCCESS;
 }
 
-int mat_load_ar(mat* m, const stringbuf mark, const stringbuf matid,\
-				const stringbuf manifestfname)
+latan_errno mat_load_ar(mat* m, const stringbuf mark, const stringbuf matid,\
+						const stringbuf manifestfname)
 {
 	stringbuf buf, fname;
 	int nfile, status;
@@ -232,8 +232,8 @@ int mat_load_ar(mat* m, const stringbuf mark, const stringbuf matid,\
 	return status;
 }
 
-int mat_save_plotdat(const mat dat, const double xstart, const double xstep,\
-					 const stringbuf fname)
+latan_errno mat_save_plotdat(const mat dat, const double xstart,\
+							 const double xstep, const stringbuf fname)
 {
 	FILE* f = NULL;
 	size_t i;
@@ -250,8 +250,9 @@ int mat_save_plotdat(const mat dat, const double xstart, const double xstep,\
 	return LATAN_SUCCESS;
 }
 
-int mat_save_plotdaterr(const mat dat, const mat sig, const double xstart,\
-					const double xstep, const stringbuf fname)
+latan_errno mat_save_plotdaterr(const mat dat, const mat sig,				\
+								const double xstart, const double xstep,	\
+								const stringbuf fname)
 {
 	FILE* f = NULL;
 	size_t i;
@@ -270,7 +271,8 @@ int mat_save_plotdaterr(const mat dat, const mat sig, const double xstart,\
 /*						random generator state I/O							*/
 /****************************************************************************/
 
-int randgen_save_state(const stringbuf prefname, const randgen_state state)
+latan_errno randgen_save_state(const stringbuf prefname,\
+							   const randgen_state state)
 {
 	stringbuf fname;
 	FILE *f;
@@ -288,7 +290,7 @@ int randgen_save_state(const stringbuf prefname, const randgen_state state)
 	return LATAN_SUCCESS;
 }
 
-int randgen_load_state(randgen_state state, const stringbuf prefname)
+latan_errno randgen_load_state(randgen_state state, const stringbuf prefname)
 {
 	stringbuf fname,errmsg;
 	FILE *f;

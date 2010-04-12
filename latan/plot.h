@@ -101,7 +101,7 @@ void plot_add_hlineerr(plot p, const double y, const double err,		\
 					   const stringbuf color2);
 
 /* plot parsing */
-int plot_parse(FILE* outstr, const plot p);
+latan_errno plot_parse(FILE* outstr, const plot p);
 #define plot_print(p) plot_parse(stdout,p);
 /*!
  @fn void plot_disp(const plot p)
@@ -117,7 +117,7 @@ int plot_parse(FILE* outstr, const plot p);
  
  @param p plot to print
 */
-int plot_disp(const plot p);
+latan_errno plot_disp(const plot p);
 
 __END_DECLS
 

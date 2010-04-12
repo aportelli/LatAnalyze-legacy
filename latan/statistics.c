@@ -30,9 +30,9 @@ double mat_elmean(mat m)
 	return mean;
 }
 
-int mat_mean(mat mean, const mat *m, const size_t size)
+latan_errno mat_mean(mat mean, const mat *m, const size_t size)
 {
-	int status;
+	latan_errno status;
 	size_t i;
 	const double dsize = (double)(size);
 	
@@ -48,9 +48,9 @@ int mat_mean(mat mean, const mat *m, const size_t size)
 	return status;
 }
 
-int mat_cov(mat cov, const mat *m, const mat *n, const size_t size)
+latan_errno mat_cov(mat cov, const mat *m, const mat *n, const size_t size)
 {
-	int status;
+	latan_errno status;
 	mat m_mean, n_mean;
 	
 	status = LATAN_SUCCESS;
@@ -68,10 +68,10 @@ int mat_cov(mat cov, const mat *m, const mat *n, const size_t size)
 	return status;
 }
 
-int mat_cov_m(mat cov, const mat* m, const mat* n, const size_t size,\
-			  const mat m_mean, const mat n_mean)
+latan_errno mat_cov_m(mat cov, const mat* m, const mat* n, const size_t size,\
+					  const mat m_mean, const mat n_mean)
 {
-	int status;
+	latan_errno status;
 	size_t i;
 	size_t subdim;
 	double dsubdim;
@@ -100,9 +100,9 @@ int mat_cov_m(mat cov, const mat* m, const mat* n, const size_t size,\
 	return status;
 }
 
-int mat_covp(mat cov, const mat *m, const mat *n, const size_t size)
+latan_errno mat_covp(mat cov, const mat *m, const mat *n, const size_t size)
 {
-	int status;
+	latan_errno status;
 	mat m_mean, n_mean;
 	
 	status = LATAN_SUCCESS;
@@ -120,10 +120,10 @@ int mat_covp(mat cov, const mat *m, const mat *n, const size_t size)
 	return status;
 }
 
-int mat_covp_m(mat cov, const mat* m, const mat* n, const size_t size,\
-				const mat m_mean, const mat n_mean)
+latan_errno mat_covp_m(mat cov, const mat* m, const mat* n, const size_t size,\
+					   const mat m_mean, const mat n_mean)
 {
-	int status;
+	latan_errno status;
 	size_t i;
 	mat* mn;
 	mat mean_prod;
@@ -149,8 +149,8 @@ int mat_covp_m(mat cov, const mat* m, const mat* n, const size_t size,\
 
 /*								histogram									*/
 /****************************************************************************/
-int histogram(mat hist, const mat data, const double xmin, const double xmax,\
-			  const size_t nint)
+latan_errno histogram(mat hist, const mat data, const double xmin,\
+					  const double xmax, const size_t nint)
 {
 	size_t i;
 	gsl_histogram* gsl_hist;

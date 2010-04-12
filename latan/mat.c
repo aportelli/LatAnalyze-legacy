@@ -106,8 +106,8 @@ void mat_set(mat m, const size_t i, const size_t j, const double val)
 	gsl_matrix_set(m,i,j,val);
 }
 
-int mat_set_subm(mat m, const mat n, const size_t k1, const size_t l1, \
-				 const size_t k2, const size_t l2)
+latan_errno mat_set_subm(mat m, const mat n, const size_t k1, const size_t l1, \
+						 const size_t k2, const size_t l2)
 {
 	gsl_matrix_view mview;
 	
@@ -128,12 +128,12 @@ int mat_set_subm(mat m, const mat n, const size_t k1, const size_t l1, \
 	return LATAN_SUCCESS;
 }
 
-int mat_set_from_ar(mat m, const double* ar)
+latan_errno mat_set_from_ar(mat m, const double* ar)
 {
 	gsl_matrix_const_view ar_view = gsl_matrix_const_view_array(ar,\
 																nrow(m),\
 																ncol(m));
-	int status;
+	latan_errno status;
 	
 	status = gsl_matrix_memcpy(m,&(ar_view.matrix));
 	
@@ -178,9 +178,9 @@ void mat_id(mat m)
 	gsl_matrix_set_identity(m);
 }
 
-int mat_cp(mat m, const mat n)
+latan_errno mat_cp(mat m, const mat n)
 {
-	int status;
+	latan_errno status;
 	
 	status = LATAN_SUCCESS;
 	
@@ -194,8 +194,8 @@ int mat_cp(mat m, const mat n)
 	return status;
 }
 
-int mat_cp_subm(mat m, const mat n, const size_t k1, const size_t l1, \
-				const size_t k2, const size_t l2)
+latan_errno mat_cp_subm(mat m, const mat n, const size_t k1, const size_t l1, \
+						const size_t k2, const size_t l2)
 {
 	gsl_matrix_view nview;
 	
@@ -216,9 +216,9 @@ int mat_cp_subm(mat m, const mat n, const size_t k1, const size_t l1, \
 	return LATAN_SUCCESS;
 }
 
-int mat_eqadd(mat m, const mat n)
+latan_errno mat_eqadd(mat m, const mat n)
 {
-	int status;
+	latan_errno status;
 	
 	status = LATAN_SUCCESS;
 	
@@ -233,9 +233,9 @@ int mat_eqadd(mat m, const mat n)
 	return status;
 }
 
-int mat_add(mat m, const mat n, const mat o)
+latan_errno mat_add(mat m, const mat n, const mat o)
 {
-	int status;
+	latan_errno status;
 	
 	status = LATAN_SUCCESS;
 	
@@ -246,9 +246,9 @@ int mat_add(mat m, const mat n, const mat o)
 }
 
 
-int mat_eqsub(mat m, const mat n)
+latan_errno mat_eqsub(mat m, const mat n)
 {
-	int status;
+	latan_errno status;
 	
 	status = LATAN_SUCCESS;
 	
@@ -263,9 +263,9 @@ int mat_eqsub(mat m, const mat n)
 	return status;
 }
 
-int mat_sub(mat m, const mat n, const mat o)
+latan_errno mat_sub(mat m, const mat n, const mat o)
 {
-	int status;
+	latan_errno status;
 	
 	status = LATAN_SUCCESS;
 	
@@ -275,9 +275,9 @@ int mat_sub(mat m, const mat n, const mat o)
 	return status;
 }
 
-int mat_mul_nn(mat m, const mat n, const mat o)
+latan_errno mat_mul_nn(mat m, const mat n, const mat o)
 {
-	int status;
+	latan_errno status;
 	mat buf;
 	
 	status = LATAN_SUCCESS;
@@ -299,9 +299,9 @@ int mat_mul_nn(mat m, const mat n, const mat o)
 	return status;
 }
 
-int mat_mul_nt(mat m, const mat n, const mat o)
+latan_errno mat_mul_nt(mat m, const mat n, const mat o)
 {
-	int status;
+	latan_errno status;
 	mat buf;
 	
 	status = LATAN_SUCCESS;
@@ -323,9 +323,9 @@ int mat_mul_nt(mat m, const mat n, const mat o)
 	return status;
 }
 
-int mat_mul_tn(mat m, const mat n, const mat o)
+latan_errno mat_mul_tn(mat m, const mat n, const mat o)
 {
-	int status;
+	latan_errno status;
 	mat buf;
 	
 	status = LATAN_SUCCESS;
@@ -347,9 +347,9 @@ int mat_mul_tn(mat m, const mat n, const mat o)
 	return status;
 }
 
-int mat_mul_tt(mat m, const mat n, const mat o)
+latan_errno mat_mul_tt(mat m, const mat n, const mat o)
 {
-	int status;
+	latan_errno status;
 	mat buf;
 	
 	status = LATAN_SUCCESS;
@@ -371,9 +371,9 @@ int mat_mul_tt(mat m, const mat n, const mat o)
 	return status;
 }
 
-int mat_eqtranspose(mat m)
+latan_errno mat_eqtranspose(mat m)
 {
-	int status;
+	latan_errno status;
 	
 	if (!mat_issquare(m))
 	{
@@ -385,9 +385,9 @@ int mat_eqtranspose(mat m)
 	return status;
 }
 
-int mat_transpose(mat m, const mat n)
+latan_errno mat_transpose(mat m, const mat n)
 {
-	int status;
+	latan_errno status;
 	
 	if ((nrow(m) != ncol(n))||(ncol(m) != nrow(n)))
 	{
@@ -400,9 +400,10 @@ int mat_transpose(mat m, const mat n)
 	return status;
 }
 
-int mat_inv(mat m, const mat n)
+latan_errno mat_inv(mat m, const mat n)
 {
-	int status,signum;
+	latan_errno status;
+	int signum;
 	mat LU;
 	size_t i;
 	gsl_permutation* perm;
@@ -436,9 +437,9 @@ int mat_inv(mat m, const mat n)
 	return status;
 }
 
-int mat_eqmulp(mat m, const mat n)
+latan_errno mat_eqmulp(mat m, const mat n)
 {
-	int status;
+	latan_errno status;
 	
 	status = LATAN_SUCCESS;
 	
@@ -453,9 +454,9 @@ int mat_eqmulp(mat m, const mat n)
 	return status;
 }
 
-int mat_mulp(mat m, const mat n, const mat o)
+latan_errno mat_mulp(mat m, const mat n, const mat o)
 {
-	int status;
+	latan_errno status;
 	
 	status = LATAN_SUCCESS;
 	
@@ -465,9 +466,9 @@ int mat_mulp(mat m, const mat n, const mat o)
 	return status;
 }
 
-int mat_eqmuls(mat m, const double s)
+latan_errno mat_eqmuls(mat m, const double s)
 {
-	int status;
+	latan_errno status;
 	
 	status = LATAN_SUCCESS;
 	
@@ -476,9 +477,9 @@ int mat_eqmuls(mat m, const double s)
 	return status;
 }
 
-int mat_muls(mat m, const mat n, const double s)
+latan_errno mat_muls(mat m, const mat n, const double s)
 {
-	int status;
+	latan_errno status;
 	
 	status = LATAN_SUCCESS;
 	
@@ -488,9 +489,9 @@ int mat_muls(mat m, const mat n, const double s)
 	return status;
 }
 
-int mat_eqdivp(mat m, const mat n)
+latan_errno mat_eqdivp(mat m, const mat n)
 {
-	int status;
+	latan_errno status;
 	
 	status = LATAN_SUCCESS;
 	
@@ -505,9 +506,9 @@ int mat_eqdivp(mat m, const mat n)
 	return status;
 }
 
-int mat_divp(mat m, const mat n, const mat o)
+latan_errno mat_divp(mat m, const mat n, const mat o)
 {
-	int status;
+	latan_errno status;
 	
 	status = LATAN_SUCCESS;
 	
@@ -517,7 +518,7 @@ int mat_divp(mat m, const mat n, const mat o)
 	return status;
 }
 
-int mat_abs(mat m, const mat n)
+latan_errno mat_abs(mat m, const mat n)
 {
 	size_t i,j;
 	
@@ -535,7 +536,7 @@ int mat_abs(mat m, const mat n)
 	return LATAN_SUCCESS;
 }
 
-int mat_sqrt(mat m, const mat n)
+latan_errno mat_sqrt(mat m, const mat n)
 {
 	size_t i,j;
 	

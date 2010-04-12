@@ -271,7 +271,7 @@ void plot_add_hlineerr(plot p, const double y, const double err,		\
 
 /*								plot parsing								*/
 /****************************************************************************/
-int plot_parse(FILE* outstr, const plot p)
+latan_errno plot_parse(FILE* outstr, const plot p)
 {
 	stringbuf begin, end;
 	size_t i;
@@ -338,9 +338,9 @@ int plot_parse(FILE* outstr, const plot p)
 	return LATAN_SUCCESS;
 }
 
-int plot_disp(const plot p)
+latan_errno plot_disp(const plot p)
 {
-	int status;
+	latan_errno status;
 	FILE* ctrl;
 	
 	GNUPLOT_OPEN(ctrl);

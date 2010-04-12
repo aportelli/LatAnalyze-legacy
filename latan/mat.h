@@ -61,19 +61,19 @@ typedef gsl_matrix* mat;
 /* loop */
 #define FOR_VAL(m,i,j)\
 for (i=0;i<nrow(m);i++)\
-	for (j=0;j<ncol(m);j++)\
+for (j=0;j<ncol(m);j++)\
 
 /* functions */
 /** allocation **/
-void mat_create(mat* m, const size_t init_nrow, const size_t init_ncol);
-void mat_create_from_mat(mat* m, const mat n);
-#define mat_create_from_dim(m,n) mat_create(m,nrow(n),ncol(n))
-#define mat_create_from_trdim(m,n) mat_create(m,ncol(n),nrow(n))
-void mat_create_ar(mat** m, const size_t nmat, const size_t init_nrow,\
+mat mat_create(const size_t init_nrow, const size_t init_ncol);
+#define mat_create_from_dim(n) mat_create(nrow(n),ncol(n))
+#define mat_create_from_trdim(n) mat_create(ncol(n),nrow(n))
+mat mat_create_from_mat(const mat n);
+mat* mat_create_ar(const size_t nmat, const size_t init_nrow,\
 				   const size_t init_ncol);
-#define mat_create_ar_from_dim(m,nmat,n) mat_create_ar(m,nmat,nrow(n),ncol(n))
-void mat_destroy(mat* m);
-void mat_destroy_ar(mat** m, const size_t nmat);
+#define mat_create_ar_from_dim(nmat,n) mat_create_ar(nmat,nrow(n),ncol(n))
+void mat_destroy(mat m);
+void mat_destroy_ar(mat* m, const size_t nmat);
 
 /** access **/
 size_t nrow(const mat m);

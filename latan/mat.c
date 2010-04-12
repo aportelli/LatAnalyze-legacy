@@ -8,47 +8,58 @@
 
 /*								allocation									*/
 /****************************************************************************/
-void mat_create(mat* m, const size_t init_nrow, const size_t init_ncol)
+mat mat_create(const size_t init_nrow, const size_t init_ncol)
 {
 	gsl_error_handler_t* error_handler;
+	mat m;
 	
 	error_handler = gsl_set_error_handler(&latan_error);
-	*m = gsl_matrix_alloc(init_nrow,init_ncol);
+	m = gsl_matrix_alloc(init_nrow,init_ncol);
 	gsl_set_error_handler(error_handler);
+	
+	return m;
 }
 
-void mat_create_from_mat(mat* m, const mat n)
+mat mat_create_from_mat(const mat n)
 {
-	mat_create_from_dim(m,n);
-	mat_cp(*m,n);
+	mat m;
+	
+	m = mat_create_from_dim(n);
+	
+	mat_cp(m,n);
+	
+	return m;
 }
 
-void mat_create_ar(mat** m, const size_t nmat, const size_t init_nrow,\
-			   const size_t init_ncol)
+mat* mat_create_ar(const size_t nmat, const size_t init_nrow,\
+				   const size_t init_ncol)
+{
+	size_t i;
+	mat* m;
+	
+	MALLOC_NOERRET(m,mat*,nmat);
+	for (i=0;i<nmat;i++)
+	{
+		m[i] = mat_create(init_nrow,init_ncol);
+	}
+	
+	return m;
+}
+
+void mat_destroy(mat m)
+{
+	gsl_matrix_free(m);
+}
+
+void mat_destroy_ar(mat* m, const size_t nmat)
 {
 	size_t i;
 	
-	MALLOC_NOERRET(*m,mat*,nmat);
 	for (i=0;i<nmat;i++)
 	{
-		mat_create((*m)+i,init_nrow,init_ncol);
+		mat_destroy(m[i]);
 	}
-}
-
-void mat_destroy(mat* m)
-{
-	gsl_matrix_free(*m);
-}
-
-void mat_destroy_ar(mat** m, const size_t nmat)
-{
-	size_t i;
-	
-	for (i=0;i<nmat;i++)
-	{
-		mat_destroy((*m)+i);
-	}
-	FREE(*m);
+	FREE(m);
 }
 
 /*								access										*/
@@ -253,13 +264,13 @@ int mat_mul_nn(mat m, const mat n, const mat o)
 					LATAN_EBADLEN);
 	}
 
-	mat_create_from_dim(&buf,m);
+	buf = mat_create_from_dim(m);
 	
 	LATAN_UPDATE_STATUS(status,gsl_blas_dgemm(CblasNoTrans,CblasNoTrans,\
 											  1.0,n,o,0.0,buf));
 	LATAN_UPDATE_STATUS(status,mat_cp(m,buf));
 	
-	mat_destroy(&buf);
+	mat_destroy(buf);
 	
 	return status;
 }
@@ -277,13 +288,13 @@ int mat_mul_nt(mat m, const mat n, const mat o)
 					LATAN_EBADLEN);
 	}
 	
-	mat_create_from_dim(&buf,m);
+	buf = mat_create_from_dim(m);
 	
 	LATAN_UPDATE_STATUS(status,gsl_blas_dgemm(CblasNoTrans,CblasTrans,\
 											  1.0,n,o,0.0,buf));
 	LATAN_UPDATE_STATUS(status,mat_cp(m,buf));
 	
-	mat_destroy(&buf);
+	mat_destroy(buf);
 	
 	return status;
 }
@@ -301,13 +312,13 @@ int mat_mul_tn(mat m, const mat n, const mat o)
 					LATAN_EBADLEN);
 	}
 	
-	mat_create_from_dim(&buf,m);
+	buf = mat_create_from_dim(m);
 	
 	LATAN_UPDATE_STATUS(status,gsl_blas_dgemm(CblasTrans,CblasNoTrans,\
 											  1.0,n,o,0.0,buf));
 	LATAN_UPDATE_STATUS(status,mat_cp(m,buf));
 	
-	mat_destroy(&buf);
+	mat_destroy(buf);
 	
 	return status;
 }
@@ -325,13 +336,13 @@ int mat_mul_tt(mat m, const mat n, const mat o)
 					LATAN_EBADLEN);
 	}
 	
-	mat_create_from_dim(&buf,m);
+	buf = mat_create_from_dim(m);
 	
 	LATAN_UPDATE_STATUS(status,gsl_blas_dgemm(CblasTrans,CblasTrans,\
 											  1.0,n,o,0.0,buf));
 	LATAN_UPDATE_STATUS(status,mat_cp(m,buf));
 	
-	mat_destroy(&buf);
+	mat_destroy(buf);
 	
 	return status;
 }
@@ -379,7 +390,7 @@ int mat_inv(mat m, const mat n)
 		LATAN_ERROR("cannot invert a non-square matrix",LATAN_ENOTSQR);
 	}
 	
-	mat_create_from_mat(&LU,n);
+	LU = mat_create_from_mat(n);
 	perm = gsl_permutation_alloc(nrow(n));
 	
 	LATAN_UPDATE_STATUS(status,gsl_linalg_LU_decomp(LU,perm,&signum));
@@ -392,7 +403,7 @@ int mat_inv(mat m, const mat n)
 	}
 	LATAN_UPDATE_STATUS(status,gsl_linalg_LU_invert(LU,perm,m));
 	
-	mat_destroy(&LU);
+	mat_destroy(LU);
 	gsl_permutation_free(perm);
 	
 	return status;

@@ -1,10 +1,18 @@
 #include <stdio.h>
+#include <math.h>
+#include <latan/mat.h>
+#include <latan/statistics.h>
 #include <latan/rand.h>
+#include <latan/plot.h>
 
 #define GENTEST_SEQ_LENGTH 25
 #define GENTEST_SAVE_STEP 9
 #define DIS_SEQ_LENGTH 1000000
 #define DICE_NFACE 6
+#define GAUSS_MU 0.0
+#define GAUSS_SIG 1.0
+#define GAUSS_HIST_MAX 5.0
+#define HIST_CONT_NINT 500
 
 int main(void)
 {
@@ -12,6 +20,12 @@ int main(void)
 	int i,f;
 	double randd;
 	randgen_state state;
+	mat rseq, hist_cont;
+	plot dist_plot;
+	stringbuf plotcmd;
+	
+	rseq = mat_create(DIS_SEQ_LENGTH,1);
+	hist_cont = mat_create(HIST_CONT_NINT,1);
 	
 	printf("- GENERATOR STATE I/O TESTS\n");
 	randgen_timeinit();
@@ -40,7 +54,9 @@ int main(void)
 		randd = rand_u(0.0,1.0);
 		printf("step %d\t: %e\n",i,randd);
 	}
+	
 	printf("- DISTRIBUTIONS TESTS\n");
+	printf("-- DISCRET UNIFORM DISTRIBUTION\n");
 	randgen_timeinit();
 	for (f=0;f<DICE_NFACE;f++)
 	{
@@ -64,6 +80,28 @@ int main(void)
 	{
 		printf("face %d\t: %f%%\n",f+1,DRATIO(hist_dice[f],DIS_SEQ_LENGTH)*100.0);
 	}
+	printf("-- NORMAL DISTRIBUTION\n");
+	printf("-- Generating %d gaussian numbers with mean %.2f and width %.2f...\n",\
+		   DIS_SEQ_LENGTH,GAUSS_MU,GAUSS_SIG);
+	for (i=0;i<DIS_SEQ_LENGTH;i++)
+	{
+		mat_set(rseq,i,0,rand_n(GAUSS_MU,GAUSS_SIG));
+	}
+	printf("-- Making sequence histogram...\n");
+	histogram(hist_cont,rseq,-GAUSS_HIST_MAX,GAUSS_HIST_MAX,HIST_CONT_NINT);
+	mat_eqmuls(hist_cont,\
+			   1.0/DIS_SEQ_LENGTH*HIST_CONT_NINT/(2.0*GAUSS_HIST_MAX));
+	dist_plot = plot_create();
+	plot_add_dat(dist_plot,hist_cont,-GAUSS_HIST_MAX,\
+				 2.0*GAUSS_HIST_MAX/HIST_CONT_NINT,"rand_n distribution");
+	sprintf(plotcmd,"exp(-(x-%e)**2/(2.0*%e))/%e title \"theoretical distribution\"",\
+			GAUSS_MU,SQ(GAUSS_SIG),sqrt(2*C_PI)*GAUSS_SIG);
+	plot_add_plot(dist_plot,plotcmd);
+	plot_disp(dist_plot);
+	plot_destroy(dist_plot);
+	
+	mat_destroy(rseq);
+	mat_destroy(hist_cont);
 	
 	return EXIT_SUCCESS;
 }

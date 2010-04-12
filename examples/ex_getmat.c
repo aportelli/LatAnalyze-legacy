@@ -8,23 +8,23 @@ int main(int argc, char *argv[])
 	int dat_nrow;
 	
 	dat_nrow = mat_load_nrow("FOO","id1","ex_getmat_f1");
-	mat_create(&a,(size_t)(dat_nrow),2);
+	a = mat_create((size_t)(dat_nrow),2);
 	dat_nrow = mat_load_nrow("BAR","testid","ex_getmat_f1");
-	mat_create(&b,(size_t)(dat_nrow),2);
+	b = mat_create((size_t)(dat_nrow),2);
 	printf("Getting a from FOO id1 in file ex_getmat_f1...\n");
-	mat_get(a,"FOO","id1","ex_getmat_f1");
+	mat_load(a,"FOO","id1","ex_getmat_f1");
 	printf("Getting b from BAR testid in file ex_getmat_f1...\n\n");
-	mat_get(b,"BAR","testid","ex_getmat_f1");
+	mat_load(b,"BAR","testid","ex_getmat_f1");
 	printf("a =\n");
 	mat_print(a);
 	printf("\nb =\n");
 	mat_print(b);
 	printf("\n");
 	
-	mat_destroy(&a);
-	mat_destroy(&b);
+	mat_destroy(a);
+	mat_destroy(b);
 	
-	mat *c = NULL;
+	mat *c;
 	stringbuf ffname;
 	int nfile, i;
 	
@@ -32,9 +32,9 @@ int main(int argc, char *argv[])
 	
 	get_firstfname(ffname,"ex_getmat_man");
 	dat_nrow = mat_load_nrow("FOO","id1",ffname);
-	mat_create_ar(&c,(size_t)(nfile),(size_t)(dat_nrow),2);
+	c = mat_create_ar((size_t)(nfile),(size_t)(dat_nrow),2);
 	printf("Filling array c from FOO id1 matrices in files referenced in file ex_getmat_man...\n\n");
-	mat_get_ar(c,"FOO","id1","ex_getmat_man");
+	mat_load_ar(c,"FOO","id1","ex_getmat_man");
 	for (i=0;i<nfile;i++)
 	{
 		printf("c[%i] =\n",i);
@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
 		printf("\n");
 	}
 	
-	mat_destroy_ar(&c,nfile);
+	mat_destroy_ar(c,nfile);
 	
 	return EXIT_SUCCESS;
 }

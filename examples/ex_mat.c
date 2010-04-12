@@ -6,21 +6,25 @@
 int main(int argc, char *argv[])
 {
 	mat a,b,c,d,e,f;
+	const double b_init[] =
+	{
+		2.5,\
+		1.0,\
+		5.0
+	};
+	const double c_init[] =
+	{
+		1.0,10.0,6.7
+	};
 	
-	mat_create(&a,3,3);
-	mat_create(&b,3,1);
-	mat_create(&c,1,3);
-	mat_create(&d,2,2);
-	mat_create(&e,3,3);
+	a = mat_create(3,3);
+	b = mat_create_from_ar(b_init,3,1);
+	c = mat_create_from_ar(c_init,1,3);
+	d = mat_create(2,2);
+	e = mat_create(3,3);
 	
 	randgen_timeinit();
 	
-	mat_set(b,0,0,2.0);
-	mat_set(b,1,0,1.5);
-	mat_set(b,2,0,5.0);
-	mat_set(c,0,0,1.0);
-	mat_set(c,0,1,10.0);
-	mat_set(c,0,2,6.7);
 	printf("b =\n");
 	mat_print(b);
 	printf("c =\n");
@@ -50,11 +54,11 @@ int main(int argc, char *argv[])
 	printf("e =\n");
 	mat_print(e);
 	
-	mat_destroy(&a);
-	mat_destroy(&b);
-	mat_destroy(&c);
-	mat_destroy(&d);
-	mat_destroy(&e);
+	mat_destroy(a);
+	mat_destroy(b);
+	mat_destroy(c);
+	mat_destroy(d);
+	mat_destroy(e);
 	
 	return EXIT_SUCCESS;
 }

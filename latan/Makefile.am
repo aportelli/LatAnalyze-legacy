@@ -13,6 +13,7 @@ liblatan_la_SOURCES =	\
 	globals.c			\
 	io.c				\
 	mat.c				\
+	plot.c				\
 	rand.c				\
 	statistics.c		\
 	../config.h
@@ -22,6 +23,7 @@ liblatan_la_HEADERS =	\
 	globals.h			\
 	io.h				\
 	mat.h				\
+	plot.h				\
 	statistics.h		\
 	rand.h
 liblatan_la_CFLAGS = $(COM_CFLAGS)

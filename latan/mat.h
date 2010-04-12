@@ -69,6 +69,8 @@ mat mat_create(const size_t init_nrow, const size_t init_ncol);
 #define mat_create_from_dim(n) mat_create(nrow(n),ncol(n))
 #define mat_create_from_trdim(n) mat_create(ncol(n),nrow(n))
 mat mat_create_from_mat(const mat n);
+mat mat_create_from_ar(const double* ar, const size_t init_nrow,\
+					   const size_t init_ncol);
 mat* mat_create_ar(const size_t nmat, const size_t init_nrow,\
 				   const size_t init_ncol);
 #define mat_create_ar_from_dim(nmat,n) mat_create_ar(nmat,nrow(n),ncol(n))
@@ -82,6 +84,7 @@ double mat_get(const mat m, const size_t i, const size_t j);
 void mat_set(mat m, const size_t i, const size_t j, const double val);
 int mat_set_subm(mat m, const mat n, const size_t k1, const size_t l1, \
 				 const size_t k2, const size_t l2);
+int mat_set_from_ar(mat m, const double* ar);
 #define mat_inc(m,i,j,val) mat_set(m,i,j,mat_get(m,i,j)+val)
 #define mat_pp(m,i,j) mat_inc(m,i,j,1.0)
 

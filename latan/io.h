@@ -72,7 +72,7 @@ int get_nfile(const stringbuf manifestfname);
  @param fname string to store the result
  @param manifestfname name of the manifest file
  */
-int get_firstfname(stringbuf fname, const stringbuf manifestfname);
+latan_errno get_firstfname(stringbuf fname, const stringbuf manifestfname);
 
 /* mat I/O */
 /*!
@@ -112,8 +112,8 @@ int mat_load_nrow(const stringbuf mark, const stringbuf matid,\
  @param matid name of the matrix
  @param inputfname name of the file where the matrix is stored
 */
-int mat_load(mat m, const stringbuf mark, const stringbuf matid,\
-			 const stringbuf inputfname);
+latan_errno mat_load(mat m, const stringbuf mark, const stringbuf matid,\
+					 const stringbuf inputfname);
 /*!
  @fn void mat_get_ar(mat* m, const stringbuf mark, const stringbuf matid,
  const stringbuf manifestfname)
@@ -126,16 +126,18 @@ int mat_load(mat m, const stringbuf mark, const stringbuf matid,\
  @param manifestfname name of the manifest file referencing files where matrices
  are stored
  */
-int mat_load_ar(mat* m, const stringbuf mark, const stringbuf matid,\
-				const stringbuf manifestfname);
-int mat_save_plotdat(const mat m, const double xstart, const double xstep,\
-					 const stringbuf fname);
-int mat_save_plotdaterr(const mat dat, const mat sig, const double xstart,\
-						const double xstep, const stringbuf fname);
+latan_errno mat_load_ar(mat* m, const stringbuf mark,\
+						const stringbuf matid, const stringbuf manifestfname);
+latan_errno mat_save_plotdat(const mat m, const double xstart,\
+							 const double xstep, const stringbuf fname);
+latan_errno mat_save_plotdaterr(const mat dat, const mat sig,\
+								const double xstart, const double xstep,\
+								const stringbuf fname);
 
 /* random generator state I/O */
-int randgen_save_state(const stringbuf prefname, const randgen_state state);
-int randgen_load_state(randgen_state state, const stringbuf prefname);
+latan_errno randgen_save_state(const stringbuf prefname,\
+							   const randgen_state state);
+latan_errno randgen_load_state(randgen_state state, const stringbuf prefname);
 
 __END_DECLS
 

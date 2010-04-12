@@ -7,6 +7,9 @@
 
 /* replacement functions */
 #ifndef HAVE_ACOSH
+#ifdef acosh
+#undef acosh
+#endif
 #define acosh gsl_acosh
 #endif
 

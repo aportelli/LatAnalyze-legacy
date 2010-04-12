@@ -82,9 +82,9 @@ size_t nrow(const mat m);
 size_t ncol(const mat m);
 double mat_get(const mat m, const size_t i, const size_t j);
 void mat_set(mat m, const size_t i, const size_t j, const double val);
-int mat_set_subm(mat m, const mat n, const size_t k1, const size_t l1, \
-				 const size_t k2, const size_t l2);
-int mat_set_from_ar(mat m, const double* ar);
+latan_errno mat_set_subm(mat m, const mat n, const size_t k1, const size_t l1, \
+						 const size_t k2, const size_t l2);
+latan_errno mat_set_from_ar(mat m, const double* ar);
 #define mat_inc(m,i,j,val) mat_set(m,i,j,mat_get(m,i,j)+val)
 #define mat_pp(m,i,j) mat_inc(m,i,j,1.0)
 
@@ -115,13 +115,13 @@ void mat_id(mat m);
  
  @warning \b m and \b n must have the same dimensions, fatal error will be generated if it is not the case.
  */
-int mat_cp(mat m, const mat n);
-int mat_cp_subm(mat m, const mat n, const size_t k1, const size_t l1, \
-				const size_t k2, const size_t l2);
-int mat_eqadd(mat m, const mat n);
-int mat_add(mat m, const mat n, const mat o);
-int mat_eqsub(mat m, const mat n);
-int mat_sub(mat m, const mat n, const mat o);
+latan_errno mat_cp(mat m, const mat n);
+latan_errno mat_cp_subm(mat m, const mat n, const size_t k1, const size_t l1, \
+						const size_t k2, const size_t l2);
+latan_errno mat_eqadd(mat m, const mat n);
+latan_errno mat_add(mat m, const mat n, const mat o);
+latan_errno mat_eqsub(mat m, const mat n);
+latan_errno mat_sub(mat m, const mat n, const mat o);
 #define mat_eqmul_l(m,n) mat_mul(m,n,m);
 #define mat_eqmul_r(m,n) mat_mul(m,m,n);
 #define mat_eqmul_l_t(m,n) mat_mul_tn(m,n,m);
@@ -134,15 +134,15 @@ int mat_sub(mat m, const mat n, const mat o);
  @warning \b NCOL(n) and \b NROW(o) must be equals, \b m must have the same number of rows than \b n and the same
  number of columns than \b o. Fatal error will be generated if precedent conditions are not satisfied.
  */
-int mat_mul_nn(mat m, const mat n, const mat o);
-int mat_mul_nt(mat m, const mat n, const mat o);
-int mat_mul_tn(mat m, const mat n, const mat o);
-int mat_mul_tt(mat m, const mat n, const mat o);
+latan_errno mat_mul_nn(mat m, const mat n, const mat o);
+latan_errno mat_mul_nt(mat m, const mat n, const mat o);
+latan_errno mat_mul_tn(mat m, const mat n, const mat o);
+latan_errno mat_mul_tt(mat m, const mat n, const mat o);
 #define mat_mul(m,n,o) mat_mul_nn(m,n,o);
-int mat_eqtranspose(mat m);
-int mat_transpose(mat m, const mat n);
+latan_errno mat_eqtranspose(mat m);
+latan_errno mat_transpose(mat m, const mat n);
 #define mat_eqinv(m) mat_inv(m,m);
-int mat_inv(mat m, const mat n);
+latan_errno mat_inv(mat m, const mat n);
 /*!
  @fn void mat_eqmulp(mat m, const mat n)
  @brief Multiply \b m by \b n "coefficient by coefficient".
@@ -150,14 +150,14 @@ int mat_inv(mat m, const mat n);
  
  @warning \b m and \b n must have the same dimensions, fatal error will be generated if it is not the case.
 */
-int mat_eqmulp(mat m, const mat n);
-int mat_mulp(mat m, const mat n, const mat o);
-int mat_eqmuls(mat m, const double s);
-int mat_muls(mat m, const mat n, const double s);
-int mat_eqdivp(mat m, const mat n);
-int mat_divp(mat m, const mat n, const mat o);
+latan_errno mat_eqmulp(mat m, const mat n);
+latan_errno mat_mulp(mat m, const mat n, const mat o);
+latan_errno mat_eqmuls(mat m, const double s);
+latan_errno mat_muls(mat m, const mat n, const double s);
+latan_errno mat_eqdivp(mat m, const mat n);
+latan_errno mat_divp(mat m, const mat n, const mat o);
 #define mat_eqabs(m) mat_abs(m,m)
-int mat_abs(mat m, const mat n);
+latan_errno mat_abs(mat m, const mat n);
 /*!
  @def mat_eqsqrt(m)
  @brief Compute the "coefficient by coefficient" square root of \b m.
@@ -171,7 +171,7 @@ int mat_abs(mat m, const mat n);
  
  @warning \b m and \b n must have the same dimensions, fatal error will be generated if it is not the case.
 */
-int mat_sqrt(mat m, const mat n);
+latan_errno mat_sqrt(mat m, const mat n);
 
 
 __END_DECLS

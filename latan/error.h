@@ -5,7 +5,7 @@
 
 __BEGIN_DECLS
 
-enum
+typedef enum
 {
 	LATAN_FAILURE	= -1,	/* generic failure statement			*/
 	LATAN_SUCCESS	= 0,	/* all is going well !					*/
@@ -17,12 +17,12 @@ enum
 	LATAN_ENOTSQR	= 20,	/* matrix is not square error			*/
 	LATAN_ELATSYN	= 33,	/* syntax error reading input file		*/
 	LATAN_ESYSTEM	= 34	/* system error							*/
-};
+} latan_errno;
 
 typedef void latan_error_handler_t(const char*, const char*, int, int);
 
 void latan_error(const char* reason, const char *file, int line, \
-				 int latan_errno);
+				 int no);
 
 latan_error_handler_t*\
 latan_set_error_handler(latan_error_handler_t* new_handler);

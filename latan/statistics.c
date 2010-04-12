@@ -1,6 +1,8 @@
 #include <latan/statistics.h>
 #include <latan/includes.h>
 #include <latan/rand.h>
+#include <gsl/gsl_histogram.h>
+#include <gsl/gsl_errno.h>
 
 /*						elementary estimators								*/
 /****************************************************************************/
@@ -150,8 +152,10 @@ int mat_covp_m(mat cov, const mat* m, const mat* n, const size_t size,\
 int histogram(mat hist, const mat data, const double xmin, const double xmax,\
 			  const size_t nint)
 {
-	double step,data_i;
-	size_t i,j;
+	size_t i;
+	gsl_histogram* gsl_hist;
+	gsl_error_handler_t* error_handler;
+	
 	
 	if (nrow(hist) != nint)
 	{
@@ -159,21 +163,19 @@ int histogram(mat hist, const mat data, const double xmin, const double xmax,\
 					LATAN_EBADLEN);
 	}
 	
-	step = (xmax-xmin)/((double)(nint));
+	error_handler = gsl_set_error_handler(&latan_error);
+	gsl_hist = gsl_histogram_alloc(nint);
+	gsl_set_error_handler(error_handler);
 	mat_zero(hist);
 	
+	gsl_histogram_set_ranges_uniform(gsl_hist,xmin,xmax);
 	for (i=0;i<nrow(data);i++)
 	{
-		for (j=0;j<nint;j++) 
-		{
-			data_i = mat_get(data,i,0);
-			if ((data_i>=xmin+(double)(j)*step)&&\
-				(data_i<xmin+(double)(j+1)*step))
-			{
-				mat_pp(hist,j,0);
-			}
-		}
+		gsl_histogram_increment(gsl_hist,mat_get(data,i,0));
 	}
+	mat_set_from_ar(hist,gsl_hist->bin);
+	
+	gsl_histogram_free(gsl_hist);
 	
 	return LATAN_SUCCESS;
 }

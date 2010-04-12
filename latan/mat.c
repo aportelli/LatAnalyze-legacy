@@ -31,6 +31,18 @@ mat mat_create_from_mat(const mat n)
 	return m;
 }
 
+mat mat_create_from_ar(const double* ar, const size_t init_nrow,\
+					   const size_t init_ncol)
+{
+	mat m;
+	
+	m = mat_create(init_nrow,init_ncol);
+	
+	mat_set_from_ar(m,ar);
+	
+	return m;
+}
+
 mat* mat_create_ar(const size_t nmat, const size_t init_nrow,\
 				   const size_t init_ncol)
 {
@@ -114,6 +126,18 @@ int mat_set_subm(mat m, const mat n, const size_t k1, const size_t l1, \
 	mat_cp(&(mview.matrix),n);
 	
 	return LATAN_SUCCESS;
+}
+
+int mat_set_from_ar(mat m, const double* ar)
+{
+	gsl_matrix_const_view ar_view = gsl_matrix_const_view_array(ar,\
+																nrow(m),\
+																ncol(m));
+	int status;
+	
+	status = gsl_matrix_memcpy(m,&(ar_view.matrix));
+	
+	return status;
 }
 
 /* tests */

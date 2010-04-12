@@ -94,28 +94,6 @@ void mat_set(mat m, const size_t i, const size_t j, const double val)
 	gsl_matrix_set(m,i,j,val);
 }
 
-int mat_cp_subm(mat m, const mat n, const size_t k1, const size_t l1, \
-				const size_t k2, const size_t l2)
-{
-	gsl_matrix_view nview;
-	
-	if ((k2-k1+1>nrow(n))||(k2-k1+1<1)||(l2-l1+1>ncol(n))||(l2-l1+1<1))
-	{
-		LATAN_ERROR("invalid sub-matrix dimensions",LATAN_EBADLEN);
-	}
-	if ((k2-k1+1!=nrow(m))||(l2-l1+1!=ncol(m)))
-	{
-		LATAN_ERROR("sub-matrix and destination matrix dimensions do not match"\
-					,LATAN_EBADLEN);
-	}
-	
-	nview =	gsl_matrix_submatrix(n,(size_t)(k1),(size_t)(l1),			\
-								 (size_t)(k2-k1+1),(size_t)(l2-l1+1));
-	mat_cp(m,&(nview.matrix));
-	
-	return LATAN_SUCCESS;
-}
-
 int mat_set_subm(mat m, const mat n, const size_t k1, const size_t l1, \
 				 const size_t k2, const size_t l2)
 {
@@ -191,7 +169,29 @@ int mat_cp(mat m, const mat n)
 	
 	return status;
 }
+
+int mat_cp_subm(mat m, const mat n, const size_t k1, const size_t l1, \
+				const size_t k2, const size_t l2)
+{
+	gsl_matrix_view nview;
 	
+	if ((k2-k1+1>nrow(n))||(k2-k1+1<1)||(l2-l1+1>ncol(n))||(l2-l1+1<1))
+	{
+		LATAN_ERROR("invalid sub-matrix dimensions",LATAN_EBADLEN);
+	}
+	if ((k2-k1+1!=nrow(m))||(l2-l1+1!=ncol(m)))
+	{
+		LATAN_ERROR("sub-matrix and destination matrix dimensions do not match"\
+					,LATAN_EBADLEN);
+	}
+	
+	nview =	gsl_matrix_submatrix(n,(size_t)(k1),(size_t)(l1),			\
+								 (size_t)(k2-k1+1),(size_t)(l2-l1+1));
+	mat_cp(m,&(nview.matrix));
+	
+	return LATAN_SUCCESS;
+}
+
 int mat_eqadd(mat m, const mat n)
 {
 	int status;

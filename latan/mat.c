@@ -406,6 +406,7 @@ int mat_inv(mat m, const mat n)
 	mat LU;
 	size_t i;
 	gsl_permutation* perm;
+	gsl_error_handler_t* error_handler;
 	
 	status = LATAN_SUCCESS;
 	
@@ -415,7 +416,9 @@ int mat_inv(mat m, const mat n)
 	}
 	
 	LU = mat_create_from_mat(n);
+	error_handler = gsl_set_error_handler(&latan_error);
 	perm = gsl_permutation_alloc(nrow(n));
+	gsl_set_error_handler(error_handler);
 	
 	LATAN_UPDATE_STATUS(status,gsl_linalg_LU_decomp(LU,perm,&signum));
 	for (i=0;i<nrow(LU);i++)

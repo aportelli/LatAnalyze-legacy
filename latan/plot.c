@@ -1,11 +1,12 @@
 #include <latan/plot.h>
 #include <latan/includes.h>
 
-/*								internal code								*/
-/****************************************************************************/
 static char* gnuplot_get_program_path(const char* pname);
 static void gnuplot_cmd(FILE *ctrl, const char* cmd, ...);
 static void plot_add_tmpf(plot p, const stringbuf tmpfname);
+
+/*								internal code								*/
+/****************************************************************************/
 
 /** part of Nicolas Devillard gnuplot interface **/
 /*** Maximal size of a gnuplot command ***/

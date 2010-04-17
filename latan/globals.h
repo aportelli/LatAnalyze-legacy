@@ -27,21 +27,6 @@
 #define VERB true
 #define VVERB 2
 
-/* math */
-/*!
- @def SQ(x)
- @brief Macro for square operation.
- */
-#define SQ(x) ((x)*(x))
-#define DRATIO(a,b) (((double)(a))/((double)(b)))
-/*!
- @def C_PI
- @brief \f$\pi\f$ math constant.
- */
-#define C_PI 3.1415926535897932384626433832795028841970
-/** 1 fm = 0.005067731 MeV^(-1) **/
-#define C_FM_IMEV 0.005067731
-
 /* error handling */
 #include <latan/error.h>
 
@@ -188,6 +173,23 @@ typedef char stringbuf[STRING_LENGTH];
 
 extern const stringbuf latan_name;
 extern const stringbuf latan_version;
+
+/* math and physics things */
+/*!
+ @def SQ(x)
+ @brief Macro for square operation.
+ */
+#define SQ(x) ((x)*(x))
+#define DRATIO(a,b) (((double)(a))/((double)(b)))
+/*!
+ @def C_PI
+ @brief \f$\pi\f$ math constant.
+ */
+#define C_PI 3.1415926535897932384626433832795028841970
+/** 1 fm = 0.005067731 MeV^(-1) **/
+#define C_FM_IMEV 0.005067731
+
+unsigned int latan_binomial(const unsigned int n, const unsigned int p);
 
 __END_DECLS
 

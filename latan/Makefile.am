@@ -11,6 +11,7 @@ lib_LTLIBRARIES = liblatan.la
 liblatan_la_SOURCES =	\
 	error.c				\
 	globals.c			\
+	includes.h			\
 	io.c				\
 	mat.c				\
 	plot.c				\

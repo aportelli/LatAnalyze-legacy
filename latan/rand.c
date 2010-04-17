@@ -1,6 +1,12 @@
 #include <latan/rand.h>
 #include <latan/includes.h>
 
+static void ranlxd(double r[],int n);
+static void rlxd_init(int level,int seed);
+static int rlxd_size(void);
+static void rlxd_get(int state[]);
+static void rlxd_reset(int state[]);
+
 /*							internal code									*/
 /****************************************************************************/
 /* Copyright (C) 2005 Martin Luescher (GPL)
@@ -36,33 +42,26 @@
  *     Resets the generator to the state defined by the array state[N]
  */
 
-
-static void ranlxd(double r[],int n);
-static void rlxd_init(int level,int seed);
-static int rlxd_size(void);
-static void rlxd_get(int state[]);
-static void rlxd_reset(int state[]);
-
 #if (defined SSE)
 
 typedef struct
 {
 	float c1,c2,c3,c4;
-} vec_t __attribute__ ((aligned (16)));
+} rlxd_vec_t __attribute__ ((aligned (16)));
 
 typedef struct
 {
-	vec_t c1,c2;
-} dble_vec_t __attribute__ ((aligned (16)));
+	rlxd_vec_t c1,c2;
+} rlxd_dble_vec_t __attribute__ ((aligned (16)));
 
-static int init=0,pr,prm,ir,jr,is,is_old,next[96];
-static vec_t one,one_bit,carry;
+static int init=0,rlxd_pr,prm,ir,jr,is,is_old,next[96];
+static rlxd_vec_t one,one_bit,carry;
 
 static union
 {
-	dble_vec_t vec[12];
+	rlxd_dble_vec_t vec[12];
 	float num[96];
-} x __attribute__ ((aligned (16)));
+} rlxd_x __attribute__ ((aligned (16)));
 
 #define STEP(pi,pj) \
 __asm__ __volatile__ ("movaps %4, %%xmm4 \n\t" \
@@ -126,13 +125,13 @@ static void error(int no)
 static void update(void)
 {
 	int k,kmax;
-	dble_vec_t *pmin,*pmax,*pi,*pj;
+	rlxd_dble_vec_t *pmin,*pmax,*pi,*pj;
 	
-	kmax=pr;
-	pmin=&x.vec[0];
+	kmax=rlxd_pr;
+	pmin=&rlxd_x.vec[0];
 	pmax=pmin+12;
-	pi=&x.vec[ir];
-	pj=&x.vec[jr];
+	pi=&rlxd_x.vec[ir];
+	pj=&rlxd_x.vec[jr];
 	
 	__asm__ __volatile__ ("movaps %0, %%xmm0 \n\t"
 						  "movaps %1, %%xmm1 \n\t"
@@ -205,9 +204,9 @@ static void rlxd_init(int level,int seed)
 	define_constants();
 	
 	if (level==1)
-		pr=202;
+		rlxd_pr=202;
 	else if (level==2)
-		pr=397;
+		rlxd_pr=397;
 	else
 		error(1);
 	
@@ -244,7 +243,7 @@ static void rlxd_init(int level,int seed)
 			if ((k%4)!=i)
 				ix=16777215-ix;
 			
-			x.num[4*k+i]=(float)(ldexp((double)(ix),-24));
+			rlxd_x.num[4*k+i]=(float)(ldexp((double)(ix),-24));
 		}
 	}
 	
@@ -257,7 +256,7 @@ static void rlxd_init(int level,int seed)
 	jr=7;
 	is=91;
 	is_old=0;
-	prm=pr%12;
+	prm=rlxd_pr%12;
 	init=1;
 }
 
@@ -274,7 +273,7 @@ static void ranlxd(double r[],int n)
 		is=next[is];
 		if (is==is_old)
 			update();
-		r[k]=(double)(x.num[is+4])+(double)(one_bit.c1*x.num[is]);
+		r[k]=(double)(rlxd_x.num[is+4])+(double)(one_bit.c1*rlxd_x.num[is]);
 	}
 }
 
@@ -297,14 +296,14 @@ static void rlxd_get(int state[])
 	state[0]=rlxd_size();
 	
 	for (k=0;k<96;k++)
-		state[k+1]=(int)(base*x.num[k]);
+		state[k+1]=(int)(base*rlxd_x.num[k]);
 	
 	state[97]=(int)(base*carry.c1);
 	state[98]=(int)(base*carry.c2);
 	state[99]=(int)(base*carry.c3);
 	state[100]=(int)(base*carry.c4);
 	
-	state[101]=pr;
+	state[101]=rlxd_pr;
 	state[102]=ir;
 	state[103]=jr;
 	state[104]=is;
@@ -324,7 +323,7 @@ static void rlxd_reset(int state[])
 		if ((state[k+1]<0)||(state[k+1]>=167777216))
 			error(5);
 		
-		x.num[k]=(float)(ldexp((double)(state[k+1]),-24));
+		rlxd_x.num[k]=(float)(ldexp((double)(state[k+1]),-24));
 	}
 	
 	if (((state[97]!=0)&&(state[97]!=1))||
@@ -338,15 +337,15 @@ static void rlxd_reset(int state[])
 	carry.c3=(float)(ldexp((double)(state[99]),-24));
 	carry.c4=(float)(ldexp((double)(state[100]),-24));
 	
-	pr=state[101];
+	rlxd_pr=state[101];
 	ir=state[102];
 	jr=state[103];
 	is=state[104];
 	is_old=8*ir;
-	prm=pr%12;
+	prm=rlxd_pr%12;
 	init=1;
 	
-	if (((pr!=202)&&(pr!=397))||
+	if (((rlxd_pr!=202)&&(rlxd_pr!=397))||
 		(ir<0)||(ir>11)||(jr<0)||(jr>11)||(jr!=((ir+7)%12))||
 		(is<0)||(is>91))
 		error(5);
@@ -360,22 +359,22 @@ static void rlxd_reset(int state[])
 typedef struct
 {
 	int c1,c2,c3,c4;
-} vec_t;
+} rlxd_vec_t;
 
 typedef struct
 {
-	vec_t c1,c2;
-} dble_vec_t;
+	rlxd_vec_t c1,c2;
+} rlxd_dble_vec_t;
 
-static int init=0,pr,prm,ir,jr,is,is_old,next[96];
+static int init=0,rlxd_pr,prm,ir,jr,is,is_old,next[96];
 static double one_bit;
-static vec_t carry;
+static rlxd_vec_t carry;
 
 static union
 {
-	dble_vec_t vec[12];
+	rlxd_dble_vec_t vec[12];
 	int num[96];
-} x;
+} rlxd_x;
 
 #define STEP(pi,pj) \
 d=(*pj).c1.c1-(*pi).c1.c1-carry.c1; \
@@ -448,13 +447,13 @@ static void error(int no)
 static void update(void)
 {
 	int k,kmax,d;
-	dble_vec_t *pmin,*pmax,*pi,*pj;
+	rlxd_dble_vec_t *pmin,*pmax,*pi,*pj;
 	
-	kmax=pr;
-	pmin=&x.vec[0];
+	kmax=rlxd_pr;
+	pmin=&rlxd_x.vec[0];
 	pmax=pmin+12;
-	pi=&x.vec[ir];
-	pj=&x.vec[jr];
+	pi=&rlxd_x.vec[ir];
+	pj=&rlxd_x.vec[jr];
 	
 	for (k=0;k<kmax;k++) 
 	{
@@ -506,9 +505,9 @@ static void rlxd_init(int level,int seed)
 	define_constants();
 	
 	if (level==1)
-		pr=202;
+		rlxd_pr=202;
 	else if (level==2)
-		pr=397;
+		rlxd_pr=397;
 	else
 		error(1);
 	
@@ -545,7 +544,7 @@ static void rlxd_init(int level,int seed)
 			if ((k%4)!=i)
 				ix=16777215-ix;
 			
-			x.num[4*k+i]=ix;
+			rlxd_x.num[4*k+i]=ix;
 		}
 	}
 	
@@ -558,7 +557,7 @@ static void rlxd_init(int level,int seed)
 	jr=7;
 	is=91;
 	is_old=0;
-	prm=pr%12;
+	prm=rlxd_pr%12;
 	init=1;
 }
 
@@ -575,7 +574,7 @@ static void ranlxd(double r[],int n)
 		is=next[is];
 		if (is==is_old)
 			update();
-		r[k]=one_bit*((double)(x.num[is+4])+one_bit*(double)(x.num[is]));      
+		r[k]=one_bit*((double)(rlxd_x.num[is+4])+one_bit*(double)(rlxd_x.num[is]));      
 	}
 }
 
@@ -596,14 +595,14 @@ static void rlxd_get(int state[])
 	state[0]=rlxd_size();
 	
 	for (k=0;k<96;k++)
-		state[k+1]=x.num[k];
+		state[k+1]=rlxd_x.num[k];
 	
 	state[97]=carry.c1;
 	state[98]=carry.c2;
 	state[99]=carry.c3;
 	state[100]=carry.c4;
 	
-	state[101]=pr;
+	state[101]=rlxd_pr;
 	state[102]=ir;
 	state[103]=jr;
 	state[104]=is;
@@ -628,7 +627,7 @@ static void rlxd_reset(int state[])
 		if ((state[k+1]<0)||(state[k+1]>=167777216))
 			error(5);
 		
-		x.num[k]=state[k+1];
+		rlxd_x.num[k]=state[k+1];
 	}
 	
 	if (((state[97]!=0)&&(state[97]!=1))||
@@ -642,15 +641,15 @@ static void rlxd_reset(int state[])
 	carry.c3=state[99];
 	carry.c4=state[100];
 	
-	pr=state[101];
+	rlxd_pr=state[101];
 	ir=state[102];
 	jr=state[103];
 	is=state[104];
 	is_old=8*ir;
-	prm=pr%12;
+	prm=rlxd_pr%12;
 	init=1;
 	
-	if (((pr!=202)&&(pr!=397))||
+	if (((rlxd_pr!=202)&&(rlxd_pr!=397))||
 		(ir<0)||(ir>11)||(jr<0)||(jr>11)||(jr!=((ir+7)%12))||
 		(is<0)||(is>91))
 		error(5);

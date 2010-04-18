@@ -4,21 +4,23 @@
 #include <latan/mat.h>
 #include <latan/rand.h>
 
-typedef struct
-{
-	mat est_val;
-	mat* sample;
-} jack_res;
+#define BOOT 0
+#define JACK 1
+
+__BEGIN_DECLS
 
 typedef struct
 {
-	mat est_val;
+	stringbuf name;
+	mat cent_val;
 	mat* sample;
 	size_t nsample;
+	int resamp_method;
 	randgen_state gen_state;
-} boot_res;
+}* rs_sample;
 
-typedef int resamp_func(mat res, mat* dat, size_t ndat, void* param);
+typedef latan_errno rs_func(mat res, const mat* dat, const size_t ndat,\
+							const size_t sampno, void* param);
 
 /* elementary estimators */
 double mat_elsum(mat m);
@@ -59,10 +61,21 @@ latan_errno mat_covp_m(mat cov, const mat* m, const mat* n, const size_t size,\
 latan_errno histogram(mat hist, const mat data, const double xmin,\
 					  const double xmax, const size_t nint);
 
-/* resampling functions */
-latan_errno resamp_bootstrap(boot_res* res, const mat* dat, size_t ndat,\
-							 resamp_func* f, void* param);
-latan_errno resamp_jackknife(jack_res* sample, const mat* dat, size_t ndat,	\
-							 resamp_func* f, void* param);
+/* resampled samples manipulation */
+/** allocation **/
+rs_sample rs_sample_create_boot(const size_t init_nrow, const size_t nboot,\
+								const stringbuf name);
+rs_sample rs_sample_create_jack(const size_t init_nrow, const size_t ndat,\
+								const size_t jk_depth, const stringbuf name);
+void rs_sample_destroy(rs_sample s);
+/** access **/
+#define rs_sample_get_cent_val(s) ((s)->cent_val)
+mat rs_sample_get_sample(const rs_sample s, const size_t i);
+
+/* resampling function */
+latan_errno resample(rs_sample s, const mat* dat, size_t ndat,\
+					 rs_func* f, void* param);
+
+__END_DECLS
 
 #endif

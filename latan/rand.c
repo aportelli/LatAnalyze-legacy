@@ -691,13 +691,13 @@ double rand_u(double a, double b)
 	return (b-a)*rx + a;
 }
 
-int rand_ud(const int n)
+unsigned int rand_ud(const unsigned int n)
 {
 	double rx;
 	
 	ranlxd(&rx,1);
 	
-	return ((int)(rx*(double)(n)));
+	return ((unsigned int)(rx*(double)(n)));
 }
 
 double rand_n(const double mean, const double sigma)

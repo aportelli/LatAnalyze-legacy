@@ -30,6 +30,9 @@
 /* error handling */
 #include <latan/error.h>
 
+/* size_t type */
+#include <sys/types.h>
+
 /* memory allocation */
 /*!
  @def MALLOC(pt,typ,size)

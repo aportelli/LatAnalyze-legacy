@@ -54,8 +54,8 @@ latan_errno mat_cov_m(mat cov, const mat* m, const mat* n, const size_t size,\
 latan_errno mat_covp(mat cov, const mat* m, const mat* n, const size_t size);
 latan_errno mat_covp_m(mat cov, const mat* m, const mat* n, const size_t size,\
 					   const mat m_mean, const mat n_mean);
-#define mat_varp(var,m,size) mat_covar(var,m,m,size)
-#define mat_varp_m(var,m,size,mean) mat_covar_m(var,m,m,size,mean,mean)
+#define mat_varp(var,m,size) mat_covp(var,m,m,size)
+#define mat_varp_m(var,m,size,mean) mat_covp_m(var,m,m,size,mean,mean)
 
 /* histogram */
 latan_errno histogram(mat hist, const mat data, const double xmin,\

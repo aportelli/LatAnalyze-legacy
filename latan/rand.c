@@ -700,6 +700,9 @@ unsigned int rand_ud(const unsigned int n)
 	return ((unsigned int)(rx*(double)(n)));
 }
 
+/* gaussian random number generator based on cartesian Box-Muller algorithm
+ * acceptance probability of one try is pi/4 = 78.54%
+ */
 double rand_n(const double mean, const double sigma)
 {
 	double rx,ry,sqnrm;

@@ -257,6 +257,38 @@ mat rs_sample_get_sample(const rs_sample s, const size_t i)
 	return (s->sample)[i];
 }
 
+/** estimators **/
+latan_errno rs_sample_cov(mat cov, const rs_sample s, const rs_sample t)
+{
+	latan_errno status;
+	
+	if (s->nsample != t->nsample)
+	{
+		LATAN_ERROR("operation between resampled samples with dimension mismatch",\
+					LATAN_EBADLEN);
+	}
+	
+	status = mat_cov_m(cov,s->sample,t->sample,s->nsample,\
+					   s->cent_val,t->cent_val);
+	
+	return status;
+}
+
+latan_errno rs_sample_covp(mat cov, const rs_sample s, const rs_sample t)
+{
+	latan_errno status;
+	
+	if (s->nsample != t->nsample)
+	{
+		LATAN_ERROR("operation between resampled samples with dimension mismatch",\
+					LATAN_EBADLEN);
+	}
+	
+	status = mat_covp_m(cov,s->sample,t->sample,s->nsample,\
+						s->cent_val,t->cent_val);
+	
+	return status;
+}
 /*						resampling functions								*/
 /****************************************************************************/
 static latan_errno resample_bootstrap(mat cent_val, mat* sample,			\
@@ -303,6 +335,21 @@ latan_errno resample(rs_sample s, const mat* dat, size_t ndat,\
 			LATAN_ERROR("resampling method flag invalid",LATAN_EINVAL);
 			break;
 	}
+	
+	return status;
+}
+
+/* some basic rs_func */
+latan_errno rs_mean(mat res, const mat* dat, const size_t ndat,\
+					const size_t sampno, void* param)
+{
+	latan_errno status;
+	size_t st_nothing;
+	
+	param = NULL;
+	st_nothing = sampno;
+	
+	status = mat_mean(res,dat,ndat);
 	
 	return status;
 }

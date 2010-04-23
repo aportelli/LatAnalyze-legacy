@@ -13,7 +13,7 @@ typedef enum
 	LATAN_EFAULT	= 3,	/* invalid pointer						*/
 	LATAN_EINVAL	= 4,    /* invalid argument supplied by user	*/
 	LATAN_ENOMEM	= 8,	/* malloc error							*/
-	LATAN_EBADLEN	= 19,	/* matrix dimension error				*/
+	LATAN_EBADLEN	= 19,	/* dimension error						*/
 	LATAN_ENOTSQR	= 20,	/* matrix is not square error			*/
 	LATAN_ELATSYN	= 33,	/* syntax error reading input file		*/
 	LATAN_ESYSTEM	= 34	/* system error							*/
@@ -31,19 +31,25 @@ latan_error_handler_t* latan_set_error_handler_off(void);
 
 #define LATAN_ERROR(reason, no)\
 {\
-	latan_error(reason,__FILE__,__LINE__,no);\
+	stringbuf _freason;\
+	sprintf(_freason,"%s (function %s)",reason,__FUNCTION__);\
+	latan_error(_freason,__FILE__,__LINE__,no);\
 	return no;\
 }
 
 #define LATAN_ERROR_VAL(reason, no, value)\
 {\
-	latan_error(reason,__FILE__,__LINE__,no);\
+	stringbuf _freason;\
+	sprintf(_freason,"%s (function %s)",reason,__FUNCTION__);\
+	latan_error(_freason,__FILE__,__LINE__,no);\
 	return value;\
 }
 
 #define LATAN_ERROR_VOID(reason, no)\
 {\
-	latan_error(reason,__FILE__,__LINE__,no);\
+	stringbuf _freason;\
+	sprintf(_freason,"%s (function %s)",reason,__FUNCTION__);\
+	latan_error(_freason,__FILE__,__LINE__,no);\
 	return;\
 }
 

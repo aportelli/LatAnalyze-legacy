@@ -106,7 +106,7 @@ int mat_load_nrow(const stringbuf mark, const stringbuf matid,\
 					
 					sprintf(errmsg,"unexpected expression %s found before END_%s",\
 							buf2,mark);
-					LATAN_ERROR(errmsg,LATAN_ELATSYN);
+					LATAN_ERROR_VAL(errmsg,LATAN_ELATSYN,LATAN_FAILURE);
 				}
 			}
 		}

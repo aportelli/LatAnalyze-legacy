@@ -1,8 +1,3 @@
-/*!
- @file macros.h
- @brief Miscellaneous utility macros.
- @author <A HREF=mailto:antonin.portelli@gmail.com>Antonin Portelli</A>
-*/
 #ifndef LATAN_GLOBALS_H_
 #define LATAN_GLOBALS_H_
 
@@ -17,11 +12,6 @@
 #define __END_DECLS
 #endif
 
-/* portability of exit status */
-#ifndef EXIT_SUCCESS
-#define EXIT_SUCCESS 0
-#endif
-
 /* verbosity flags */
 #define QUIET false
 #define VERB true
@@ -34,14 +24,6 @@
 #include <sys/types.h>
 
 /* memory allocation */
-/*!
- @def MALLOC(pt,typ,size)
- @brief Allocate memory for an array, generates a fatal error in case of failure.
- 
- @param pt pointer on the first element of the array
- @param typ pointer type of the elements of the array
- @param size number of elements of the array
- */
 #define MALLOC(pt,typ,size)\
 {\
 	pt = (typ)(malloc((size_t)(size)*sizeof(*pt)));\
@@ -66,15 +48,6 @@
 		LATAN_ERROR_NORET("memory allocation failed",LATAN_EFAULT);\
 	}\
 }
-/*!
- @def REALLOC(pt,pt_old,typ,size)
- @brief Reallocate memory for an array, backup of the old values is made. Generates a fatal error in case of failure.
- 
- @param pt pointer on the first element of the array
- @param pt_old pointer on the first element of the array to backup
- @param typ pointer type of the elements of the array
- @param size number of elements of the array
- */
 #define REALLOC(pt,pt_old,typ,size)\
 {\
 	pt = (typ)(realloc(pt_old,(size_t)(size)*sizeof(*pt)));\
@@ -99,12 +72,6 @@
 		LATAN_ERROR_NORET("memory allocation failed",LATAN_EFAULT);\
 	}\
 }
-/*!
- @def FREE(pt)
- @brief Desallocate a previoulsy memory allocated array.
- 
- @param pt pointer on the first element of the array
- */
 #define FREE(pt)\
 {\
 	if (pt != NULL)\
@@ -114,14 +81,6 @@
 	}\
 }
 /* file opening */
-/*!
- @def FOPEN(f,fname,mode)
- @brief Macro opening a file, generates a fatal error in case of failure.
- 
- @param f pointer on a \b FILE structure (standard C) to access the file
- @param fname string for the file name
- @param mode string for the opening mode of the file (\e cf. \b fopen standard C function)
- */
 #define FOPEN(f,fname,mode)\
 {\
 	f = fopen(fname,mode);\
@@ -163,31 +122,18 @@ typedef enum
 } bool;
 
 /* string buffers */
-/*!
- @def STRING_LENGTH
- @brief Number of characters of a string defined by the ::stringbuf type.
-*/
+#ifndef STRING_LENGTH
 #define STRING_LENGTH 128
-/*!
- @typedef stringbuf
- @brief String type of fixed length #STRING_LENGTH
-*/
+#endif
+
 typedef char stringbuf[STRING_LENGTH];
 
 extern const stringbuf latan_name;
 extern const stringbuf latan_version;
 
 /* math and physics things */
-/*!
- @def SQ(x)
- @brief Macro for square operation.
- */
 #define SQ(x) ((x)*(x))
 #define DRATIO(a,b) (((double)(a))/((double)(b)))
-/*!
- @def C_PI
- @brief \f$\pi\f$ math constant.
- */
 #define C_PI 3.1415926535897932384626433832795028841970
 /** 1 fm = 0.005067731 MeV^(-1) **/
 #define C_FM_IMEV 0.005067731

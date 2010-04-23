@@ -1,6 +1,7 @@
 #ifndef LATAN_STATISTICS_H_
 #define LATAN_STATISTICS_H_
 
+#include <latan/globals.h>
 #include <latan/mat.h>
 #include <latan/rand.h>
 
@@ -25,27 +26,7 @@ typedef latan_errno rs_func(mat res, const mat* dat, const size_t ndat,\
 /* elementary estimators */
 double mat_elsum(mat m);
 double mat_elmean(mat m);
-/*!
- @fn void mat_mean(mat mean, const mat *m, const int size)
- @brief Compute the "coefficient by coefficient" mean of an array of matrices.
- @see #mat_print
- 
- @param mean matrix to store the mean
- @param m input array of matrices
- @param size number of matrices in the array
- @warning \b mean and all the elements of \b m must have the same dimensions, fatal error will be generated if it is not the case.
- */
 latan_errno mat_mean(mat mean, const mat* m, const size_t size);
-/*!
- @fn void mat_meansig(mat mean, mat sig, const mat *m, const int size)
- @brief Compute the "coefficient by coefficient" mean and standard deviation of an array of matrices.
- 
- @param mean matrix to store the mean
- @param sig matrix to store the standard deviation
- @param m input array of matrices
- @param size number of matrices in the array
- @warning \b mean, \b sig and all the elements of \b m must have the same dimensions, fatal error will be generated if it is not the case.
- */
 latan_errno mat_cov(mat cov, const mat* m, const mat* n, const size_t size);
 latan_errno mat_cov_m(mat cov, const mat* m, const mat* n, const size_t size,\
 					  const mat m_mean, const mat n_mean);

@@ -68,13 +68,23 @@ rs_sample rs_sample_create_boot(const size_t init_nrow, const size_t nboot,\
 rs_sample rs_sample_create_jack(const size_t init_nrow, const size_t ndat,\
 								const size_t jk_depth, const stringbuf name);
 void rs_sample_destroy(rs_sample s);
+
 /** access **/
 #define rs_sample_get_cent_val(s) ((s)->cent_val)
 mat rs_sample_get_sample(const rs_sample s, const size_t i);
 
+/** estimators **/
+latan_errno rs_sample_cov(mat cov, const rs_sample s, const rs_sample t);
+#define rs_sample_var(cov,s) rs_sample_cov(cov,s,s);
+latan_errno rs_sample_covp(mat cov, const rs_sample s, const rs_sample t);
+#define rs_sample_varp(cov,s) rs_sample_covp(cov,s,s);
+
 /* resampling function */
 latan_errno resample(rs_sample s, const mat* dat, size_t ndat,\
 					 rs_func* f, void* param);
+
+/* some basic rs_func */
+rs_func rs_mean;
 
 __END_DECLS
 

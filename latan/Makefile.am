@@ -11,20 +11,24 @@ lib_LTLIBRARIES = liblatan.la
 liblatan_la_SOURCES =	\
 	error.c				\
 	globals.c			\
+	hadron.c			\
 	includes.h			\
 	io.c				\
 	mat.c				\
 	plot.c				\
 	rand.c				\
+	spectrum.c			\
 	statistics.c		\
 	../config.h
 liblatan_ladir = $(includedir)/latan
 liblatan_la_HEADERS =	\
 	error.h				\
 	globals.h			\
+	hadron.h			\
 	io.h				\
 	mat.h				\
 	plot.h				\
+	spectrum.h			\
 	statistics.h		\
 	rand.h
 liblatan_la_CFLAGS = $(COM_CFLAGS)

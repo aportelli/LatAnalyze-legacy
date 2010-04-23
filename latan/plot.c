@@ -224,7 +224,7 @@ void plot_add_dat(plot p, const mat dat, const double start, const double step,\
 	}
 	fclose(tmpf);
 	plot_add_tmpf(p,tmpfname);
-	sprintf(plotcmd,"\"%s\" title \"%s\"",tmpfname,title);
+	sprintf(plotcmd,"\"%s\" u 1:2 t \"%s\"",tmpfname,title);
 	plot_add_plot(p,plotcmd);
 }
 
@@ -245,7 +245,7 @@ void plot_add_daterr(plot p, const mat dat, const mat err, const double start,\
 	}
 	fclose(tmpf);
 	plot_add_tmpf(p,tmpfname);
-	sprintf(plotcmd,"\"%s\" title \"%s\"",tmpfname,title);
+	sprintf(plotcmd,"\"%s\" u 1:2:3 w yerr t \"%s\"",tmpfname,title);
 	plot_add_plot(p,plotcmd);
 }
 

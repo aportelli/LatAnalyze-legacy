@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
 	d = mat_create(2,2);
 	e = mat_create(3,3);
 	
-	randgen_timeinit();
+	randgen_init_from_time();
 	
 	printf("b =\n");
 	mat_print(b);

@@ -672,6 +672,19 @@ void randgen_init_from_time(void)
 	randgen_init((int)time(NULL));
 }
 
+latan_errno randgen_set_state_from_rs_sample(rs_sample s)
+{
+	if (s->resamp_method != BOOT)
+	{
+		LATAN_ERROR("setting random generator state form resampled sample only apply for bootstrap samples",\
+					LATAN_EINVAL);
+	}
+	
+	randgen_set_state(s->gen_state);
+	
+	return LATAN_SUCCESS;
+}
+
 void randgen_get_state(randgen_state state)
 {
 	rlxd_get(state);

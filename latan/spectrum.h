@@ -7,6 +7,7 @@
 __BEGIN_DECLS
 
 /* channels */
+#define NCHANNEL 9
 typedef enum
 {
 	ch_SS		= 0,
@@ -24,6 +25,7 @@ void channel_id_set(const channel_no i, const stringbuf new_id);
 void channel_id_get(stringbuf str, const channel_no i);
 
 /* quarks */
+#define NQUARK 4
 typedef enum
 {
 	qu_l	= 0,

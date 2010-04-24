@@ -131,6 +131,10 @@ typedef char stringbuf[STRING_LENGTH];
 extern const stringbuf latan_name;
 extern const stringbuf latan_version;
 
+/* type for random generator state */
+#define RLXG_STATE_SIZE 105
+typedef int randgen_state[RLXG_STATE_SIZE];
+
 /* math and physics things */
 #define SQ(x) ((x)*(x))
 #define DRATIO(a,b) (((double)(a))/((double)(b)))

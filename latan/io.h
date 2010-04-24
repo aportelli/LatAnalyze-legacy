@@ -4,6 +4,7 @@
 #include <latan/globals.h>
 #include <latan/mat.h>
 #include <latan/rand.h>
+#include <latan/statistics.h>
 
 __BEGIN_DECLS
 
@@ -30,6 +31,10 @@ latan_errno mat_save_plotdaterr(const mat dat, const mat sig,\
 latan_errno randgen_save_state(const stringbuf prefname,\
 							   const randgen_state state);
 latan_errno randgen_load_state(randgen_state state, const stringbuf prefname);
+
+/* reampled sample I/O */
+latan_errno rs_sample_save(const rs_sample s, const stringbuf f_name);
+latan_errno rs_sample_load(rs_sample s, const stringbuf f_name);
 
 __END_DECLS
 

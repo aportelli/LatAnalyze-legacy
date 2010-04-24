@@ -180,10 +180,11 @@ latan_errno mat_load(mat m, const stringbuf mark, const stringbuf matid,\
 					{
 						stringbuf errmsg;
 						
-						sprintf(errmsg,"error while reading matrix %s %s (%u,%u) in file %s (trying to read a %ux%u matrix)",\
-								mark,matid,(unsigned)(row),(unsigned)(col),	\
-								inputfname,(unsigned)(nrow(m)),				\
-								(unsigned)(ncol(m)));
+						sprintf(errmsg,"error while reading matrix %s %s (%lu,%lu) in file %s (trying to read a %lux%lu matrix)",\
+								mark,matid,(unsigned long)row,	\
+								(unsigned long)col,inputfname,	\
+								(unsigned long)nrow(m),			\
+								(unsigned long)ncol(m));
 						LATAN_ERROR(errmsg,LATAN_ELATSYN);
 					}
 				}
@@ -271,15 +272,15 @@ latan_errno mat_save_plotdaterr(const mat dat, const mat sig,				\
 /*						random generator state I/O							*/
 /****************************************************************************/
 
-latan_errno randgen_save_state(const stringbuf prefname,\
+latan_errno randgen_save_state(const stringbuf f_name,\
 							   const randgen_state state)
 {
-	stringbuf fname;
+	stringbuf full_f_name;
 	FILE *f;
-	int i;
+	size_t i;
 	
-	sprintf(fname,"%s.rand",prefname);
-	FOPEN(f,fname,"w");
+	sprintf(full_f_name,"%s.rand",f_name);
+	FOPEN(f,full_f_name,"w");
 	for (i=0;i<RLXG_STATE_SIZE;i++)
 	{
 		fprintf(f,"%d ",state[i]);
@@ -290,24 +291,68 @@ latan_errno randgen_save_state(const stringbuf prefname,\
 	return LATAN_SUCCESS;
 }
 
-latan_errno randgen_load_state(randgen_state state, const stringbuf prefname)
+latan_errno randgen_load_state(randgen_state state, const stringbuf f_name)
 {
-	stringbuf fname,errmsg;
+	stringbuf full_f_name,errmsg;
 	FILE *f;
-	int i;
+	size_t i;
 	
-	sprintf(fname,"%s.rand",prefname);
-	FOPEN(f,fname,"r");
+	sprintf(full_f_name,"%s.rand",f_name);
+	FOPEN(f,full_f_name,"r");
 	for (i=0;i<RLXG_STATE_SIZE;i++)
 	{
 		if(fscanf(f,"%d ",state+i)<0)
 		{
-			sprintf(errmsg,"error while reading generator state component %d in file %s",\
-					i,fname);
+			sprintf(errmsg,"error while reading generator state component %lu in file %s",\
+					(unsigned long)i,full_f_name);
 			LATAN_ERROR(errmsg,LATAN_ELATSYN);
 		}
 	}
 	fclose(f);
+	
+	return LATAN_SUCCESS;
+}
+
+/*							resampled sample I/O							*/
+/****************************************************************************/
+latan_errno rs_sample_save(const rs_sample s, const stringbuf f_name)
+{
+	stringbuf full_f_name;
+	FILE* f;
+	size_t i,j;
+	size_t sample_nrow;
+	
+	sample_nrow = nrow(s->cent_val);
+	
+	switch (s->resamp_method)
+	{
+		case BOOT:
+			sprintf(full_f_name,"%s.boot",f_name);
+			break;
+		case JACK:
+			sprintf(full_f_name,"%s.jack",f_name);
+			break;
+		default:
+			LATAN_ERROR("resampling method flag invalid",LATAN_EINVAL);
+			break;
+	}
+	FOPEN(f,full_f_name,"w");
+	fprintf(f,"%s %lu %lu\n",s->name,(unsigned long)sample_nrow,\
+			(unsigned long)s->nsample);
+	for (i=0;i<sample_nrow;i++)
+	{
+		fprintf(f,"%.10e ",mat_get(s->cent_val,i,0));
+		for (j=0;j<s->nsample-1;j++)
+		{
+			fprintf(f,"%.10e ",mat_get(s->sample[j],i,0));
+		}
+		fprintf(f,"%.10e\n",mat_get(s->sample[s->nsample-1],i,0));
+	}
+	fclose(f);
+	if (s->resamp_method == BOOT)
+	{
+		randgen_save_state(f_name,s->gen_state);
+	}
 	
 	return LATAN_SUCCESS;
 }

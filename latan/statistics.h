@@ -3,7 +3,6 @@
 
 #include <latan/globals.h>
 #include <latan/mat.h>
-#include <latan/rand.h>
 
 #define BOOT 0
 #define JACK 1

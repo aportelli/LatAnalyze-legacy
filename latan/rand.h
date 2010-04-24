@@ -2,12 +2,9 @@
 #define LATAN_RAND_H_
 
 #include <latan/globals.h>
-
-#define RLXG_STATE_SIZE 105
+#include <latan/statistics.h>
 
 __BEGIN_DECLS
-
-typedef int randgen_state[RLXG_STATE_SIZE];
 
 void randgen_init(const int seed);
 void randgen_init_from_time(void);

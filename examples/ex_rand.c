@@ -28,7 +28,7 @@ int main(void)
 	hist_cont = mat_create(HIST_CONT_NINT,1);
 	
 	printf("- GENERATOR STATE I/O TESTS\n");
-	randgen_timeinit();
+	randgen_init_from_time();
 	printf("-- generating a %d steps random sequence...\n",GENTEST_SEQ_LENGTH);
 	for (i=0;i<GENTEST_SEQ_LENGTH;i++) 
 	{
@@ -43,7 +43,7 @@ int main(void)
 		printf("step %d\t: %e\n",i,randd);
 	}
 	printf("-- messing up the generator...\n");
-	randgen_timeinit();
+	randgen_init_from_time();
 	randgen_get_state(state);
 	printf("-- reloading state from ex_rand.rand...\n");
 	randgen_load_state(state,"ex_rand");
@@ -57,7 +57,7 @@ int main(void)
 	
 	printf("- DISTRIBUTIONS TESTS\n");
 	printf("-- DISCRET UNIFORM DISTRIBUTION\n");
-	randgen_timeinit();
+	randgen_init_from_time();
 	for (f=0;f<DICE_NFACE;f++)
 	{
 		hist_dice[f] = 0;

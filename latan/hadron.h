@@ -12,10 +12,10 @@
 #define ODD 1
 
 #ifndef MAXPROP
-#define MAXPROP 4
+#define MAXPROP 2
 #endif
 #ifndef MAXQUARKST
-#define MAXQUARKST 4
+#define MAXQUARKST 2
 #endif
 #ifndef MAXISO
 #define MAXISO 4

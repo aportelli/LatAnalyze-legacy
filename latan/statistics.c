@@ -306,7 +306,7 @@ static latan_errno resample_bootstrap(mat cent_val, mat* sample,			\
 	
 	status = LATAN_SUCCESS;
 	
-	fakedat = mat_create_ar_from_dim(ndat,dat[0]);
+	MALLOC(fakedat,mat*,ndat);
 	
 	LATAN_UPDATE_STATUS(status,f(cent_val,dat,ndat,0,param));
 	for (i=0;i<nboot;i++)
@@ -318,6 +318,8 @@ static latan_errno resample_bootstrap(mat cent_val, mat* sample,			\
 		}
 		LATAN_UPDATE_STATUS(status,f(sample[i],fakedat,ndat,i+1,param));
 	}
+	
+	FREE(fakedat);
 	
 	return status;
 }

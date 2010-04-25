@@ -83,6 +83,7 @@ void spectrum_destroy(spectrum s)
 	{
 		FREE(s->particle[i]);
 	}
+	FREE(s->particle);
 	s->nparticle = 0;
 	FREE(s);
 }

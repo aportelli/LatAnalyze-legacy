@@ -1,5 +1,6 @@
 #include <latan/latan_mat.h>
 #include <latan/latan_includes.h>
+#include <latan/latan_math.h>
 #include <latan/latan_rand.h>
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_permutation.h>
@@ -124,6 +125,25 @@ latan_errno mat_set_subm(mat m, const mat n, const size_t k1, const size_t l1, \
 	mview =	gsl_matrix_submatrix(m,(size_t)(k1),(size_t)(l1),			\
 								 (size_t)(k2-k1+1),(size_t)(l2-l1+1));
 	mat_cp(&(mview.matrix),n);
+	
+	return LATAN_SUCCESS;
+}
+
+latan_errno mat_set_diag(mat m, const mat diag)
+{
+	size_t min_dim;
+	size_t i;
+	
+	min_dim = MIN(nrow(m),ncol(m));
+	if (min_dim != nrow(diag))
+	{
+		LATAN_ERROR("trying to set the diagonal of a matrix with invalid dimensions",\
+					LATAN_EBADLEN);
+	}
+	for (i=0;i<min_dim;i++)
+	{
+		mat_set(m,i,i,mat_get(diag,i,0));
+	}
 	
 	return LATAN_SUCCESS;
 }

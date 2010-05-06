@@ -124,8 +124,10 @@ plot plot_create(void)
 	p->log = NOLOG;
 	p->xmin = 0.0;
 	p->xmax = 0.0;
+	strcpy(p->xlabel,"");
 	p->ymin = 0.0;
 	p->ymax = 0.0;
+	strcpy(p->ylabel,"");
 	
 	return p;
 }
@@ -197,6 +199,16 @@ void plot_set_scale_xylog(plot p)
 void plot_set_title(plot p, const stringbuf title)
 {
 	strcpy(p->title,title);
+}
+
+void plot_set_xlabel(plot p, const stringbuf xlabel)
+{
+	strcpy(p->xlabel,xlabel);
+}
+
+void plot_set_ylabel(plot p, const stringbuf ylabel)
+{
+	strcpy(p->ylabel,ylabel);
 }
 
 /*								plot functions								*/
@@ -315,6 +327,8 @@ latan_errno plot_parse(FILE* outstr, const plot p)
 			break;
 	}
 	gnuplot_cmd(outstr,"set title \"%s\"",p->title);
+	gnuplot_cmd(outstr,"set xlabel \"%s\"",p->xlabel);
+	gnuplot_cmd(outstr,"set ylabel \"%s\"",p->ylabel);
 	for (i=0;i<p->nplot;i++)
 	{
 		if (i == 0)

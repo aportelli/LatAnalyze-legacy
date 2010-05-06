@@ -36,8 +36,10 @@ typedef struct
 	int log;				/* logarithmic mode of the axis */
 	double xmin;			/* lower bound of x axis */
 	double xmax;			/* upper bound of x axis */
+	stringbuf xlabel;
 	double ymin;			/* lower bound of y axis */
 	double ymax;			/* upper bound of y axis */
+	stringbuf ylabel;
 }* plot;
 
 /* allocation */
@@ -55,6 +57,8 @@ void plot_set_scale_xlog(plot p);
 void plot_set_scale_ylog(plot p);
 void plot_set_scale_xylog(plot p);
 void plot_set_title(plot p, const stringbuf title);
+void plot_set_xlabel(plot p, const stringbuf xlabel);
+void plot_set_ylabel(plot p, const stringbuf xlabel);
 
 /* plot functions */
 void plot_add_plot(plot p, const stringbuf cmd);

@@ -1,0 +1,106 @@
+\input texinfo   @c -*-texinfo-*-
+@c %**start of header
+@setfilename latanalyze.info
+@settitle LatAnalyze library user manual 
+@setchapternewpage odd
+@c %**end of header
+
+@copying
+This manual is for LatAnalyze library, version 2.0.
+Copyright @copyright{} 2010 Antonin Portelli.
+@quotation
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation.
+@end quotation
+@end copying
+
+@titlepage
+@title LatAnalyze
+@subtitle a lattice QCD result analysis library
+@author Antonin Portelli
+Centre de Physique Th@'eorique, Universit@'e d'Aix-Marseille
+@page
+@vskip 0pt plus 1filll
+@insertcopying
+@end titlepage
+
+@contents
+
+@ifnottex
+@node Top, Introduction, ,
+@top LatAnalyze
+This manual is for LatAnalyze, version 2.0.
+@end ifnottex
+
+@menu
+* Introduction::
+* Using the library::
+* Error handling::
+* Matrices::
+* Random generator::
+* Statistical analysis::
+* Plots::
+* Input/Output::
+* Particles::
+* Minimization and fitting::
+* Physical analysis::
+* Contributors to LatAnalyze::
+* GNU Free Documentation License::
+* Indices::
+@end menu
+
+@node Introduction, Using the library, Top, Top
+@chapter Introduction
+
+@node Using the library, Error handling, Introduction, Top
+@chapter Using the library
+
+@node Error handling, Matrices, Using the library, Top
+@chapter Error handling
+@include error.texi
+
+@node Matrices, Random generator, Error handling, Top
+@chapter Matrices
+
+@node Random generator, Statistical analysis, Matrices, Top
+@chapter Random generator
+
+@node Statistical analysis, Plots, Random generator, Top
+@chapter Statistical analysis
+
+@node Plots, Input/Output, Statistical analysis, Top
+@chapter Plots
+
+@node Input/Output, Particles, Plots, Top
+@chapter Input/Output
+
+@node Particles, Minimization and fitting, Input/Output, Top
+@chapter Particles
+
+@node Minimization and fitting, Physical analysis, Particles, Top
+@chapter Minimization and fitting
+
+@node Physical analysis, Contributors to LatAnalyze, Minimization and fitting, Top
+@chapter Physical analysis
+
+@node Contributors to LatAnalyze, GNU Free Documentation License, Physical analysis, Top
+@appendix Contributors to LatAnalyze
+
+@node GNU Free Documentation License, Indices, Contributors to LatAnalyze, Top
+@appendix GNU Free Documentation License
+
+@node Indices, , GNU Free Documentation License, Top
+@unnumbered Indices
+@section General index
+@printindex cp
+@page
+@section Functions index
+@printindex fn
+@page
+@section Types index
+@printindex tp
+
+@bye
+
+

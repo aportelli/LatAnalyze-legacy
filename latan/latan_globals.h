@@ -12,16 +12,52 @@
 #define __END_DECLS
 #endif
 
-/* verbosity flags */
-#define QUIET false
-#define VERB true
-#define VVERB 2
+__BEGIN_DECLS
 
-/* error handling */
-#include <latan/error.h>
+/* boolean type */
+#ifndef __cplusplus
+typedef enum
+{
+	false = 0,
+	true = 1
+} bool;
+#endif
+
+/* string buffers */
+#ifndef STRING_LENGTH
+#define STRING_LENGTH 128
+#endif
+
+typedef char stringbuf[STRING_LENGTH];
+
+extern const stringbuf latan_name;
+extern const stringbuf latan_version;
+
+/* type for random generator state */
+#define RLXG_STATE_SIZE 105
+typedef int randgen_state[RLXG_STATE_SIZE];
+
+__END_DECLS
+
+/* verbosity flags */
+#define QUIET 0
+#define VERB 1
+#define DEBUG 2
+
+/* minimize lib flags */
+#define GSL 0
+#define MINUIT 1
 
 /* size_t type */
 #include <sys/types.h>
+
+/* error handling */
+#include <latan/latan_error.h>
+
+/* matrices */
+#ifdef LATAN_ERRNO_DEF
+#include <latan/latan_mat.h>
+#endif
 
 /* memory allocation */
 #define MALLOC(pt,typ,size)\
@@ -114,36 +150,19 @@
 
 __BEGIN_DECLS
 
-/* boolean type */
-typedef enum
-{
-	false = 0,
-	true = 1
-} bool;
-
-/* string buffers */
-#ifndef STRING_LENGTH
-#define STRING_LENGTH 128
+/* LatAnalyze environment access */
+void latan_get_name(stringbuf name);
+void latan_get_version(stringbuf version);
+int latan_get_verb(void);
+int latan_get_minimize_lib(void);
+#ifdef LATAN_ERRNO_DEF
+latan_errno latan_set_verb(int verb);
+latan_errno latan_set_minimize_lib(int minimize_lib);
 #endif
-
-typedef char stringbuf[STRING_LENGTH];
-
-extern const stringbuf latan_name;
-extern const stringbuf latan_version;
-
-/* type for random generator state */
-#define RLXG_STATE_SIZE 105
-typedef int randgen_state[RLXG_STATE_SIZE];
-
-/* math and physics things */
-#define SQ(x) ((x)*(x))
-#define DRATIO(a,b) (((double)(a))/((double)(b)))
-#define C_PI 3.1415926535897932384626433832795028841970
-/** 1 fm = 0.005067731 MeV^(-1) **/
-#define C_FM_IMEV 0.005067731
-
-unsigned int latan_binomial(const unsigned int n, const unsigned int p);
-
+void latan_get_prop_mark(stringbuf prop_mark);
+void latan_set_prop_mark(const stringbuf prop_mark);
+void latan_get_prop_idfmt(stringbuf prop_idfmt);
+void latan_set_prop_idfmt(const stringbuf prop_idfmt);
 __END_DECLS
 
 #endif

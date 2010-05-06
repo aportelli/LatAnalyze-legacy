@@ -1,8 +1,7 @@
 #ifndef LATAN_STATISTICS_H_
 #define LATAN_STATISTICS_H_
 
-#include <latan/globals.h>
-#include <latan/mat.h>
+#include <latan/latan_globals.h>
 
 #define BOOT 0
 #define JACK 1
@@ -60,11 +59,16 @@ latan_errno rs_sample_covp(mat cov, const rs_sample s, const rs_sample t);
 #define rs_sample_varp(cov,s) rs_sample_covp(cov,s,s);
 
 /* resampling function */
-latan_errno resample(rs_sample s, const mat* dat, size_t ndat,\
-					 rs_func* f, void* param);
+latan_errno resample(rs_sample s, const mat* dat, const size_t ndat,\
+					 const size_t nobs, rs_func* f, void* param);
 
 /* some basic rs_func */
-rs_func rs_mean;
+latan_errno rs_mean(mat res, const mat* dat, const size_t ndat,\
+					const size_t sampno, void* nothing);
+latan_errno rs_finite_diff(mat res, const mat* dat, const size_t ndat,\
+						   const size_t sampno, void* nothing);
+latan_errno rs_effmass_PCAC(mat res, const mat* dat, const size_t ndat,\
+							const size_t sampno, void* nothing);
 
 __END_DECLS
 

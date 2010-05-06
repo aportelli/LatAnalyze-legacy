@@ -1,5 +1,6 @@
-#include <latan/io.h>
-#include <latan/includes.h>
+#include <latan/latan_io.h>
+#include <latan/latan_includes.h>
+#include <latan/latan_math.h>
 
 /*							general I/O										*/
 /****************************************************************************/
@@ -114,7 +115,7 @@ int mat_load_nrow(const stringbuf mark, const stringbuf matid,\
 	fclose(inputf);
 	if (!found)
 	{
-		stringbuf errmsg ;
+		stringbuf errmsg;
 		
 		sprintf(errmsg,"no matrix %s %s in file %s",mark,matid,inputfname);
 		LATAN_ERROR_VAL(errmsg,LATAN_ELATSYN,LATAN_FAILURE);
@@ -269,6 +270,105 @@ latan_errno mat_save_plotdaterr(const mat dat, const mat sig,				\
 	return LATAN_SUCCESS;
 }
 
+/*							propagator I/O									*/
+/****************************************************************************/
+int hadron_getnt(const hadron h, const int source, const int sink,\
+				 const stringbuf manfname)
+{
+	stringbuf ffname,fullpropid,prop_mark,prop_idfmt;
+	int nt;
+	
+	latan_get_prop_mark(prop_mark);
+	latan_get_prop_idfmt(prop_idfmt);
+	get_firstfname(ffname,manfname);
+	sprintf(fullpropid,prop_idfmt,h->channel[0],h->quarkst[0],source,sink);
+	nt = mat_load_nrow(prop_mark,fullpropid,ffname);
+	
+	return nt;
+}
+
+latan_errno hadron_prop(mat* prop, const hadron h, const int source,\
+						const int sink, const stringbuf manfname)
+{
+	int i,p,s;
+	size_t j;
+	int ndat, chmix, stmix;
+	size_t nt;
+	double mean;
+	mat* dat[MAXPROP][MAXQUARKST];
+	stringbuf fullpropid,prop_mark,prop_idfmt;
+	latan_errno status;
+	
+	nt		= nrow(prop[0]);
+	ndat	= get_nfile(manfname);
+	chmix	= ((h->chmix) == NOMIX) ? 1 : MAXPROP;
+	stmix	= ((h->stmix) == NOMIX) ? 1 : MAXQUARKST;
+	status	= LATAN_SUCCESS;
+	
+	if (ndat == -1)
+	{
+		LATAN_ERROR("error while reading manifest file",LATAN_ESYSTEM);
+	}
+	
+	latan_get_prop_mark(prop_mark);
+	latan_get_prop_idfmt(prop_idfmt);
+	for (p=0;p<chmix;p++)
+	{
+		for (s=0;s<stmix;s++)
+		{
+			dat[p][s] = mat_ar_create((size_t)(ndat),(size_t)(nt),1);
+			sprintf(fullpropid,prop_idfmt,h->channel[p],h->quarkst[s],source,\
+					sink);
+			LATAN_UPDATE_STATUS(status,mat_load_ar(dat[p][s],prop_mark,\
+												   fullpropid,manfname));
+		}
+	}
+	for (i=0;i<ndat;i++)
+	{
+		mat_zero(prop[i]);
+		for (p=0;p<chmix;p++)
+		{
+			for (s=0;s<stmix;s++)
+			{
+				LATAN_UPDATE_STATUS(status,mat_eqadd(prop[i],dat[p][s][i]));
+			}
+		}
+		if ((h->chmix) == MEAN)
+		{
+			LATAN_UPDATE_STATUS(status,mat_eqmuls(prop[i],DRATIO(1,MAXPROP)));
+		}
+		if ((h->stmix) == MEAN)
+		{
+			LATAN_UPDATE_STATUS(status,mat_eqmuls(prop[i],\
+												  DRATIO(1,MAXQUARKST)));
+		}
+		mat_eqabs(prop[i]);
+	}
+	
+	if ((h->parity) == ODD)
+	{
+		for (i=0;i<ndat;i++)
+		{
+			for (j=1;j<nt/2;j++)
+			{
+				mean = 0.5*(mat_get(prop[i],(size_t)(j),0)	\
+							+ mat_get(prop[i],(size_t)(nt-j),0));
+				mat_set(prop[i],(size_t)(j),0,mean);
+				mat_set(prop[i],(size_t)(nt-j),0,mean);
+			}
+		}
+	}
+	
+	for (p=0;p<chmix;p++)
+	{
+		for (s=0;s<stmix;s++)
+		{
+			mat_ar_destroy(dat[p][s],(size_t)(ndat));
+		}
+	}
+	
+	return status;
+}
 /*						random generator state I/O							*/
 /****************************************************************************/
 

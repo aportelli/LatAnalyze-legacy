@@ -1,8 +1,24 @@
-#ifndef LATAN_SPECTRUM_H_
-#define LATAN_SPECTRUM_H_
+#ifndef LATAN_HADRON_H_
+#define LATAN_HADRON_H_
 
-#include <latan/globals.h>
-#include <latan/hadron.h>
+#include <latan/latan_globals.h>
+
+#define NOMIX 0
+#define SUM 1
+#define MEAN 2
+
+#define EVEN 0
+#define ODD 1
+
+#ifndef MAXPROP
+#define MAXPROP 2
+#endif
+#ifndef MAXQUARKST
+#define MAXQUARKST 2
+#endif
+#ifndef MAXISO
+#define MAXISO 4
+#endif
 
 __BEGIN_DECLS
 
@@ -34,11 +50,44 @@ typedef enum
 	qu_s	= 3
 } quark_no;
 
+quark_no quark_no_get(const char c);
 void quark_id_set(const quark_no i, const stringbuf new_id);
 void quark_id_get(stringbuf str, const quark_no i);
 void diquark_id_get(stringbuf str, const quark_no i1, const quark_no i2);
 void triquark_id_get(stringbuf str, const quark_no i1, const quark_no i2,\
 					 const quark_no i3);
+
+/* hadron structure */
+typedef struct
+{
+	stringbuf name;
+	stringbuf channel[MAXPROP];
+	stringbuf quarkst[MAXQUARKST];
+	int chmix;
+	int stmix;
+	int parity;
+}* hadron;
+
+/** allocation **/
+hadron hadron_create(void);
+void hadron_destroy(hadron h);
+
+/** access **/
+void hadron_set_2q_nomix(hadron h, const stringbuf name, const int parity,	\
+						 const channel_no channel, const quark_no q1,		\
+						 const quark_no q2);
+void hadron_set_2q_2stmean(hadron h, const stringbuf name, const int parity,\
+						   const channel_no channel, const quark_no q11,	\
+						   const quark_no q12, const quark_no q21,			\
+						   const quark_no q22);
+
+/* isohadron structure */
+typedef struct
+{
+	stringbuf name;
+	size_t isodim;
+	const hadron* had[MAXISO];
+} isohad;
 
 /* spectrum type */
 typedef struct

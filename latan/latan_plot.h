@@ -1,8 +1,7 @@
 #ifndef LATAN_PLOT_H_
 #define LATAN_PLOT_H_
 
-#include <latan/globals.h>
-#include <latan/mat.h>
+#include <latan/latan_globals.h>
 
 /* system dependant gnuplot terminal setting */
 #ifdef __APPLE__

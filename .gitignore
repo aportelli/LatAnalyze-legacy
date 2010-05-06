@@ -6,9 +6,11 @@
 *.dylib
 examples/ex_mat
 examples/ex_getmat
+examples/ex_min
 examples/ex_rand
 examples/ex_rand.rand
 examples/ex_plot
+examples/ex_stat
 
 # Apple stuffs
 *.xcodeproj
@@ -20,6 +22,14 @@ build/*
 
 # debug
 *.dSYM
+
+# archives
+*.tar.*
+
+# doc
+doc/*.pdf
+doc/*.html
+doc/*.info
 
 # autotools
 *.la
@@ -34,6 +44,7 @@ libtool
 .buildutils/m4/*
 .buildutils/*
 latan/.libs/*
+latan/.deps/*
 aclocal.m4
 config.log
 config.status

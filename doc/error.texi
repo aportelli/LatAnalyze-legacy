@@ -1,0 +1,62 @@
+This chapter describe how LatAnalyze handles errors and how you can 
+control and customize this handling. The objects described in this 
+chapter are declared in the header file @file{latan/error.h}.
+
+@menu
+* Error codes::
+* Error handler::
+@end menu
+
+@node Error codes, Error handler, , Error handling
+@section Error codes
+@cindex error codes
+@tindex latan_errno
+Almost every function of LatAnalyze that can raise an error return 
+an error code as an integer. For more clarity, all possible error 
+codes are enumerated in the @code{latan_errno} type. The error codes
+from -1 to 32 are compatibles with @acronym{GSL} error codes.
+Here follow the list and the meaning of these error codes.
+@deftypevr Macro int LATAN_FAILURE @code{= -1}
+General failure; used to indicate an error for functions that must 
+return a positive integer result.
+@end deftypevr
+@deftypevr Macro int LATAN_SUCCESS @code{= 0}
+Success; used to indicate that the function call was done without error.
+@end deftypevr
+@deftypevr Macro int LATAN_EDOM @code{= 1}
+Domain error; used to indicate that a mathematic function was call with
+an argument out of its definition domain.
+@end deftypevr
+@deftypevr Macro int LATAN_EFAULT @code{= 3}
+Invalid pointer; used to indicate that an invalid pointer (like
+@code{NULL}) was encountered during the function call. This error
+almost always happens after an allocation error.
+@end deftypevr
+@deftypevr Macro int LATAN_EINVAL @code{= 4}
+Invalid argument; used when an invalid argument was specified by
+user (@i{e.g.} unknown flag).
+@end deftypevr
+
+@node Error handler, , Error codes, Error handling
+@section Error handler
+@cindex error handler
+The error handler is the function used by LatAnalyze to report errors.
+Its default behaviour is to print an error message and then abort
+the program. User can use its own function to handle LatAnalyze errors
+using the following functions. A error handler function must have the
+@code{latan_error_handler_t} type defined in @file{latan/error.h}.
+@deftp {Data type} latan_error_handler_t
+A function of type @code{latan_error_handler_t} is a function that have
+the following prototype :
+@example
+void handler(const char* reason,
+             const char* file,
+             int line,
+             int no)
+@end example
+@end deftp
+
+@deftypefun latan_error_handler_t* latan_set_error_handler_off (void)
+This function desactivate LatAnalyze error handler and return a
+pointer on the current handler.
+@end deftypefun

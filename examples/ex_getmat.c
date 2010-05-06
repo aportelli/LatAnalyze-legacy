@@ -1,6 +1,6 @@
 #include <stdio.h>
-#include <latan/mat.h>
-#include <latan/io.h>
+#include <latan/latan_mat.h>
+#include <latan/latan_io.h>
 
 int main(int argc, char *argv[])
 {
@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
 	
 	get_firstfname(ffname,"ex_getmat_man");
 	dat_nrow = mat_load_nrow("FOO","id1",ffname);
-	c = mat_create_ar((size_t)(nfile),(size_t)(dat_nrow),2);
+	c = mat_ar_create((size_t)(nfile),(size_t)(dat_nrow),2);
 	printf("Filling array c from FOO id1 matrices in files referenced in file ex_getmat_man...\n\n");
 	mat_load_ar(c,"FOO","id1","ex_getmat_man");
 	for (i=0;i<nfile;i++)
@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
 		printf("\n");
 	}
 	
-	mat_destroy_ar(c,nfile);
+	mat_ar_destroy(c,nfile);
 	
 	return EXIT_SUCCESS;
 }

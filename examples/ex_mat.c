@@ -1,7 +1,7 @@
 #include <stdio.h>
-#include <latan/mat.h>
-#include <latan/rand.h>
-#include <latan/io.h>
+#include <latan/latan_mat.h>
+#include <latan/latan_rand.h>
+#include <latan/latan_io.h>
 
 int main(int argc, char *argv[])
 {

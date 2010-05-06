@@ -1,5 +1,5 @@
-#include <latan/plot.h>
-#include <latan/includes.h>
+#include <latan/latan_plot.h>
+#include <latan/latan_includes.h>
 
 static char* gnuplot_get_program_path(const char* pname);
 static void gnuplot_cmd(FILE *ctrl, const char* cmd, ...);

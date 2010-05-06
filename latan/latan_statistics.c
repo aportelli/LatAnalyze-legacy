@@ -1,17 +1,20 @@
-#include <latan/statistics.h>
-#include <latan/includes.h>
-#include <latan/rand.h>
+#include <latan/latan_statistics.h>
+#include <latan/latan_includes.h>
+#include <latan/latan_math.h>
+#include <latan/latan_rand.h>
+#include <latan/latan_io.h>
+#include <latan/latan_mass.h>
 #include <gsl/gsl_histogram.h>
 #include <gsl/gsl_errno.h>
 
 static latan_errno resample_bootstrap(mat cent_val, mat* sample,			\
 									  const size_t nboot, const mat* dat,	\
-									  const size_t ndat, rs_func* f,		\
-									  void* param);
+									  const size_t ndat, const size_t nobs,	\
+									  rs_func* f, void* param);
 static latan_errno resample_jackknife(mat cent_val, mat* sample,			\
-									  const int jk_depth, const mat* dat,	\
-									  const size_t ndat, rs_func* f,		\
-									  void* param);
+									  const size_t jk_depth, const mat* dat,\
+									  const size_t ndat, const size_t nobs,	\
+									  rs_func* f, void* param);
 static size_t jackknife_nsample(const size_t ndat, const size_t jk_depth); 
 
 /*						elementary estimators								*/
@@ -93,9 +96,9 @@ latan_errno mat_cov_m(mat cov, const mat* m, const mat* n, const size_t size,\
 	subdim = ncol(m[0]);
 	dsubdim = (double)(subdim);
 	
-	mctnc = mat_create_ar_from_dim(size,cov);
-	mc = mat_create_ar_from_dim(size,m[0]);
-	nc = mat_create_ar_from_dim(size,n[0]);
+	mctnc = mat_ar_create_from_dim(size,cov);
+	mc = mat_ar_create_from_dim(size,m[0]);
+	nc = mat_ar_create_from_dim(size,n[0]);
 	
 	for (i=0;i<size;i++) 
 	{
@@ -106,9 +109,9 @@ latan_errno mat_cov_m(mat cov, const mat* m, const mat* n, const size_t size,\
 	}
 	LATAN_UPDATE_STATUS(status,mat_mean(cov,mctnc,size));
 	
-	mat_destroy_ar(mctnc,size);
-	mat_destroy_ar(mc,size);
-	mat_destroy_ar(nc,size);
+	mat_ar_destroy(mctnc,size);
+	mat_ar_destroy(mc,size);
+	mat_ar_destroy(nc,size);
 	
 	return status;
 }
@@ -143,8 +146,8 @@ latan_errno mat_covp_m(mat cov, const mat* m, const mat* n, const size_t size,\
 	
 	status = LATAN_SUCCESS;
 	
-	mcnc = mat_create_ar_from_dim(size,cov);
-	nc = mat_create_ar_from_dim(size,cov);
+	mcnc = mat_ar_create_from_dim(size,cov);
+	nc = mat_ar_create_from_dim(size,cov);
 	
 	for (i=0;i<size;i++)
 	{
@@ -154,8 +157,8 @@ latan_errno mat_covp_m(mat cov, const mat* m, const mat* n, const size_t size,\
 	}
 	LATAN_UPDATE_STATUS(status,mat_mean(cov,mcnc,size));
 	
-	mat_destroy_ar(mcnc,size);
-	mat_destroy_ar(nc,size);
+	mat_ar_destroy(mcnc,size);
+	mat_ar_destroy(nc,size);
 
 	return status;
 }
@@ -206,7 +209,7 @@ static size_t jackknife_nsample(const size_t ndat, const size_t jk_depth)
 
 	for (i=1;i<=jk_depth;i++)
 	{
-		nsample += (size_t)(latan_binomial(ui_ndat,i));
+		nsample += (size_t)(binomial(ui_ndat,i));
 	}
 	
 	return nsample;
@@ -225,7 +228,7 @@ rs_sample rs_sample_create_boot(const size_t init_nrow, const size_t nboot,\
 	s->resamp_method = BOOT;
 	
 	s->cent_val = mat_create(init_nrow,1);
-	s->sample = mat_create_ar_from_dim(s->nsample,s->cent_val);
+	s->sample = mat_ar_create_from_dim(s->nsample,s->cent_val);
 	
 	return s;
 }
@@ -242,7 +245,7 @@ rs_sample rs_sample_create_jack(const size_t init_nrow, const size_t ndat,\
 	s->resamp_method = JACK;
 	
 	s->cent_val = mat_create(init_nrow,1);
-	s->sample = mat_create_ar_from_dim(s->nsample,s->cent_val);
+	s->sample = mat_ar_create_from_dim(s->nsample,s->cent_val);
 	
 	return s;
 }
@@ -250,7 +253,7 @@ rs_sample rs_sample_create_jack(const size_t init_nrow, const size_t ndat,\
 void rs_sample_destroy(rs_sample s)
 {
 	mat_destroy(s->cent_val);
-	mat_destroy_ar(s->sample,s->nsample);
+	mat_ar_destroy(s->sample,s->nsample);
 	s->nsample = 0;
 }
 
@@ -296,25 +299,29 @@ latan_errno rs_sample_covp(mat cov, const rs_sample s, const rs_sample t)
 /****************************************************************************/
 static latan_errno resample_bootstrap(mat cent_val, mat* sample,			\
 									  const size_t nboot, const mat* dat,	\
-									  const size_t ndat, rs_func* f,		\
-									  void* param)
+									  const size_t ndat, const size_t nobs,	\
+									  rs_func* f, void* param)
 {
 	mat* fakedat;
-	size_t i,j;
+	size_t i,j,k;
 	unsigned int rj;
 	latan_errno status;
 	
 	status = LATAN_SUCCESS;
 	
-	MALLOC(fakedat,mat*,ndat);
+	MALLOC(fakedat,mat*,ndat*nobs);
 	
 	LATAN_UPDATE_STATUS(status,f(cent_val,dat,ndat,0,param));
 	for (i=0;i<nboot;i++)
 	{
+		
 		for (j=0;j<ndat;j++) 
 		{
 			rj = rand_ud((unsigned int)(ndat));
-			fakedat[j] = dat[rj];
+			for (k=0; k<nobs; k++)
+			{
+				fakedat[j+k*ndat] = dat[rj+k*ndat];
+			}
 		}
 		LATAN_UPDATE_STATUS(status,f(sample[i],fakedat,ndat,i+1,param));
 	}
@@ -324,8 +331,8 @@ static latan_errno resample_bootstrap(mat cent_val, mat* sample,			\
 	return status;
 }
 
-latan_errno resample(rs_sample s, const mat* dat, size_t ndat,\
-					 rs_func* f, void* param)
+latan_errno resample(rs_sample s, const mat* dat, const size_t ndat,\
+					 const size_t nobs, rs_func* f, void* param)
 {
 	latan_errno status;
 	
@@ -334,7 +341,11 @@ latan_errno resample(rs_sample s, const mat* dat, size_t ndat,\
 		case BOOT:
 			randgen_get_state(s->gen_state);
 			status = resample_bootstrap(s->cent_val,s->sample,s->nsample,dat,\
-										ndat,f,param);
+										ndat,nobs,f,param);
+			break;
+		case JACK:
+			LATAN_ERROR("jackknife resampling is not implemented yet",\
+						LATAN_FAILURE);
 			break;
 		default:
 			LATAN_ERROR("resampling method flag invalid",LATAN_EINVAL);
@@ -346,15 +357,64 @@ latan_errno resample(rs_sample s, const mat* dat, size_t ndat,\
 
 /* some basic rs_func */
 latan_errno rs_mean(mat res, const mat* dat, const size_t ndat,\
-					const size_t sampno, void* param)
+					const size_t sampno, void* nothing)
 {
 	latan_errno status;
 	size_t st_nothing;
 	
-	param = NULL;
+	nothing = NULL;
 	st_nothing = sampno;
 	
 	status = mat_mean(res,dat,ndat);
+	
+	return status;
+}
+
+latan_errno rs_finite_diff(mat res, const mat* dat, const size_t ndat,\
+						   const size_t sampno, void* nothing)
+{
+	latan_errno status;
+	mat mean;
+	size_t st_nothing;
+	
+	nothing = NULL;
+	st_nothing = sampno;
+	status = LATAN_SUCCESS;
+	
+	mean = mat_create_from_dim(dat[0]);
+	
+	LATAN_UPDATE_STATUS(status,mat_mean(mean,dat,ndat));
+	LATAN_UPDATE_STATUS(status,finite_diff(res,mean));
+	
+	mat_destroy(mean);
+	
+	return status;
+}
+
+latan_errno rs_effmass_PCAC(mat res, const mat* dat, const size_t ndat,\
+							const size_t sampno, void* nothing)
+{
+	latan_errno status;
+	const mat* prop_AP;
+	const mat* prop_PP;
+	mat mprop_AP, mprop_PP;
+	size_t st_nothing;
+	
+	nothing = NULL;
+	st_nothing = sampno;
+	status = LATAN_SUCCESS;
+	
+	prop_AP = dat;
+	prop_PP = dat + ndat;
+	mprop_AP = mat_create_from_dim(prop_AP[0]);
+	mprop_PP = mat_create_from_dim(prop_PP[0]);
+	
+	LATAN_UPDATE_STATUS(status,mat_mean(mprop_AP,prop_AP,ndat));
+	LATAN_UPDATE_STATUS(status,mat_mean(mprop_PP,prop_PP,ndat));
+	LATAN_UPDATE_STATUS(status,effmass_PCAC(res,mprop_AP,mprop_PP));
+	
+	mat_destroy(mprop_AP);
+	mat_destroy(mprop_PP);
 	
 	return status;
 }

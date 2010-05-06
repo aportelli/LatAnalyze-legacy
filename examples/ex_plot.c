@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include <latan/mat.h>
-#include <latan/plot.h>
+#include <latan/latan_mat.h>
+#include <latan/latan_plot.h>
 
 int main(void)
 {

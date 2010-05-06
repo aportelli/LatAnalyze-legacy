@@ -1,9 +1,9 @@
 #include <stdio.h>
 #include <math.h>
-#include <latan/mat.h>
-#include <latan/statistics.h>
-#include <latan/rand.h>
-#include <latan/plot.h>
+#include <latan/latan_mat.h>
+#include <latan/latan_statistics.h>
+#include <latan/latan_rand.h>
+#include <latan/latan_plot.h>
 
 #define GENTEST_SEQ_LENGTH 25
 #define GENTEST_SAVE_STEP 9

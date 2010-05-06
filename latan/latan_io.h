@@ -1,10 +1,10 @@
 #ifndef LATAN_IO_H_
 #define LATAN_IO_H_
 
-#include <latan/globals.h>
-#include <latan/mat.h>
-#include <latan/rand.h>
-#include <latan/statistics.h>
+#include <latan/latan_globals.h>
+#include <latan/latan_hadron.h>
+#include <latan/latan_rand.h>
+#include <latan/latan_statistics.h>
 
 __BEGIN_DECLS
 
@@ -26,6 +26,12 @@ latan_errno mat_save_plotdat(const mat m, const double xstart,\
 latan_errno mat_save_plotdaterr(const mat dat, const mat sig,\
 								const double xstart, const double xstep,\
 								const stringbuf fname);
+
+/* propagator I/O */
+int hadron_getnt(const hadron h, const int source, const int sink,\
+				 const stringbuf manfname);
+latan_errno hadron_prop(mat* prop, const hadron h, const int source,\
+						const int sink, const stringbuf manfname);
 
 /* random generator state I/O */
 latan_errno randgen_save_state(const stringbuf prefname,\

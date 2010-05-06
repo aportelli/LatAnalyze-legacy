@@ -1,7 +1,7 @@
 #ifndef LATAN_MAT_H_
 #define LATAN_MAT_H_
 
-#include <latan/globals.h>
+#include <latan/latan_globals.h>
 #include <gsl/gsl_matrix.h>
 
 __BEGIN_DECLS
@@ -22,11 +22,11 @@ mat mat_create(const size_t init_nrow, const size_t init_ncol);
 mat mat_create_from_mat(const mat n);
 mat mat_create_from_ar(const double* ar, const size_t init_nrow,\
 					   const size_t init_ncol);
-mat* mat_create_ar(const size_t nmat, const size_t init_nrow,\
+mat* mat_ar_create(const size_t nmat, const size_t init_nrow,\
 				   const size_t init_ncol);
-#define mat_create_ar_from_dim(nmat,n) mat_create_ar(nmat,nrow(n),ncol(n))
+#define mat_ar_create_from_dim(nmat,n) mat_ar_create(nmat,nrow(n),ncol(n))
 void mat_destroy(mat m);
-void mat_destroy_ar(mat* m, const size_t nmat);
+void mat_ar_destroy(mat* m, const size_t nmat);
 
 /** access **/
 size_t nrow(const mat m);

@@ -1,7 +1,7 @@
 #ifndef LATAN_ERROR_H_
 #define LATAN_ERROR_H_
 
-#include <latan/globals.h>
+#include <latan/latan_globals.h>
 
 __BEGIN_DECLS
 
@@ -19,14 +19,16 @@ typedef enum
 	LATAN_ESYSTEM	= 34	/* system error							*/
 } latan_errno;
 
+#ifndef LATAN_ERRNO_DEF
+#define LATAN_ERRNO_DEF
+#endif
+
 typedef void latan_error_handler_t(const char*, const char*, int, int);
 
-void latan_error(const char* reason, const char *file, int line, \
-				 int no);
-
+void latan_error(const char* reason, const char *file, int line, int no);
+void latan_warning(const char* reason, const char* file, int line, int no);
 latan_error_handler_t*\
 latan_set_error_handler(latan_error_handler_t* new_handler);
-
 latan_error_handler_t* latan_set_error_handler_off(void);
 
 #define LATAN_ERROR(reason, no)\
@@ -57,7 +59,11 @@ latan_error_handler_t* latan_set_error_handler_off(void);
 LATAN_ERROR_VAL(reason,no,NULL)
 
 #define LATAN_ERROR_NORET(reason, no)\
-latan_error(reason,__FILE__,__LINE__,no)
+{\
+	stringbuf _freason;\
+	sprintf(_freason,"%s (function %s)",reason,__FUNCTION__);\
+	latan_error(_freason,__FILE__,__LINE__,no);\
+}\
 
 #define LATAN_ERROR_SELECT_2(a,b)       \
 ((a) != LATAN_SUCCESS ? (a) : ((b) != LATAN_SUCCESS ? (b) : LATAN_SUCCESS))
@@ -73,6 +79,7 @@ latan_error(reason,__FILE__,__LINE__,no)
 	cstat=instruction;\
 	status = LATAN_ERROR_SELECT_2(status,cstat);\
 }
+
 __END_DECLS
 
 #endif

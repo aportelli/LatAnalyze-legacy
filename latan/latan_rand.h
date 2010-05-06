@@ -1,8 +1,8 @@
 #ifndef LATAN_RAND_H_
 #define LATAN_RAND_H_
 
-#include <latan/globals.h>
-#include <latan/statistics.h>
+#include <latan/latan_globals.h>
+#include <latan/latan_statistics.h>
 
 __BEGIN_DECLS
 

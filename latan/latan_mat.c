@@ -1,6 +1,6 @@
-#include <latan/mat.h>
-#include <latan/includes.h>
-#include <latan/rand.h>
+#include <latan/latan_mat.h>
+#include <latan/latan_includes.h>
+#include <latan/latan_rand.h>
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_permutation.h>
 #include <gsl/gsl_linalg.h>
@@ -43,7 +43,7 @@ mat mat_create_from_ar(const double* ar, const size_t init_nrow,\
 	return m;
 }
 
-mat* mat_create_ar(const size_t nmat, const size_t init_nrow,\
+mat* mat_ar_create(const size_t nmat, const size_t init_nrow,\
 				   const size_t init_ncol)
 {
 	size_t i;
@@ -63,7 +63,7 @@ void mat_destroy(mat m)
 	gsl_matrix_free(m);
 }
 
-void mat_destroy_ar(mat* m, const size_t nmat)
+void mat_ar_destroy(mat* m, const size_t nmat)
 {
 	size_t i;
 	

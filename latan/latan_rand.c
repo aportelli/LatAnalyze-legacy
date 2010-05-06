@@ -1,5 +1,6 @@
-#include <latan/rand.h>
-#include <latan/includes.h>
+#include <latan/latan_rand.h>
+#include <latan/latan_includes.h>
+#include <latan/latan_math.h>
 
 static void ranlxd(double r[],int n);
 static void rlxd_init(int level,int seed);

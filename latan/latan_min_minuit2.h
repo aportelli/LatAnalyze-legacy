@@ -6,7 +6,7 @@
 
 __BEGIN_DECLS
 
-latan_errno minimize_minuit2(mat var, min_func* f, void* param);
+latan_errno minimize_minuit2(mat var, double* f_min, min_func* f, void* param);
 
 __END_DECLS
 

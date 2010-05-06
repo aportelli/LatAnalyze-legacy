@@ -258,7 +258,7 @@ void rs_sample_destroy(rs_sample s)
 }
 
 /** access **/
-mat rs_sample_get_sample(const rs_sample s, const size_t i)
+mat rs_sample_pt_sample(const rs_sample s, const size_t i)
 {
 	return (s->sample)[i];
 }

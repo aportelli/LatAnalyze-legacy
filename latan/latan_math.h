@@ -5,6 +5,7 @@
 
 #define SQ(x) ((x)*(x))
 #define DRATIO(a,b) (((double)(a))/((double)(b)))
+#define MIN(a,b) (((a) < (b)) ? (a) : (b))
 #define C_PI 3.1415926535897932384626433832795028841970
 
 __BEGIN_DECLS

@@ -1,6 +1,19 @@
 #include <latan/latan_min_minuit2.h>
 #include <latan/latan_includes.h>
 
+#ifndef INIT_RERROR
+#define INIT_RERROR 0.25
+#endif
+#ifndef STRATEGY
+#define STRATEGY 2
+#endif
+#ifndef MAX_FUNC_CALL
+#define MAX_FUNC_CALL 500
+#endif
+#ifndef TOL
+#define TOL 0.01
+#endif
+
 #ifdef HAVE_MINUIT2
 
 #include <iostream>
@@ -8,8 +21,7 @@
 #include <Minuit2/FCNBase.h>
 #include <Minuit2/CombinedMinimizer.h>
 #include <Minuit2/FunctionMinimum.h>
-
-#define INIT_RERROR 0.25
+#include <Minuit2/MnPrint.h>
 
 // WARNING : std namespace already contain a stringbuf type
 using namespace ROOT;
@@ -67,7 +79,7 @@ double Minuit2MinFunc::Up(void) const
 }
 #endif
 
-latan_errno minimize_minuit2(mat var, min_func* f, void* param)
+latan_errno minimize_minuit2(mat var, double* f_min, min_func* f, void* param)
 {
 #ifdef HAVE_MINUIT2
 	latan_errno status;
@@ -89,19 +101,29 @@ latan_errno minimize_minuit2(mat var, min_func* f, void* param)
 		v_init_err.push_back(init_var_i*INIT_RERROR);
 	}
 	FunctionMinimum minuit2_min = minimizer.Minimize(minuit2_f,v_init_var,\
-													 v_init_err);
+													 v_init_err,STRATEGY,\
+													 MAX_FUNC_CALL,TOL);
+	if (!minuit2_min.IsValid())
+	{
+		LATAN_WARNING("MINUIT library reported that minimization result is not valid",\
+					  LATAN_FAILURE);
+		status = LATAN_FAILURE;
+	}
 	for (i=0;i<var_size;i++)
 	{
 		var_i = minuit2_min.UserParameters().Parameter((unsigned int)i).Value();
 		mat_set(var,i,0,var_i);
 	}
-
+	*f_min = minuit2_min.Fval();
+	if (latan_get_verb() == DEBUG)
+	{
+		std::cout << "-- (DEBUG) MINUIT minimizer call :";
+		std::cout << minuit2_min;
+	}
 	return status;
 #else
-	mat dummy;
-	
-	dummy = res;
-	dummy = init_var;
+	var = NULL;
+	f_min = NULL;
 	f = NULL;
 	param = NULL;
 	LATAN_ERROR("MINUIT library support was not compiled",LATAN_FAILURE);

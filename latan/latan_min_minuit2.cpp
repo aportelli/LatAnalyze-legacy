@@ -11,7 +11,7 @@
 #define MAX_FUNC_CALL 500
 #endif
 #ifndef TOL
-#define TOL 0.01
+#define TOL 1e-6
 #endif
 
 #ifdef HAVE_MINUIT2
@@ -115,9 +115,10 @@ latan_errno minimize_minuit2(mat var, double* f_min, min_func* f, void* param)
 		mat_set(var,i,0,var_i);
 	}
 	*f_min = minuit2_min.Fval();
+
+	latan_printf(DEBUG,"MINUIT minimizer call :\n");
 	if (latan_get_verb() == DEBUG)
 	{
-		std::cout << "-- (DEBUG) MINUIT minimizer call :";
 		std::cout << minuit2_min;
 	}
 	return status;

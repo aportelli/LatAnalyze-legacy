@@ -2,6 +2,7 @@
 #include <latan/latan_includes.h>
 #include <latan/latan_min_minuit2.h>
 #include <latan/latan_io.h>
+#include <latan/latan_math.h>
 
 /*							the minimizer									*/
 /****************************************************************************/
@@ -24,46 +25,118 @@ latan_errno minimize(mat var, double* f_min, min_func* f, void* param)
 	return status;
 }
 
+/*							fit model structure								*/
+/****************************************************************************/
+/** access **/
+void fit_model_get_name(stringbuf name, const fit_model* model)
+{
+	strcpy(name,model->name);
+}
+
+void fit_model_get_plot_fmt(stringbuf plot_fmt, const fit_model* model)
+{
+	strcpy(plot_fmt,model->plot_fmt);
+}
+
+double fit_model_eval(const fit_model* model, const double x,
+					  const mat func_param, void* model_param)
+{
+	return model->func(x,func_param,model_param);
+}
+
+/** some useful models **/
+/*** constant: y(x) = p0 ***/
+double fm_const_func(const double x, const mat func_param, void* nothing)
+{
+	double dummy;
+	
+	nothing = NULL;
+	dummy = x;
+	
+	return mat_get(func_param,0,0);
+}
+
+const fit_model fm_const =
+{
+	"y(x) = p0",
+	&fm_const_func,
+	1,
+	"%e"
+};
+
+double fm_lin_func(const double x, const mat func_param, void* nothing)
+{
+	double res;
+	
+	nothing = NULL;
+	res = mat_get(func_param,0,0) + mat_get(func_param,1,0)*x;
+	
+	return res;
+}
+
+const fit_model fm_lin =
+{
+	"y(x) = p0 + p1*x",
+	&fm_lin_func,
+	2,
+	"%e+%e*x"
+};
+
+/*** exponential decay: y(x) = p0*exp(-p1*x) ***/
+double fm_expdec_func(const double x, const mat func_param, void* nothing)
+{
+	double res;
+	
+	nothing = NULL;
+	res = mat_get(func_param,0,0)*exp(-mat_get(func_param,1,0)*x);
+	
+	return res;
+}
+
+const fit_model fm_expdec = 
+{
+	"y(x) = p0*exp(-p1*x)",
+	&fm_expdec_func,
+	2,
+	"%e*exp(-%e*x)"
+};
+
+/*** hyperbolic cosine: y(x) = p0*cosh(p1*x) ***/
+double fm_cosh_func(const double x, const mat func_param, void* nothing)
+{
+	double res;
+	
+	nothing = NULL;
+	res = mat_get(func_param,0,0)*cosh(mat_get(func_param,1,0)*x);
+	
+	return res;
+}
+
+const fit_model fm_cosh =
+{
+	"y(x) = p0*cosh(p1*x)",
+	&fm_cosh_func,
+	2,
+	"%e*cosh(%e*x)"
+};
+
 /*							fit data structure								*/
 /****************************************************************************/
 /** allocation **/
-fit_data fit_data_create(mat x, mat data, mat var, model_func* model,\
-						 void* model_param)
+fit_data fit_data_create(const size_t ndata)
 {
 	fit_data d;
-	size_t ndata;
 	
 	MALLOC_ERRVAL(d,fit_data,1,NULL);
-	
-	d->is_correlated = mat_issquare(var);
-	if (nrow(var) != nrow(data))
-	{
-		LATAN_ERROR_NULL("correlation matrix have not the same number of row than data vector",LATAN_EBADLEN);
-	}
-	if (nrow(var) != nrow(x))
-	{
-		LATAN_ERROR_NULL("correlation matrix have not the same number of row than point vector",LATAN_EBADLEN);
-	}
-	ndata = nrow(data);
 	d->x = mat_create(ndata,1);
 	d->data = mat_create(ndata,1);
 	d->var_inveigval = mat_create(ndata,1);
 	d->var_eigvec = mat_create(ndata,ndata);
-	mat_cp(d->x,x);
-	mat_cp(d->data,data);
-	if (d->is_correlated)
-	{
-		LATAN_ERROR_NULL("correlated fit is not implemented yet",LATAN_FAILURE);
-	}
-	else
-	{
-		mat_id(d->var_eigvec);
-		mat_cst(d->var_inveigval,1.0);
-		mat_eqdivp(d->var_inveigval,var);
-	}
-	d->model = model;
-	d->model_param = model_param;
+	
+	d->model = NULL;
+	d->model_param = NULL;
 	d->stage = 0;
+	d->ndata = ndata;
 	
 	return d;
 }
@@ -77,9 +150,102 @@ void fit_data_destroy(fit_data d)
 	FREE(d);
 }
 
+/** access **/
+void fit_data_set_x(fit_data d, const size_t i, const double x_i)
+{
+	mat_set(d->x,i,0,x_i);
+}
+
+double fit_data_get_x(const fit_data d, const size_t i)
+{
+	return mat_get(d->x,i,0);
+}
+
+mat fit_data_pt_x(const fit_data d)
+{
+	return d->x;
+}
+
+void fit_data_set_data(fit_data d, const size_t i, const double data_i)
+{
+	mat_set(d->data,i,0,data_i);
+}
+
+double fit_data_get_data(const fit_data d, const size_t i)
+{
+	return mat_get(d->data,i,0);
+}
+
+mat fit_data_pt_data(fit_data d)
+{
+	return d->data;
+}
+
+latan_errno fit_data_set_var(fit_data d, const mat var)
+{
+	latan_errno status;
+	
+	status = LATAN_SUCCESS;
+	d->is_correlated = mat_issquare(var);
+	
+	if (d->is_correlated)
+	{
+		LATAN_ERROR("correlated fit is not implemented yet",LATAN_FAILURE);
+	}
+	else
+	{
+		mat_id(d->var_eigvec);
+		mat_cst(d->var_inveigval,1.0);
+		LATAN_UPDATE_STATUS(status,mat_eqdivp(d->var_inveigval,var));
+	}
+	
+	return status;
+}
+
+void fit_data_set_model(fit_data d, const fit_model* model)
+{
+	d->model = model;
+}
+
+const fit_model* fit_data_pt_model(fit_data d)
+{
+	return d->model;
+}
+
+void fit_data_set_model_param(fit_data d, void* model_param)
+{
+	d->model_param = model_param;
+}
+
+double fit_data_model_eval(const fit_data d, const size_t i,\
+						   const mat func_param)
+{
+	return fit_model_eval(d->model,mat_get(d->x,i,0),func_param,d->model_param);
+}
+
+void fit_data_set_stage(fit_data d, const int stage)
+{
+	d->stage = stage;
+}
+
+int fit_data_get_stage(const fit_data d)
+{
+	return d->stage;
+}
+
+int fit_data_get_dof(const fit_data d)
+{
+	return d->ndata - d->model->npar;
+}
+
+bool fit_data_is_correlated(const fit_data d)
+{
+	return d->is_correlated;
+}
+
 /*							chi2 functions									*/
 /****************************************************************************/
-double chi2(const mat var, void* d)
+double chi2(const mat fit_param, void* d)
 {
 	fit_data dt;
 	size_t ndata;
@@ -95,7 +261,7 @@ double chi2(const mat var, void* d)
 	
 	for (i=0;i<ndata;i++)
 	{
-		mat_set(X,i,0,dt->model(mat_get(dt->x,i,0),var,dt->model_param));
+		mat_set(X,i,0,fit_data_model_eval(d,i,fit_param));
 	}
 	mat_eqsub(X,dt->data);
 	mat_mul_nn(X,dt->var_eigvec,X);
@@ -103,4 +269,22 @@ double chi2(const mat var, void* d)
 	mat_mul_tn(res,X,X);
 	
 	return mat_get(res,0,0);
+}
+
+/*							fit functions									*/
+/****************************************************************************/
+latan_errno data_fit(mat fit_param, double* chi2pdof, fit_data d)
+{
+	latan_errno status;
+	stringbuf cor_status;
+	double chi2_min;
+	
+	fit_data_is_correlated(d) ? \
+	(strcpy(cor_status,"correlated")) : (strcpy(cor_status,"uncorrelated"));
+	latan_printf(VERB,"fitting (%s) %u data points with model %s...\n",
+				 cor_status,(unsigned int)d->ndata,d->model->name);
+	status = minimize(fit_param,&chi2_min,&chi2,d);
+	*chi2pdof = DRATIO(chi2_min,fit_data_get_dof(d));
+	
+	return status;
 }

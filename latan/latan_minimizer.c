@@ -251,13 +251,14 @@ double chi2(const mat fit_param, void* d)
 	size_t ndata;
 	size_t i;
 	mat X;
-	mat res;
+	mat mres;
+	double res;
 	
 	dt = (fit_data)d;
 	ndata = nrow(dt->data);
 	
 	X = mat_create(ndata,1);
-	res = mat_create(1,1);
+	mres = mat_create(1,1);
 	
 	for (i=0;i<ndata;i++)
 	{
@@ -266,9 +267,13 @@ double chi2(const mat fit_param, void* d)
 	mat_eqsub(X,dt->data);
 	mat_mul_nn(X,dt->var_eigvec,X);
 	mat_eqdivp(X,dt->var_inveigval);
-	mat_mul_tn(res,X,X);
+	mat_mul_tn(mres,X,X);
+	res = mat_get(mres,0,0);
 	
-	return mat_get(res,0,0);
+	mat_destroy(X);
+	mat_destroy(mres);
+	
+	return res;
 }
 
 /*							fit functions									*/

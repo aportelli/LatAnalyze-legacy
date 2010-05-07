@@ -163,6 +163,10 @@ void latan_get_prop_mark(stringbuf prop_mark);
 void latan_set_prop_mark(const stringbuf prop_mark);
 void latan_get_prop_idfmt(stringbuf prop_idfmt);
 void latan_set_prop_idfmt(const stringbuf prop_idfmt);
+
+/* LatAnalyze message function */
+void latan_printf(const int verb, const stringbuf fmt, ...);
+
 __END_DECLS
 
 #endif

@@ -84,3 +84,29 @@ void latan_set_prop_idfmt(const stringbuf prop_idfmt)
 {
 	strcpy(env.prop_idfmt,prop_idfmt);
 }
+
+void latan_printf(const int verb, const stringbuf fmt, ...)
+{
+	va_list args;
+	stringbuf head,tail,name,debug,version;
+	
+	if ((latan_get_verb() >= verb)&&(verb >= VERB))
+	{
+		latan_get_name(name);
+		latan_get_version(version);
+		if (verb == DEBUG)
+		{
+			strcpy(debug," - DEBUG");
+		}
+		else
+		{
+			strcpy(debug,"");
+		}
+		
+		sprintf(head,"[%s v%s%s]",name,version,debug);
+		va_start(args,fmt);
+		vsprintf(tail,fmt,args);
+		va_end(args);
+		printf("%s %s",head,tail);
+	}
+}

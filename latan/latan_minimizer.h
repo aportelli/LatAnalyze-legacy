@@ -52,10 +52,12 @@ typedef struct
 	mat var_inveigval;
 	mat var_eigvec;
 	bool is_correlated;
+	bool save_chi2pdof;
 	bool* to_fit;
 	const fit_model* model;
 	void* model_param;
 	int stage;
+	double chi2pdof;
 }* fit_data;
 
 /** allocation **/
@@ -90,7 +92,7 @@ bool fit_data_is_correlated(const fit_data d);
 double chi2(const mat var, void* d);
 
 /* fit functions */
-latan_errno data_fit(mat fit_param, double* chi2pdof, fit_data d);
+latan_errno data_fit(mat fit_param, fit_data d);
 
 __END_DECLS
 

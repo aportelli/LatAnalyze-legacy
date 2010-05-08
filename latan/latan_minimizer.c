@@ -159,6 +159,16 @@ void fit_data_destroy(fit_data d)
 }
 
 /** access **/
+void fit_data_save_chi2pdof(fit_data d, bool save)
+{
+	d->save_chi2pdof = save;
+}
+
+double fit_data_get_chi2pdof(fit_data d)
+{
+	return d->chi2pdof;
+}
+
 void fit_data_set_x(fit_data d, const size_t i, const double x_i)
 {
 	mat_set(d->x,i,0,x_i);
@@ -341,7 +351,7 @@ double chi2(const mat fit_param, void* d)
 
 /*							fit functions									*/
 /****************************************************************************/
-latan_errno data_fit(mat fit_param, double* chi2pdof, fit_data d)
+latan_errno data_fit(mat fit_param, fit_data d)
 {
 	latan_errno status;
 	stringbuf cor_status;
@@ -353,7 +363,10 @@ latan_errno data_fit(mat fit_param, double* chi2pdof, fit_data d)
 				 cor_status,(unsigned int)fit_data_fit_point_num(d),\
 				 d->model->name);
 	status = minimize(fit_param,&chi2_min,&chi2,d);
-	*chi2pdof = DRATIO(chi2_min,fit_data_get_dof(d));
+	if (d->save_chi2pdof)
+	{
+		d->chi2pdof = DRATIO(chi2_min,fit_data_get_dof(d));
+	}
 	
 	return status;
 }

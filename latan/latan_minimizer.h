@@ -52,6 +52,7 @@ typedef struct
 	mat var_inveigval;
 	mat var_eigvec;
 	bool is_correlated;
+	bool* to_fit;
 	const fit_model* model;
 	void* model_param;
 	int stage;
@@ -62,8 +63,14 @@ fit_data fit_data_create(const size_t ndata);
 void fit_data_destroy(fit_data d);
 
 /** access **/
+void fit_data_save_chi2pdof(fit_data d, bool save);
+double fit_data_get_chi2pdof(fit_data d);
 void fit_data_set_x(fit_data d, const size_t i, const double x_i);
 double fit_data_get_x(const fit_data d, const size_t i);
+void fit_data_fit_all_points(fit_data d, bool fit);
+void fit_data_fit_point(fit_data d, size_t i, bool fit);
+bool fit_data_is_fit_point(fit_data d, size_t i);
+size_t fit_data_fit_point_num(fit_data d);
 mat fit_data_pt_x(const fit_data d);
 void fit_data_set_data(fit_data d, const size_t i, const double data_i);
 double fit_data_get_data(const fit_data d, const size_t i);

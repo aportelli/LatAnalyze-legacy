@@ -126,17 +126,24 @@ const fit_model fm_cosh =
 fit_data fit_data_create(const size_t ndata)
 {
 	fit_data d;
+	size_t i;
 	
 	MALLOC_ERRVAL(d,fit_data,1,NULL);
 	d->x = mat_create(ndata,1);
 	d->data = mat_create(ndata,1);
 	d->var_inveigval = mat_create(ndata,1);
 	d->var_eigvec = mat_create(ndata,ndata);
-	
+	MALLOC_ERRVAL(d->to_fit,bool*,ndata,NULL);
+	for (i=0;i<ndata;i++)
+	{
+		d->to_fit[i] = true;
+	}
+				  
 	d->model = NULL;
 	d->model_param = NULL;
 	d->stage = 0;
 	d->ndata = ndata;
+	d->save_chi2pdof = true;
 	
 	return d;
 }
@@ -147,6 +154,7 @@ void fit_data_destroy(fit_data d)
 	mat_destroy(d->data);
 	mat_destroy(d->var_inveigval);
 	mat_destroy(d->var_eigvec);
+	FREE(d->to_fit);
 	FREE(d);
 }
 
@@ -164,6 +172,54 @@ double fit_data_get_x(const fit_data d, const size_t i)
 mat fit_data_pt_x(const fit_data d)
 {
 	return d->x;
+}
+
+void fit_data_fit_all_points(fit_data d, bool fit)
+{
+	size_t i;
+	
+	for (i=0;i<d->ndata;i++)
+	{
+		d->to_fit[i] = fit;
+	}
+}
+
+void fit_data_fit_point(fit_data d, size_t i, bool fit)
+{
+	if (i>=d->ndata)
+	{
+		LATAN_ERROR_VOID("index out of range",LATAN_EBADLEN);
+	}
+	
+	d->to_fit[i] = fit;
+}
+
+bool fit_data_is_fit_point(fit_data d, size_t i)
+{
+	if (i>=d->ndata)
+	{
+		LATAN_ERROR_VAL("index out of range",LATAN_EBADLEN,false);
+	}
+	
+	return d->to_fit[i];
+}
+
+size_t fit_data_fit_point_num(fit_data d)
+{
+	size_t nfitpt;
+	size_t i;
+	
+	nfitpt = 0;
+	
+	for (i=0;i<d->ndata;i++)
+	{
+		if (d->to_fit[i])
+		{
+			nfitpt++;
+		}
+	}
+	
+	return nfitpt;
 }
 
 void fit_data_set_data(fit_data d, const size_t i, const double data_i)
@@ -235,7 +291,7 @@ int fit_data_get_stage(const fit_data d)
 
 int fit_data_get_dof(const fit_data d)
 {
-	return d->ndata - d->model->npar;
+	return fit_data_fit_point_num(d) - d->model->npar;
 }
 
 bool fit_data_is_correlated(const fit_data d)
@@ -255,16 +311,23 @@ double chi2(const mat fit_param, void* d)
 	double res;
 	
 	dt = (fit_data)d;
-	ndata = nrow(dt->data);
+	ndata = nrow(fit_data_pt_data(d));
 	
 	X = mat_create(ndata,1);
 	mres = mat_create(1,1);
 	
 	for (i=0;i<ndata;i++)
 	{
-		mat_set(X,i,0,fit_data_model_eval(d,i,fit_param));
+		if (fit_data_is_fit_point(d,i))
+		{
+			mat_set(X,i,0,fit_data_model_eval(d,i,fit_param)
+					- fit_data_get_data(d,i));
+		}
+		else
+		{
+			mat_set(X,i,0,0.0);
+		}
 	}
-	mat_eqsub(X,dt->data);
 	mat_mul_nn(X,dt->var_eigvec,X);
 	mat_eqdivp(X,dt->var_inveigval);
 	mat_mul_tn(mres,X,X);
@@ -287,7 +350,8 @@ latan_errno data_fit(mat fit_param, double* chi2pdof, fit_data d)
 	fit_data_is_correlated(d) ? \
 	(strcpy(cor_status,"correlated")) : (strcpy(cor_status,"uncorrelated"));
 	latan_printf(VERB,"fitting (%s) %u data points with model %s...\n",
-				 cor_status,(unsigned int)d->ndata,d->model->name);
+				 cor_status,(unsigned int)fit_data_fit_point_num(d),\
+				 d->model->name);
 	status = minimize(fit_param,&chi2_min,&chi2,d);
 	*chi2pdof = DRATIO(chi2_min,fit_data_get_dof(d));
 	

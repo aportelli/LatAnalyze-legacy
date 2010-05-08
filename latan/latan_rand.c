@@ -43,7 +43,7 @@ static void rlxd_reset(int state[]);
  *     Resets the generator to the state defined by the array state[N]
  */
 
-#if (defined SSE)
+#ifdef HAVE_SSE
 
 typedef struct
 {

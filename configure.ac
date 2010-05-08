@@ -2,9 +2,9 @@
 
 # Initialization
 AC_PREREQ([2.64])
-AC_INIT([LatAnalyze],[2.0alpha],[antonin.portelli@gmail.com],[latan])
+AC_INIT([LatAnalyze],[2.0beta],[antonin.portelli@gmail.com],[latan])
 AC_CONFIG_AUX_DIR([.buildutils])
-AC_CONFIG_SRCDIR([latan/globals.c])
+AC_CONFIG_SRCDIR([latan/latan_globals.c])
 AC_CONFIG_MACRO_DIR([.buildutils/m4])
 AM_INIT_AUTOMAKE([-Wall -Werror])
 
@@ -43,6 +43,24 @@ AC_ARG_WITH([Minuit2],
 
 CFLAGS="$AM_CFLAGS $CFLAGS"
 LDFLAGS="$AM_LDFLAGS $LDFLAGS"
+
+# Check for SSE
+AC_MSG_CHECKING([if CPU support SSE instructions])
+AC_RUN_IFELSE(
+	[AC_LANG_PROGRAM([],[
+		int ax,bx,cx,dx;
+		int func = 0x1;
+		
+		__asm__ __volatile__("cpuid":\
+							 "=a" (ax), "=b" (bx), "=c" (cx), "=d" (dx) :\
+							 "a" (func));
+
+		return 1-(dx >> 25)&0x1;])],
+	[AC_DEFINE([HAVE_SSE],
+				[1],
+				[Define to 1 if your CPU support SSE instructions.])]
+	[AC_MSG_RESULT([yes])],
+	[AC_MSG_RESULT([no])])
 
 # Checks for libraries.
 AC_CHECK_LIB([m],[cos],[],[AC_MSG_ERROR([libm library not found])])

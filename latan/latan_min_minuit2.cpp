@@ -119,7 +119,10 @@ latan_errno minimize_minuit2(mat var, double* f_min, min_func* f, void* param)
 	latan_printf(DEBUG,"MINUIT minimizer call :\n");
 	if (latan_get_verb() == DEBUG)
 	{
+		std::cout << "--------------------------------------------------------";
 		std::cout << minuit2_min;
+		std::cout << "--------------------------------------------------------";
+		std::cout << std::endl;
 	}
 	return status;
 #else

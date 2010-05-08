@@ -11,6 +11,17 @@ typedef struct
 	stringbuf prop_idfmt;
 } latan_env;
 
+#ifdef HAVE_MINUIT2
+static latan_env env = 
+{
+	PACKAGE_NAME,		\
+	PACKAGE_VERSION,	\
+	QUIET,				\
+	MINUIT,				\
+	"PROP",				\
+	"%s_%s_%d_%d"
+};
+#else
 static latan_env env = 
 {
 	PACKAGE_NAME,		\
@@ -20,6 +31,7 @@ static latan_env env =
 	"PROP",				\
 	"%s_%s_%d_%d"
 };
+#endif
 
 void latan_get_name(stringbuf name)
 {

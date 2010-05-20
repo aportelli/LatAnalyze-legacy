@@ -136,7 +136,7 @@ fit_data fit_data_create(const size_t ndata)
 	MALLOC_ERRVAL(d->to_fit,bool*,ndata,NULL);
 	for (i=0;i<ndata;i++)
 	{
-		d->to_fit[i] = true;
+		d->to_fit[i] = false;
 	}
 				  
 	d->model = NULL;

@@ -1,9 +1,7 @@
 #ifndef LATAN_INCLUDES_H_
 #define LATAN_INCLUDES_H_
 
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
+#include "../config.h"
 
 /* replacement functions */
 #ifndef HAVE_ACOSH

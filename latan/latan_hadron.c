@@ -15,6 +15,54 @@ static stringbuf channel_id[] =
 	"DELTA"
 };
 
+channel_no channel_no_get(const stringbuf label)
+{
+	channel_no res;
+	
+	if (strcmp(label,"SS") == 0)
+	{
+		res = ch_SS;
+	}
+	else if (strcmp(label,"VV") == 0)
+	{
+		res = ch_VV;
+	}
+	else if (strcmp(label,"PP") == 0)
+	{
+		res = ch_PP;
+	}
+	else if (strcmp(label,"PA") == 0)
+	{
+		res = ch_PA;
+	}
+	else if (strcmp(label,"AP") == 0)
+	{
+		res = ch_AP;
+	}
+	else if (strcmp(label,"AA") == 0)
+	{
+		res = ch_AA;
+	}
+	else if (strcmp(label,"N") == 0)
+	{
+		res = ch_N;
+	}
+	else if (strcmp(label,"Lambda") == 0)
+	{
+		res = ch_Lambda;
+	}
+	else if (strcmp(label,"Delta") == 0)
+	{
+		res = ch_Delta;
+	}
+	else
+	{
+		LATAN_ERROR("wrong channel name",LATAN_FAILURE);
+	}
+	
+	return res;
+}
+
 void channel_id_set(const channel_no i, const stringbuf new_id)
 {
 	strcpy(channel_id[i],new_id);

@@ -37,6 +37,7 @@ typedef enum
 	ch_Delta	= 8
 } channel_no;
 
+channel_no channel_no_get(const stringbuf label);
 void channel_id_set(const channel_no i, const stringbuf new_id);
 void channel_id_get(stringbuf str, const channel_no i);
 

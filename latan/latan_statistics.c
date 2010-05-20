@@ -283,6 +283,16 @@ void rs_sample_destroy(rs_sample s)
 }
 
 /** access **/
+size_t rs_sample_get_nsample(const rs_sample s)
+{
+	return s->nsample;
+}
+
+mat rs_sample_pt_cent_val(const rs_sample s)
+{
+	return s->cent_val;
+}
+
 mat rs_sample_pt_sample(const rs_sample s, const size_t i)
 {
 	return (s->sample)[i];

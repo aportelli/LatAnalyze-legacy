@@ -10,8 +10,8 @@
 #ifndef MAX_FUNC_CALL
 #define MAX_FUNC_CALL 500
 #endif
-#ifndef TOL
-#define TOL 1e-6
+#ifndef FIT_TOL
+#define FIT_TOL 1e-6
 #endif
 
 #ifdef HAVE_MINUIT2
@@ -102,7 +102,7 @@ latan_errno minimize_minuit2(mat var, double* f_min, min_func* f, void* param)
 	}
 	FunctionMinimum minuit2_min = minimizer.Minimize(minuit2_f,v_init_var,\
 													 v_init_err,STRATEGY,\
-													 MAX_FUNC_CALL,TOL);
+													 MAX_FUNC_CALL,FIT_TOL);
 	if (!minuit2_min.IsValid())
 	{
 		LATAN_WARNING("MINUIT library reported that minimization result is not valid",\

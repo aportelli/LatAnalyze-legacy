@@ -53,7 +53,8 @@ rs_sample rs_sample_create_jack(const size_t init_nrow, const size_t ndat,\
 void rs_sample_destroy(rs_sample s);
 
 /** access **/
-#define rs_sample_pt_cent_val(s) ((s)->cent_val)
+size_t rs_sample_get_nsample(const rs_sample s);
+mat rs_sample_pt_cent_val(const rs_sample s);
 mat rs_sample_pt_sample(const rs_sample s, const size_t i);
 
 /** estimators **/

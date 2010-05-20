@@ -102,24 +102,21 @@ static void error(int no)
 	switch(no)
 	{
 		case 1:
-			printf("Error in subroutine rlxd_init\n");
-			printf("Bad choice of luxury level (should be 1 or 2)\n");
+			LATAN_ERROR_VOID("Bad choice of luxury level (should be 1 or 2)",\
+							 LATAN_EINVAL);
 			break;
 		case 2:
-			printf("Error in subroutine rlxd_init\n");
-			printf("Bad choice of seed (should be between 1 and 2^31-1)\n");
+			LATAN_ERROR_VOID("Bad choice of seed (should be between 1 and 2^31-1)",\
+							 LATAN_EINVAL);
 			break;
 		case 3:
-			printf("Error in rlxd_get\n");
-			printf("Undefined state (ranlxd is not initialized\n");
+			LATAN_ERROR_VOID("Undefined state (ranlxd is not initialized)",\
+							 LATAN_FAILURE);
 			break;
 		case 5:
-			printf("Error in rlxd_reset\n");
-			printf("Unexpected input data\n");
+			LATAN_ERROR_VOID("Unexpected input data",LATAN_EINVAL);
 			break;
 	}         
-	printf("Program aborted\n");
-	exit(0);
 }
 
 
@@ -416,32 +413,28 @@ static void error(int no)
 	switch(no)
 	{
 		case 0:
-			printf("Error in rlxd_init\n");
-			printf("Arithmetic on this machine is not suitable for ranlxd\n");
+			LATAN_ERROR_VOID("Arithmetic on this machine is not suitable for ranlxd",\
+							 LATAN_ESYSTEM);
 			break;
 		case 1:
-			printf("Error in subroutine rlxd_init\n");
-			printf("Bad choice of luxury level (should be 1 or 2)\n");
+			LATAN_ERROR_VOID("Bad choice of luxury level (should be 1 or 2)",\
+							 LATAN_EINVAL);
 			break;
 		case 2:
-			printf("Error in subroutine rlxd_init\n");
-			printf("Bad choice of seed (should be between 1 and 2^31-1)\n");
+			LATAN_ERROR_VOID("Bad choice of seed (should be between 1 and 2^31-1)",\
+							 LATAN_EINVAL);
 			break;
 		case 3:
-			printf("Error in rlxd_get\n");
-			printf("Undefined state (ranlxd is not initialized)\n");
-			break;
+			LATAN_ERROR_VOID("Undefined state (ranlxd is not initialized)",\
+							 LATAN_FAILURE);
 		case 4:
-			printf("Error in rlxd_reset\n");
-			printf("Arithmetic on this machine is not suitable for ranlxd\n");
+			LATAN_ERROR_VOID("Arithmetic on this machine is not suitable for ranlxd",\
+							 LATAN_ESYSTEM);
 			break;
 		case 5:
-			printf("Error in rlxd_reset\n");
-			printf("Unexpected input data\n");
+			LATAN_ERROR_VOID("Unexpected input data",LATAN_EINVAL);
 			break;
 	}         
-	printf("Program aborted\n");
-	exit(0);
 }
 
 

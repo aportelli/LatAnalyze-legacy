@@ -277,6 +277,8 @@ mat fit_data_pt_data(fit_data d)
 latan_errno fit_data_set_var(fit_data d, const mat var)
 {
 	latan_errno status;
+	size_t i;
+	double dieg_i;
 	
 	status = LATAN_SUCCESS;
 	d->is_correlated = mat_issquare(var);
@@ -289,7 +291,11 @@ latan_errno fit_data_set_var(fit_data d, const mat var)
 	{
 		mat_id(d->var_eigvec);
 		mat_cst(d->var_inveigval,1.0);
-		LATAN_UPDATE_STATUS(status,mat_eqdivp(d->var_inveigval,var));
+		for (i=0;i<nrow(var);i++)
+		{
+			dieg_i = (mat_get(var,i,0) == 0) ? (0.0) : (1.0/mat_get(var,i,0));
+			mat_set(d->var_inveigval,i,0,dieg_i);
+		}
 	}
 	
 	return status;
@@ -436,7 +442,7 @@ double chi2(const mat fit_param, void* d)
 	fit_data dt;
 	size_t ndata;
 	size_t i;
-	mat X;
+	mat X,Xonsig;
 	mat mres;
 	double res;
 	
@@ -444,6 +450,7 @@ double chi2(const mat fit_param, void* d)
 	ndata = nrow(fit_data_pt_data(d));
 	
 	X = mat_create(ndata,1);
+	Xonsig = mat_create(ndata,1);
 	mres = mat_create(1,1);
 	
 	for (i=0;i<ndata;i++)
@@ -459,11 +466,12 @@ double chi2(const mat fit_param, void* d)
 		}
 	}
 	mat_mul_nn(X,dt->var_eigvec,X);
-	mat_eqdivp(X,dt->var_inveigval);
-	mat_mul_tn(mres,X,X);
+	mat_mulp(Xonsig,X,dt->var_inveigval);
+	mat_mul_tn(mres,Xonsig,X);
 	res = mat_get(mres,0,0);
 	
 	mat_destroy(X);
+	mat_destroy(Xonsig);
 	mat_destroy(mres);
 	
 	return res;

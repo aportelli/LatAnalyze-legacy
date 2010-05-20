@@ -204,6 +204,25 @@ void fit_data_fit_point(fit_data d, size_t i, bool fit)
 	d->to_fit[i] = fit;
 }
 
+void fit_data_fit_range(fit_data d, size_t start, size_t end, bool fit)
+{
+	size_t i;
+	
+	if ((start >= d->ndata)||(end >= d->ndata))
+	{
+		LATAN_ERROR_VOID("index out of range",LATAN_EBADLEN);
+	}
+	if (start > end)
+	{
+		LATAN_WARNING("trying to modify an empty fit range",LATAN_EBADLEN);
+	}
+	
+	for (i=start;i<=end;i++)
+	{
+		d->to_fit[i] = fit;
+	}
+}
+
 bool fit_data_is_fit_point(fit_data d, size_t i)
 {
 	if (i>=d->ndata)

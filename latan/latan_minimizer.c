@@ -490,3 +490,34 @@ latan_errno data_fit(mat fit_param, fit_data d)
 	
 	return status;
 }
+
+latan_errno rs_sample_fit(rs_sample fit_param, rs_sample data, fit_data d)
+{
+	latan_errno status;
+	mat datavar;
+	size_t i;
+	bool save_chi2pdof_backup;
+	int verb_backup;
+	
+	save_chi2pdof_backup = d->save_chi2pdof;
+	verb_backup = latan_get_verb();
+	status = LATAN_SUCCESS;
+	
+	datavar = mat_create_from_dim(rs_sample_pt_cent_val(data));
+	
+	LATAN_UPDATE_STATUS(status,rs_sample_varp(datavar,data));
+	LATAN_UPDATE_STATUS(status,fit_data_set_var(d,datavar));
+	mat_cp(fit_data_pt_data(d),rs_sample_pt_cent_val(data));
+	LATAN_UPDATE_STATUS(status,data_fit(rs_sample_pt_cent_val(fit_param),d));
+	fit_data_save_chi2pdof(d,false);
+	latan_set_verb(QUIET);
+	for (i=0;i<rs_sample_get_nsample(data);i++)
+	{
+		mat_cp(fit_data_pt_data(d),rs_sample_pt_sample(data,i));
+		LATAN_UPDATE_STATUS(status,data_fit(rs_sample_pt_sample(fit_param,i),d));
+	}
+	fit_data_save_chi2pdof(d,save_chi2pdof_backup);
+	latan_set_verb(verb_backup);
+	
+	return status;
+}

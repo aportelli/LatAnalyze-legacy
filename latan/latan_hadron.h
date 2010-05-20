@@ -7,9 +7,6 @@
 #define SUM 1
 #define MEAN 2
 
-#define EVEN 0
-#define ODD 1
-
 #ifndef MAXPROP
 #define MAXPROP 2
 #endif

@@ -48,6 +48,10 @@ __END_DECLS
 #define GSL 0
 #define MINUIT 1
 
+/* parity flags */
+#define EVEN 0
+#define ODD 1
+
 /* size_t type */
 #include <sys/types.h>
 

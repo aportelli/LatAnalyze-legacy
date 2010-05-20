@@ -2,6 +2,7 @@
 #define LATAN_MINIMIZER_H_
 
 #include <latan/latan_globals.h>
+#include <latan/latan_statistics.h>
 
 __BEGIN_DECLS
 
@@ -88,6 +89,11 @@ void fit_data_set_stage(fit_data d, const int stage);
 int fit_data_get_stage(const fit_data d);
 int fit_data_get_dof(const fit_data d);
 bool fit_data_is_correlated(const fit_data d);
+
+/** tuning **/
+latan_errno fit_data_mass_fit_tune(fit_data d, mat fit_init, const mat prop,\
+								   const mat em, const mat sigem,			\
+								   const int parity);
 
 /* chi2 functions, have min_func type */
 double chi2(const mat var, void* d);

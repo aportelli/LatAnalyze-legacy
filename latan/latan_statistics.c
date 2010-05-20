@@ -4,6 +4,7 @@
 #include <latan/latan_rand.h>
 #include <latan/latan_io.h>
 #include <latan/latan_mass.h>
+#include <latan/latan_minimizer.h>
 #include <gsl/gsl_histogram.h>
 #include <gsl/gsl_errno.h>
 
@@ -472,6 +473,44 @@ latan_errno rs_effmass_PCAC(mat res, const mat* dat, const size_t ndat,\
 	
 	mat_destroy(mprop_AP);
 	mat_destroy(mprop_PP);
+	
+	return status;
+}
+
+latan_errno rs_data_fit(mat res, const mat* dat, const size_t ndat,\
+						const size_t sampno, void* d)
+{
+	latan_errno status;
+	fit_data dt;
+	static double chi2pdof;
+	mat mprop;
+	int verb_backup;
+	
+	
+	dt = (fit_data)(d);
+	status = LATAN_SUCCESS;
+	verb_backup = latan_get_verb();
+	
+	mprop = mat_create_from_dim(dat[0]);
+	
+	LATAN_UPDATE_STATUS(status,mat_mean(mprop,dat,ndat));
+	mat_cp(fit_data_pt_data(dt),mprop);
+	if (sampno > 0)
+	{
+		latan_set_verb(QUIET);
+	}
+	LATAN_UPDATE_STATUS(status,data_fit(res,dt));
+	if (sampno > 0)
+	{
+		latan_set_verb(verb_backup);
+	}
+	if (sampno == 0)
+	{
+		chi2pdof = dt->chi2pdof;
+	}
+	dt->chi2pdof = chi2pdof;
+	
+	mat_destroy(mprop);
 	
 	return status;
 }

@@ -67,7 +67,7 @@ latan_errno rs_sample_covp(mat cov, const rs_sample s, const rs_sample t);
 latan_errno resample(rs_sample s, const mat* dat, const size_t ndat,\
 					 const size_t nobs, rs_func* f, void* param);
 
-/* some basic rs_func */
+/* useful rs_func */
 latan_errno rs_mean(mat res, const mat* dat, const size_t ndat,\
 					const size_t sampno, void* nothing);
 latan_errno rs_finite_diff(mat res, const mat* dat, const size_t ndat,\
@@ -76,6 +76,8 @@ latan_errno rs_effmass(mat res, const mat* dat, const size_t ndat,\
 					   const size_t sampno, void* parity);
 latan_errno rs_effmass_PCAC(mat res, const mat* dat, const size_t ndat,\
 							const size_t sampno, void* nothing);
+latan_errno rs_data_fit(mat res, const mat* dat, const size_t ndat,\
+							const size_t sampno, void* d);
 
 __END_DECLS
 

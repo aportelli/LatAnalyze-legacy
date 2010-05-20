@@ -4,13 +4,15 @@
 *.o
 *.a
 *.dylib
-examples/ex_mat
+examples/ex_fit
 examples/ex_getmat
+examples/ex_mat
 examples/ex_min
 examples/ex_rand
 examples/ex_rand.rand
 examples/ex_plot
 examples/ex_stat
+utils/latan_info
 
 # Apple stuffs
 *.xcodeproj
@@ -45,6 +47,10 @@ libtool
 .buildutils/*
 latan/.libs/*
 latan/.deps/*
+examples/.deps/*
+examples/.libs/*
+utils/.deps/*
+utils/.libs/*
 aclocal.m4
 config.log
 config.status

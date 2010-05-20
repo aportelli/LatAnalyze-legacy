@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <latan/latan_mat.h>
+#include <latan/latan_math.h>
 #include <latan/latan_statistics.h>
 #include <latan/latan_rand.h>
 #include <latan/latan_plot.h>

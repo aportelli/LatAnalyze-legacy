@@ -40,3 +40,5 @@ liblatan_la_HEADERS =		\
 	latan_rand.h
 liblatan_la_CFLAGS = $(COM_CFLAGS)
 liblatan_la_CXXFLAGS = $(COM_CXXFLAGS)
+
+ACLOCAL_AMFLAGS = -I .buildutils/m4

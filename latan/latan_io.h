@@ -30,8 +30,9 @@ latan_errno mat_save_plotdaterr(const mat dat, const mat sig,\
 /* propagator I/O */
 int hadron_getnt(const hadron h, const int source, const int sink,\
 				 const stringbuf manfname);
-latan_errno hadron_prop(mat* prop, const hadron h, const int source,\
-						const int sink, const stringbuf manfname);
+latan_errno hadron_propbin(mat* prop, const hadron h, const int source,	\
+						   const int sink, const stringbuf manfname,	\
+						   const size_t binsize);
 
 /* random generator state I/O */
 latan_errno randgen_save_state(const stringbuf prefname,\

@@ -287,8 +287,9 @@ int hadron_getnt(const hadron h, const int source, const int sink,\
 	return nt;
 }
 
-latan_errno hadron_prop(mat* prop, const hadron h, const int source,\
-						const int sink, const stringbuf manfname)
+latan_errno hadron_propbin(mat* prop, const hadron h, const int source,	\
+						   const int sink, const stringbuf manfname,	\
+						   const size_t binsize)
 {
 	int i,p,s;
 	size_t j;
@@ -296,6 +297,7 @@ latan_errno hadron_prop(mat* prop, const hadron h, const int source,\
 	size_t nt;
 	double mean;
 	mat* dat[MAXPROP][MAXQUARKST];
+	mat* prop_prebin;
 	stringbuf fullpropid,prop_mark,prop_idfmt;
 	latan_errno status;
 	
@@ -310,8 +312,11 @@ latan_errno hadron_prop(mat* prop, const hadron h, const int source,\
 		LATAN_ERROR("error while reading manifest file",LATAN_ESYSTEM);
 	}
 	
+	prop_prebin = mat_ar_create(ndat,nt,1);
+	
 	latan_get_prop_mark(prop_mark);
 	latan_get_prop_idfmt(prop_idfmt);
+	
 	for (p=0;p<chmix;p++)
 	{
 		for (s=0;s<stmix;s++)
@@ -319,46 +324,49 @@ latan_errno hadron_prop(mat* prop, const hadron h, const int source,\
 			dat[p][s] = mat_ar_create((size_t)(ndat),(size_t)(nt),1);
 			sprintf(fullpropid,prop_idfmt,h->channel[p],h->quarkst[s],source,\
 					sink);
+			latan_printf(DEBUG,"loading correlators with id %s %s...\n",\
+						 prop_mark,fullpropid);
 			LATAN_UPDATE_STATUS(status,mat_load_ar(dat[p][s],prop_mark,\
 												   fullpropid,manfname));
 		}
 	}
 	for (i=0;i<ndat;i++)
 	{
-		mat_zero(prop[i]);
+		mat_zero(prop_prebin[i]);
 		for (p=0;p<chmix;p++)
 		{
 			for (s=0;s<stmix;s++)
 			{
-				LATAN_UPDATE_STATUS(status,mat_eqadd(prop[i],dat[p][s][i]));
+				LATAN_UPDATE_STATUS(status,mat_eqadd(prop_prebin[i],dat[p][s][i]));
 			}
 		}
 		if ((h->chmix) == MEAN)
 		{
-			LATAN_UPDATE_STATUS(status,mat_eqmuls(prop[i],DRATIO(1,MAXPROP)));
+			LATAN_UPDATE_STATUS(status,mat_eqmuls(prop_prebin[i],DRATIO(1,MAXPROP)));
 		}
 		if ((h->stmix) == MEAN)
 		{
-			LATAN_UPDATE_STATUS(status,mat_eqmuls(prop[i],\
+			LATAN_UPDATE_STATUS(status,mat_eqmuls(prop_prebin[i],\
 												  DRATIO(1,MAXQUARKST)));
 		}
-		mat_eqabs(prop[i]);
+		mat_eqabs(prop_prebin[i]);
 	}
-	
 	if ((h->parity) == ODD)
 	{
 		for (i=0;i<ndat;i++)
 		{
 			for (j=1;j<nt/2;j++)
 			{
-				mean = 0.5*(mat_get(prop[i],(size_t)(j),0)	\
-							+ mat_get(prop[i],(size_t)(nt-j),0));
-				mat_set(prop[i],(size_t)(j),0,mean);
-				mat_set(prop[i],(size_t)(nt-j),0,mean);
+				mean = 0.5*(mat_get(prop_prebin[i],(size_t)(j),0)	\
+							+ mat_get(prop_prebin[i],(size_t)(nt-j),0));
+				mat_set(prop_prebin[i],(size_t)(j),0,mean);
+				mat_set(prop_prebin[i],(size_t)(nt-j),0,mean);
 			}
 		}
 	}
+	LATAN_UPDATE_STATUS(status,mat_ar_bin(prop,prop_prebin,ndat,binsize));
 	
+	mat_ar_destroy(prop_prebin,ndat);
 	for (p=0;p<chmix;p++)
 	{
 		for (s=0;s<stmix;s++)
@@ -366,6 +374,7 @@ latan_errno hadron_prop(mat* prop, const hadron h, const int source,\
 			mat_ar_destroy(dat[p][s],(size_t)(ndat));
 		}
 	}
+	
 	
 	return status;
 }

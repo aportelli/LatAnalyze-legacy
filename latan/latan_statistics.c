@@ -163,6 +163,31 @@ latan_errno mat_covp_m(mat cov, const mat* m, const mat* n, const size_t size,\
 	return status;
 }
 
+/*								data binning								*/
+/****************************************************************************/
+latan_errno mat_ar_bin(mat* bindat, const mat* dat, const size_t ndat,\
+					   const size_t binsize)
+{
+	size_t nbindat;
+	size_t i;
+	latan_errno status;
+	
+	if (ndat % binsize != 0)
+	{
+		LATAN_ERROR("bin size is not a divider of data number",LATAN_EBADLEN);
+	}
+	
+	nbindat = ndat/binsize;
+	status = LATAN_SUCCESS;
+	
+	for (i=0;i<nbindat;i++)
+	{
+		LATAN_UPDATE_STATUS(status,mat_mean(bindat[i],dat+i*binsize,binsize));
+	}
+	
+	return status;
+}
+
 /*								histogram									*/
 /****************************************************************************/
 latan_errno histogram(mat hist, const mat data, const double xmin,\

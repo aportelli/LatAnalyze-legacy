@@ -36,6 +36,10 @@ latan_errno mat_covp_m(mat cov, const mat* m, const mat* n, const size_t size,\
 #define mat_varp(var,m,size) mat_covp(var,m,m,size)
 #define mat_varp_m(var,m,size,mean) mat_covp_m(var,m,m,size,mean,mean)
 
+/* data binning */
+latan_errno mat_ar_bin(mat* bindat, const mat* dat, const size_t ndat,\
+					   const size_t binsize);
+
 /* histogram */
 latan_errno histogram(mat hist, const mat data, const double xmin,\
 					  const double xmax, const size_t nint);

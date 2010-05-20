@@ -5,6 +5,8 @@ AC_PREREQ([2.64])
 AC_INIT([LatAnalyze],[2.0beta],[antonin.portelli@gmail.com],[latan])
 AC_CONFIG_AUX_DIR([.buildutils])
 AC_CONFIG_SRCDIR([latan/latan_globals.c])
+AC_CONFIG_SRCDIR([utils/latan_info.c])
+AC_CONFIG_SRCDIR([examples/ex_mat.c])
 AC_CONFIG_MACRO_DIR([.buildutils/m4])
 AM_INIT_AUTOMAKE([-Wall -Werror])
 
@@ -43,6 +45,23 @@ AC_ARG_WITH([Minuit2],
 
 CFLAGS="$AM_CFLAGS $CFLAGS"
 LDFLAGS="$AM_LDFLAGS $LDFLAGS"
+
+# Get compilers informations
+AX_COMPILER_VENDOR
+AC_DEFINE_UNQUOTED([C_COMP_VENDOR],["$ax_cv_c_compiler_vendor"],
+			[vendor of C compiler that will compile the code])
+AC_LANG([C++])
+AX_COMPILER_VENDOR
+AC_DEFINE_UNQUOTED([CXX_COMP_VENDOR],["$ax_cv_cxx_compiler_vendor"],
+			[vendor of C++ compiler that will compile the code])
+AC_LANG([C])
+AX_GCC_VERSION
+AC_DEFINE_UNQUOTED([GCC_VERSION],["$GCC_VERSION"],
+			[version of gcc that will compile the code])
+AX_GXX_VERSION
+AC_DEFINE_UNQUOTED([GXX_VERSION],["$GXX_VERSION"],
+			[version of g++ that will compile the code])
+
 
 # Check for SSE
 AC_MSG_CHECKING([if CPU support SSE instructions])
@@ -102,5 +121,6 @@ AC_SUBST([LIBS])
 AC_SUBST([AM_CFLAGS])
 AC_SUBST([AM_LDFLAGS])
 
-AC_CONFIG_FILES([Makefile latan/Makefile doc/Makefile])
+AC_CONFIG_FILES([Makefile latan/Makefile utils/Makefile examples/Makefile \
+				doc/Makefile])
 AC_OUTPUT

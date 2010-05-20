@@ -416,6 +416,28 @@ latan_errno rs_finite_diff(mat res, const mat* dat, const size_t ndat,\
 	return status;
 }
 
+latan_errno rs_effmass(mat res, const mat* dat, const size_t ndat,\
+					   const size_t sampno, void* parity)
+{
+	latan_errno status;
+	mat mean;
+	int parityt;
+	size_t st_nothing;
+	
+	st_nothing = sampno;
+	status = LATAN_SUCCESS;
+	parityt = *((int*)(parity));
+	
+	mean = mat_create_from_dim(dat[0]);
+	
+	LATAN_UPDATE_STATUS(status,mat_mean(mean,dat,ndat));
+	LATAN_UPDATE_STATUS(status,effmass(res,mean,parityt));
+	
+	mat_destroy(mean);
+	
+	return status;
+}
+
 latan_errno rs_effmass_PCAC(mat res, const mat* dat, const size_t ndat,\
 							const size_t sampno, void* nothing)
 {

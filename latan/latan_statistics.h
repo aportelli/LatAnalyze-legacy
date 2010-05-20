@@ -71,6 +71,8 @@ latan_errno rs_mean(mat res, const mat* dat, const size_t ndat,\
 					const size_t sampno, void* nothing);
 latan_errno rs_finite_diff(mat res, const mat* dat, const size_t ndat,\
 						   const size_t sampno, void* nothing);
+latan_errno rs_effmass(mat res, const mat* dat, const size_t ndat,\
+					   const size_t sampno, void* parity);
 latan_errno rs_effmass_PCAC(mat res, const mat* dat, const size_t ndat,\
 							const size_t sampno, void* nothing);
 

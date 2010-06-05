@@ -41,6 +41,9 @@ latan_errno randgen_load_state(randgen_state state, const stringbuf prefname);
 
 /* reampled sample I/O */
 latan_errno rs_sample_save(const rs_sample s, const stringbuf f_name);
+int rs_sample_load_nrow(const stringbuf f_name);
+int rs_sample_load_nsample(const stringbuf f_name);
+int rs_sample_load_method(const stringbuf f_name);
 latan_errno rs_sample_load(rs_sample s, const stringbuf f_name);
 
 __END_DECLS

@@ -383,7 +383,6 @@ latan_errno hadron_propbin(mat* prop, const hadron h, const ss_no source,	\
 }
 /*						random generator state I/O							*/
 /****************************************************************************/
-
 latan_errno randgen_save_state(const stringbuf f_name,\
 							   const randgen_state state)
 {
@@ -405,18 +404,17 @@ latan_errno randgen_save_state(const stringbuf f_name,\
 
 latan_errno randgen_load_state(randgen_state state, const stringbuf f_name)
 {
-	stringbuf full_f_name,errmsg;
+	stringbuf errmsg;
 	FILE *f;
 	size_t i;
 	
-	sprintf(full_f_name,"%s.rand",f_name);
-	FOPEN(f,full_f_name,"r");
+	FOPEN(f,f_name,"r");
 	for (i=0;i<RLXG_STATE_SIZE;i++)
 	{
 		if(fscanf(f,"%d ",state+i)<0)
 		{
 			sprintf(errmsg,"error while reading generator state component %lu in file %s",\
-					(unsigned long)i,full_f_name);
+					(unsigned long)i,f_name);
 			LATAN_ERROR(errmsg,LATAN_ELATSYN);
 		}
 	}
@@ -444,13 +442,16 @@ latan_errno rs_sample_save(const rs_sample s, const stringbuf f_name)
 		case JACK:
 			sprintf(full_f_name,"%s.jack",f_name);
 			break;
+		case GENERIC:
+			sprintf(full_f_name,"%s.rs",f_name);
+			break;
 		default:
 			LATAN_ERROR("resampling method flag invalid",LATAN_EINVAL);
 			break;
 	}
 	FOPEN(f,full_f_name,"w");
-	fprintf(f,"%s %lu %lu\n",s->name,(unsigned long)sample_nrow,\
-			(unsigned long)s->nsample);
+	fprintf(f,"%s %lu %lu %d\n",s->name,(unsigned long)sample_nrow,\
+			(unsigned long)s->nsample,s->resamp_method);
 	for (i=0;i<sample_nrow;i++)
 	{
 		fprintf(f,"%.10e ",mat_get(s->cent_val,i,0));
@@ -465,6 +466,166 @@ latan_errno rs_sample_save(const rs_sample s, const stringbuf f_name)
 	{
 		randgen_save_state(f_name,s->gen_state);
 	}
+	
+	return LATAN_SUCCESS;
+}
+
+int rs_sample_load_nrow(const stringbuf f_name)
+{
+	FILE* f;
+	stringbuf dumstr,errmsg;
+	int s_nrow;
+	
+	FOPEN(f,f_name,"r");
+	sprintf(errmsg,"error while reading sample dimension in file %s",f_name);
+	if (fscanf(f,"%s ",dumstr)<0)
+	{
+		LATAN_ERROR(errmsg,LATAN_FAILURE);
+	}
+	if (fscanf(f,"%d ",&s_nrow)<0)
+	{
+		LATAN_ERROR(errmsg,LATAN_FAILURE);
+	}
+	fclose(f);
+	
+	return s_nrow;
+}
+
+int rs_sample_load_nsample(const stringbuf f_name)
+{
+	FILE* f;
+	stringbuf dumstr,errmsg;
+	int nsample;
+	
+	FOPEN(f,f_name,"r");
+	sprintf(errmsg,"error while reading number of sample in file %s",f_name);
+	if (fscanf(f,"%s ",dumstr)<0)
+	{
+		LATAN_ERROR(errmsg,LATAN_FAILURE);
+	}
+	if (fscanf(f,"%d ",&nsample)<0)
+	{
+		LATAN_ERROR(errmsg,LATAN_FAILURE);
+	}
+	if (fscanf(f,"%d ",&nsample)<0)
+	{
+		LATAN_ERROR(errmsg,LATAN_FAILURE);
+	}
+	fclose(f);
+	
+	return nsample;
+}
+
+int rs_sample_load_method(const stringbuf f_name)
+{
+	FILE* f;
+	stringbuf dumstr,errmsg;
+	int method;
+	
+	FOPEN(f,f_name,"r");
+	sprintf(errmsg,"error while reading resampling method in file %s",f_name);
+	if (fscanf(f,"%s ",dumstr)<0)
+	{
+		LATAN_ERROR(errmsg,LATAN_FAILURE);
+	}
+	if (fscanf(f,"%d ",&method)<0)
+	{
+		LATAN_ERROR(errmsg,LATAN_FAILURE);
+	}
+	if (fscanf(f,"%d ",&method)<0)
+	{
+		LATAN_ERROR(errmsg,LATAN_FAILURE);
+	}
+	if (fscanf(f,"%d\n",&method)<0)
+	{
+		LATAN_ERROR(errmsg,LATAN_FAILURE);
+	}
+	fclose(f);
+	
+	return method;
+}
+
+latan_errno rs_sample_load(rs_sample s, const stringbuf f_name)
+{
+	FILE* f;
+	size_t i,j;
+	stringbuf dumstr,errmsg;
+	double dbuf;
+	int ibuf;
+	mat pt;
+	
+	FOPEN(f,f_name,"r");
+	if (fscanf(f,"%s ",dumstr)<0)
+	{
+		sprintf(errmsg,"error while reading sample name in file %s",f_name);
+		LATAN_ERROR(errmsg,LATAN_ELATSYN);
+	}
+	strcpy(s->name,dumstr);
+	if (fscanf(f,"%d ",&ibuf)<0)
+	{
+		sprintf(errmsg,"error while reading sample dimension in file %s",\
+				f_name);
+		LATAN_ERROR(errmsg,LATAN_ELATSYN);
+	}
+	if ((size_t)ibuf != nrow(s->cent_val))
+	{
+		sprintf(errmsg,"sample dimension (%d) in file %s is invalid",ibuf,\
+				f_name);
+		LATAN_ERROR(errmsg,LATAN_EBADLEN);
+	}
+	if (fscanf(f,"%d ",&ibuf)<0)
+	{
+		sprintf(errmsg,"error while reading number of sample in file %s",\
+				f_name);
+		LATAN_ERROR(errmsg,LATAN_ELATSYN);
+	}
+	if ((size_t)ibuf != s->nsample)
+	{
+		sprintf(errmsg,"number of sample (%d) in file %s is invalid",ibuf,\
+				f_name);
+		LATAN_ERROR(errmsg,LATAN_EBADLEN);
+	}
+	if (fscanf(f,"%d\n",&ibuf)<0)
+	{
+		sprintf(errmsg,"error while reading resampling method in file %s",\
+				f_name);
+		LATAN_ERROR(errmsg,LATAN_ELATSYN);
+	}
+	if (s->resamp_method != GENERIC)
+	{
+		LATAN_WARNING("resampled sample to load do not have GENERIC method",\
+					  LATAN_EINVAL);
+	}
+	for (i=0;i<nrow(s->cent_val);i++)
+	{
+		for (j=0;j<s->nsample;j++)
+		{
+			if (fscanf(f,"%lf ",&dbuf)<0)
+			{
+				sprintf(errmsg,"error reading component %lu of sample %lu in file %s",\
+						(unsigned long)i,(unsigned long)j,f_name);
+				LATAN_ERROR(errmsg,LATAN_ELATSYN);
+			}
+			if (j == 0)
+			{
+				pt = s->cent_val;
+			}
+			else
+			{
+				pt = s->sample[j-1];
+			}
+			mat_set(pt,i,0,dbuf);
+		}
+		j = s->nsample;
+		if (fscanf(f,"%lf\n",&dbuf)<0)
+		{
+			sprintf(errmsg,"error reading component %lu of sample %lu in file %s",\
+					(unsigned long)i,(unsigned long)j,f_name);
+			LATAN_ERROR(errmsg,LATAN_ELATSYN);
+		}
+		mat_set(s->sample[j-1],i,0,dbuf);
+	}
+	fclose(f);
 	
 	return LATAN_SUCCESS;
 }

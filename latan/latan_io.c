@@ -4,7 +4,6 @@
 
 /*							general I/O										*/
 /****************************************************************************/
-
 int get_nfile(const stringbuf manifestfname)
 {
 	stringbuf buf1, buf2;
@@ -41,7 +40,6 @@ latan_errno get_firstfname(stringbuf fname, const stringbuf manifestfname)
 
 /*								mat I/O										*/
 /****************************************************************************/
-
 void mat_dump(FILE* stream, const mat m)
 {
 	size_t i,j;
@@ -272,23 +270,26 @@ latan_errno mat_save_plotdaterr(const mat dat, const mat sig,				\
 
 /*							propagator I/O									*/
 /****************************************************************************/
-int hadron_getnt(const hadron h, const int source, const int sink,\
+int hadron_getnt(const hadron h, const ss_no source, const ss_no sink,\
 				 const stringbuf manfname)
 {
-	stringbuf ffname,fullpropid,prop_mark,prop_idfmt;
+	stringbuf ffname,fullpropid,prop_mark,prop_idfmt,source_id,sink_id;
 	int nt;
 	
 	latan_get_prop_mark(prop_mark);
 	latan_get_prop_idfmt(prop_idfmt);
+	ss_id_get(source_id,source);
+	ss_id_get(sink_id,sink);
 	get_firstfname(ffname,manfname);
-	sprintf(fullpropid,prop_idfmt,h->channel[0],h->quarkst[0],source,sink);
+	sprintf(fullpropid,prop_idfmt,h->channel[0],h->quarkst[0],source_id,\
+			sink_id);
 	nt = mat_load_nrow(prop_mark,fullpropid,ffname);
 	
 	return nt;
 }
 
-latan_errno hadron_propbin(mat* prop, const hadron h, const int source,	\
-						   const int sink, const stringbuf manfname,	\
+latan_errno hadron_propbin(mat* prop, const hadron h, const ss_no source,	\
+						   const ss_no sink, const stringbuf manfname,	\
 						   const size_t binsize)
 {
 	int i,p,s;
@@ -298,7 +299,7 @@ latan_errno hadron_propbin(mat* prop, const hadron h, const int source,	\
 	double mean;
 	mat* dat[MAXPROP][MAXQUARKST];
 	mat* prop_prebin;
-	stringbuf fullpropid,prop_mark,prop_idfmt;
+	stringbuf fullpropid,prop_mark,prop_idfmt,source_id,sink_id;
 	latan_errno status;
 	
 	nt		= nrow(prop[0]);
@@ -316,14 +317,16 @@ latan_errno hadron_propbin(mat* prop, const hadron h, const int source,	\
 	
 	latan_get_prop_mark(prop_mark);
 	latan_get_prop_idfmt(prop_idfmt);
+	ss_id_get(source_id,source);
+	ss_id_get(sink_id,sink);
 	
 	for (p=0;p<chmix;p++)
 	{
 		for (s=0;s<stmix;s++)
 		{
 			dat[p][s] = mat_ar_create((size_t)(ndat),(size_t)(nt),1);
-			sprintf(fullpropid,prop_idfmt,h->channel[p],h->quarkst[s],source,\
-					sink);
+			sprintf(fullpropid,prop_idfmt,h->channel[p],h->quarkst[s],\
+					source_id, sink_id);
 			latan_printf(DEBUG,"loading correlators with id %s %s...\n",\
 						 prop_mark,fullpropid);
 			LATAN_UPDATE_STATUS(status,mat_load_ar(dat[p][s],prop_mark,\

@@ -86,7 +86,8 @@ quark_no quark_no_get(const char c)
 {
 	quark_no res;
 	
-	switch (c) {
+	switch (c)
+	{
 		case 'l':
 			res = qu_l;
 			break;
@@ -210,6 +211,11 @@ void hadron_set_2q_2stmean(hadron h, const stringbuf name, const int parity,\
 	channel_id_get(h->channel[0],channel);
 	diquark_id_get(h->quarkst[0],q11,q12);
 	diquark_id_get(h->quarkst[1],q21,q22);
+}
+
+void hadron_get_name(stringbuf str, const hadron h)
+{
+	strcpy(str,h->name);
 }
 
 /* spectrum */

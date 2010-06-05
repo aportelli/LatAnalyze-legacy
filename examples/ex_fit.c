@@ -30,10 +30,10 @@ int main(void)
 	d = fit_data_create(NDATA);
 	
 	randgen_init_from_time();
-	mat_set(real_param,0,0,5.0);
-	mat_set(real_param,1,0,0.5);
-	mat_set(fit_param,0,0,6.1);
-	mat_set(fit_param,1,0,0.32);
+	mat_set(real_param,0,0,0.5);
+	mat_set(real_param,1,0,5.0);
+	mat_set(fit_param,0,0,0.32);
+	mat_set(fit_param,1,0,6.1);
 	mat_cst(var,SQ(ERR));
 	fit_data_set_model(d,&fm_expdec);
 	fit_data_set_var(d,var);

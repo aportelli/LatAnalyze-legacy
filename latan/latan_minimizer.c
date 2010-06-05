@@ -391,7 +391,8 @@ latan_errno fit_data_mass_fit_tune(fit_data d, mat fit_init, const mat prop,\
 	}
 	
 	/* searching mass plateaux */
-	latan_printf(VERB,"searching mass plateaux...\n");
+	latan_printf(VERB,"searching mass plateaux in range [1,%lu]...\n",
+				 (long unsigned)ntmax);
 	em_plat = search_plat(&nplat,em,sigem,ntmax-1,NSIGMA,PLAT_TOL);
 	
 	/* setting points to fit */
@@ -407,6 +408,7 @@ latan_errno fit_data_mass_fit_tune(fit_data d, mat fit_init, const mat prop,\
 	latan_printf(VERB,"fit ranges set to : %s\n",ranges);
 	
 	/* setting initial fit parameters */
+	latan_printf(VERB,"searching initial parameter values...\n");
 	mem = 0.0;
 	for (p=0;p<nplat;p++)
 	{
@@ -427,6 +429,7 @@ latan_errno fit_data_mass_fit_tune(fit_data d, mat fit_init, const mat prop,\
 			LATAN_ERROR("wrong parity flag",LATAN_EINVAL);
 			break;
 	}
+	latan_printf(VERB,"prefactor = %e mass = %e\n",pref,mem);
 	mat_set(fit_init,1,0,pref);
 	mat_set(fit_init,0,0,mem);
 	
@@ -524,7 +527,10 @@ latan_errno rs_sample_fit(rs_sample fit_param, rs_sample data, fit_data d)
 	mat_cp(fit_data_pt_data(d),rs_sample_pt_cent_val(data));
 	LATAN_UPDATE_STATUS(status,data_fit(rs_sample_pt_cent_val(fit_param),d));
 	fit_data_save_chi2pdof(d,false);
-	latan_set_verb(QUIET);
+	if (verb_backup != DEBUG)
+	{
+		latan_set_verb(QUIET);
+	}
 	for (i=0;i<rs_sample_get_nsample(data);i++)
 	{
 		mat_cp(fit_data_pt_data(d),rs_sample_pt_sample(data,i));

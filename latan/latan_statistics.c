@@ -517,19 +517,18 @@ latan_errno rs_data_fit(mat res, const mat* dat, const size_t ndat,\
 	
 	LATAN_UPDATE_STATUS(status,mat_mean(mprop,dat,ndat));
 	mat_cp(fit_data_pt_data(dt),mprop);
-	if (sampno > 0)
+	if ((verb_backup != DEBUG)&&(sampno > 0))
 	{
 		latan_set_verb(QUIET);
 	}
 	LATAN_UPDATE_STATUS(status,data_fit(res,dt));
-	if (sampno > 0)
-	{
-		latan_set_verb(verb_backup);
-	}
+	latan_set_verb(verb_backup);
 	if (sampno == 0)
 	{
 		chi2pdof = dt->chi2pdof;
 	}
+	latan_printf(DEBUG,"sample %lu fit chi2/dof : %e\n",\
+				 (long unsigned)sampno,dt->chi2pdof);
 	dt->chi2pdof = chi2pdof;
 	
 	mat_destroy(mprop);

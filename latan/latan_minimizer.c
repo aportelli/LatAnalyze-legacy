@@ -355,7 +355,7 @@ latan_errno fit_data_mass_fit_tune(fit_data d, mat fit_init, const mat prop,\
 	const fit_model* model;
 	
 	nt    = nrow(em) + 2;
-	ntmax = nt/2;
+	ntmax = (parity == EVEN) ? nt/2 : nt-2;
 	
 	/* setting fit model */
 	switch (parity)
@@ -507,6 +507,12 @@ latan_errno rs_sample_fit(rs_sample fit_param, rs_sample data, fit_data d)
 	bool save_chi2pdof_backup;
 	int verb_backup;
 	
+	if (rs_sample_get_method(fit_param) != GENERIC)
+	{
+		LATAN_WARNING("resampled sample fit result do not have GENERIC method",\
+					  LATAN_EINVAL);
+	}
+	
 	save_chi2pdof_backup = d->save_chi2pdof;
 	verb_backup = latan_get_verb();
 	status = LATAN_SUCCESS;
@@ -526,6 +532,8 @@ latan_errno rs_sample_fit(rs_sample fit_param, rs_sample data, fit_data d)
 	}
 	fit_data_save_chi2pdof(d,save_chi2pdof_backup);
 	latan_set_verb(verb_backup);
+	
+	mat_destroy(datavar);
 	
 	return status;
 }

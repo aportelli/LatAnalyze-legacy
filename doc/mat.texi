@@ -1,0 +1,44 @@
+This chapter explains how to manipulate the matrix type defined
+in LatAnalyze that is the main numerical data type of the
+library. All non trivial operations (matrix product,
+inversion...) are performed at low level by the @acronym{CBLAS}
+library. The performance of the functions described here
+will greatly depend of the optimization level of the 
+ @acronym{CBLAS} binary linked to LatAnalyze at installation
+ time.
+
+@menu
+* Definition::
+* Allocation::
+* Access::
+* Tests::
+* Operations::
+* Linear algebra::
+@end menu
+
+@node Definition, Allocation, , Matrices
+@section Definition
+@cindex matrix type
+@tindex mat
+
+@node Allocation, Access, Definition, Matrices
+@section Allocation
+@cindex matrix allocation
+
+@node Access, Tests, Allocation, Matrices
+@section Access
+@cindex matrix access
+
+@node Tests, Operations, Access, Matrices
+@section Tests
+@cindex matrix tests
+
+@node Operations, Linear algebra, Tests, Matrices
+@section Operations
+@cindex matrix operations
+
+@node Linear algebra, , Operations, Matrices
+@section Linear Algebra
+@cindex matrix inversion
+@cindex matrix diagonalization
+

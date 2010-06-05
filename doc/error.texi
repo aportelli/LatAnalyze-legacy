@@ -29,12 +29,16 @@ an argument out of its definition domain.
 @end deftypevr
 @deftypevr Macro int LATAN_EFAULT @code{= 3}
 Invalid pointer; used to indicate that an invalid pointer (like
-@code{NULL}) was encountered during the function call. This error
-almost always happens after an allocation error.
+@code{NULL}) was encountered during the function call.
 @end deftypevr
 @deftypevr Macro int LATAN_EINVAL @code{= 4}
 Invalid argument; used when an invalid argument was specified by
 user (@i{e.g.} unknown flag).
+@end deftypevr
+@deftypevr Macro int LATAN_ENOMEM @code{= 8}
+@code{malloc} call failed; used when a @code{NULL} pointer is obtained after an
+allocation request, in almost all cases it means that the system is
+out of memory.
 @end deftypevr
 
 @node Error handler, , Error codes, Error handling
@@ -56,7 +60,13 @@ void handler(const char* reason,
 @end example
 @end deftp
 
-@deftypefun latan_error_handler_t* latan_set_error_handler_off (void)
-This function desactivate LatAnalyze error handler and return a
-pointer on the current handler.
+@deftypefun latan_error_handler_t* latan_set_error_handler (latan_error_handler_t* new_handler)
+This function set the error handler to @var{new_handler} and return
+the previous one.
 @end deftypefun
+
+@deftypefun latan_error_handler_t* latan_set_error_handler_off (void)
+This function desactivate LatAnalyze error handler and return the 
+current handler.
+@end deftypefun
+

@@ -62,6 +62,7 @@ This manual is for LatAnalyze, version 2.0.
 
 @node Matrices, Random generator, Error handling, Top
 @chapter Matrices
+@include mat.texi
 
 @node Random generator, Statistical analysis, Matrices, Top
 @chapter Random generator

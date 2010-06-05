@@ -23,15 +23,15 @@ __BEGIN_DECLS
 #define NCHANNEL 9
 typedef enum
 {
-	ch_SS		= 0,
-	ch_VV		= 1,
-	ch_PP		= 2,
-	ch_PA		= 3,
-	ch_AP		= 4,
-	ch_AA		= 5,
-	ch_N		= 6,
-	ch_Lambda	= 7,
-	ch_Delta	= 8
+	ch_SS		= 0,	/* scalar			-> scalar			*/
+	ch_VV		= 1,	/* vector			-> vector			*/
+	ch_PP		= 2,	/* pseudoscalar		-> pseudoscalar		*/
+	ch_PA		= 3,	/* pseudoscalar		-> axial			*/
+	ch_AP		= 4,	/* axial			-> pseudoscalar		*/
+	ch_AA		= 5,	/* axial			-> axial			*/
+	ch_N		= 6,	/* nucleon-like		-> nucleon-like		*/
+	ch_Lambda	= 7,	/* Lambda-like		-> Lambda-like		*/
+	ch_Delta	= 8		/* Delta-like		-> Delta-like		*/
 } channel_no;
 
 channel_no channel_no_get(const stringbuf label);
@@ -42,10 +42,10 @@ void channel_id_get(stringbuf str, const channel_no i);
 #define NQUARK 4
 typedef enum
 {
-	qu_l	= 0,
-	qu_u	= 1,
-	qu_d	= 2,
-	qu_s	= 3
+	qu_l	= 0,	/* light	*/
+	qu_u	= 1,	/* up		*/
+	qu_d	= 2,	/* down		*/
+	qu_s	= 3		/* strange	*/
 } quark_no;
 
 quark_no quark_no_get(const char c);
@@ -91,6 +91,7 @@ void hadron_set_2q_2stmean(hadron h, const stringbuf name, const int parity,\
 						   const channel_no channel, const quark_no q11,	\
 						   const quark_no q12, const quark_no q21,			\
 						   const quark_no q22);
+void hadron_get_name(stringbuf str, const hadron h);
 
 /* isohadron structure */
 typedef struct

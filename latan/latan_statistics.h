@@ -5,6 +5,7 @@
 
 #define BOOT 0
 #define JACK 1
+#define GENERIC 2
 
 __BEGIN_DECLS
 
@@ -50,10 +51,13 @@ rs_sample rs_sample_create_boot(const size_t init_nrow, const size_t nboot,\
 								const stringbuf name);
 rs_sample rs_sample_create_jack(const size_t init_nrow, const size_t ndat,\
 								const size_t jk_depth, const stringbuf name);
+rs_sample rs_sample_create(const size_t init_nrow, const size_t nsample,\
+						   const stringbuf name);
 void rs_sample_destroy(rs_sample s);
 
 /** access **/
 size_t rs_sample_get_nsample(const rs_sample s);
+int rs_sample_get_method(const rs_sample s);
 mat rs_sample_pt_cent_val(const rs_sample s);
 mat rs_sample_pt_sample(const rs_sample s, const size_t i);
 

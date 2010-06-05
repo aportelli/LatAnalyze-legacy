@@ -128,6 +128,47 @@ void triquark_id_get(stringbuf str, const quark_no i1, const quark_no i2,\
 	sprintf(str,"%s%s%s",quark_id[i1],quark_id[i2],quark_id[i3]);
 }
 
+/* sources/sinks */
+static stringbuf ss_id[] =
+{
+	"0",
+	"1",
+	"2"
+};
+
+ss_no ss_no_get(const char c)
+{
+	ss_no res;
+	
+	switch (c)
+	{
+		case 'P':
+			res = ss_P;
+			break;
+		case 'W':
+			res = ss_W;
+			break;
+		case 'G':
+			res = ss_G;
+			break;
+		default:
+			LATAN_ERROR("wrong source/sink name",LATAN_FAILURE);
+			break;
+	}
+	
+	return res;
+}
+
+void ss_id_set(const ss_no i, const stringbuf new_id)
+{
+	strcpy(ss_id[i],new_id);
+}
+
+void ss_id_get(stringbuf str, const ss_no i)
+{
+	strcpy(str,ss_id[i]);
+}
+
 /* hadron */
 /** allocation **/
 hadron hadron_create(void)

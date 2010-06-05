@@ -55,6 +55,19 @@ void diquark_id_get(stringbuf str, const quark_no i1, const quark_no i2);
 void triquark_id_get(stringbuf str, const quark_no i1, const quark_no i2,\
 					 const quark_no i3);
 
+/* sources/sinks */
+#define NSS 3
+typedef enum
+{
+	ss_P	= 0,	/* point	*/
+	ss_W	= 1,	/* wall		*/
+	ss_G	= 2		/* gaussian	*/
+} ss_no;
+
+ss_no ss_no_get(const char c);
+void ss_id_set(const ss_no i, const stringbuf new_id);
+void ss_id_get(stringbuf str, const ss_no i);
+
 /* hadron structure */
 typedef struct
 {

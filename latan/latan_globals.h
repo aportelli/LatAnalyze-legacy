@@ -69,7 +69,7 @@ __END_DECLS
 	pt = (typ)(malloc((size_t)(size)*sizeof(*pt)));\
 	if (pt == NULL)\
 	{\
-		LATAN_ERROR("memory allocation failed",LATAN_EFAULT);\
+		LATAN_ERROR("memory allocation failed",LATAN_ENOMEM);\
 	}\
 }
 #define MALLOC_ERRVAL(pt,typ,size,value)\
@@ -77,7 +77,7 @@ __END_DECLS
 	pt = (typ)(malloc((size_t)(size)*sizeof(*pt)));\
 	if (pt == NULL)\
 	{\
-		LATAN_ERROR_VAL("memory allocation failed",LATAN_EFAULT,value);\
+		LATAN_ERROR_VAL("memory allocation failed",LATAN_ENOMEM,value);\
 	}\
 }
 #define MALLOC_NOERRET(pt,typ,size)\
@@ -85,7 +85,7 @@ __END_DECLS
 	pt = (typ)(malloc((size_t)(size)*sizeof(*pt)));\
 	if (pt == NULL)\
 	{\
-		LATAN_ERROR_NORET("memory allocation failed",LATAN_EFAULT);\
+		LATAN_ERROR_NORET("memory allocation failed",LATAN_ENOMEM);\
 	}\
 }
 #define REALLOC(pt,pt_old,typ,size)\
@@ -93,7 +93,7 @@ __END_DECLS
 	pt = (typ)(realloc(pt_old,(size_t)(size)*sizeof(*pt)));\
 	if (pt == NULL)\
 	{\
-		LATAN_ERROR("memory allocation failed",LATAN_EFAULT);\
+		LATAN_ERROR("memory allocation failed",LATAN_ENOMEM);\
 	}\
 }
 #define REALLOC_ERRVAL(pt,pt_old,typ,size,value)\
@@ -101,7 +101,7 @@ __END_DECLS
 	pt = (typ)(realloc(pt_old,(size_t)(size)*sizeof(*pt)));\
 	if (pt == NULL)\
 	{\
-		LATAN_ERROR_VAL("memory allocation failed",LATAN_EFAULT,value);\
+		LATAN_ERROR_VAL("memory allocation failed",LATAN_ENOMEM,value);\
 	}\
 }
 #define REALLOC_NOERRET(pt,pt_old,typ,size)\
@@ -109,7 +109,7 @@ __END_DECLS
 	pt = (typ)(realloc(pt_old,(size_t)(size)*sizeof(*pt)));\
 	if (pt == NULL)\
 	{\
-		LATAN_ERROR_NORET("memory allocation failed",LATAN_EFAULT);\
+		LATAN_ERROR_NORET("memory allocation failed",LATAN_ENOMEM);\
 	}\
 }
 #define FREE(pt)\

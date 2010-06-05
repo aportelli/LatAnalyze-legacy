@@ -276,17 +276,39 @@ rs_sample rs_sample_create_jack(const size_t init_nrow, const size_t ndat,\
 	return s;
 }
 
+rs_sample rs_sample_create(const size_t init_nrow, const size_t nsample,\
+						   const stringbuf name)
+{
+	rs_sample s;
+	
+	MALLOC_ERRVAL(s,rs_sample,1,NULL);
+	
+	s->nsample = nsample;
+	strcpy(s->name,name);
+	s->resamp_method = GENERIC;
+	
+	s->cent_val = mat_create(init_nrow,1);
+	s->sample = mat_ar_create_from_dim(s->nsample,s->cent_val);
+	
+	return s;
+}
+
 void rs_sample_destroy(rs_sample s)
 {
 	mat_destroy(s->cent_val);
 	mat_ar_destroy(s->sample,s->nsample);
-	s->nsample = 0;
+	FREE(s);
 }
 
 /** access **/
 size_t rs_sample_get_nsample(const rs_sample s)
 {
 	return s->nsample;
+}
+
+int rs_sample_get_method(const rs_sample s)
+{
+	return s->resamp_method;
 }
 
 mat rs_sample_pt_cent_val(const rs_sample s)

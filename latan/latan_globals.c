@@ -12,26 +12,20 @@ typedef struct
 } latan_env;
 
 #ifdef HAVE_MINUIT2
-static latan_env env = 
-{
-	PACKAGE_NAME,		\
-	PACKAGE_VERSION,	\
-	QUIET,				\
-	MINUIT,				\
-	"PROP",				\
-	"%s_%s_%d_%d"
-};
+#define DEFMIN MINUIT
 #else
+#define DEFMIN GSL
+#endif
+
 static latan_env env = 
 {
 	PACKAGE_NAME,		\
 	PACKAGE_VERSION,	\
 	QUIET,				\
-	GSL,				\
+	DEFMIN,				\
 	"PROP",				\
-	"%s_%s_%d_%d"
+	"%s_%s_%s_%s"
 };
-#endif
 
 void latan_get_name(stringbuf name)
 {

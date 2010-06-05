@@ -220,8 +220,7 @@ void plot_add_plot(plot p, const stringbuf cmd)
 	strcpy(p->plotbuf[p->nplot-1],cmd);
 }
 
-void plot_add_dat(plot p, const mat dat, const double start, const double step,\
-				  const stringbuf title)
+void plot_add_dat(plot p, const mat x, const mat dat, const stringbuf title)
 {
 	FILE* tmpf;
 	stringbuf tmpfname, plotcmd;
@@ -232,7 +231,7 @@ void plot_add_dat(plot p, const mat dat, const double start, const double step,\
 	FOPEN_NOERRET(tmpf,tmpfname,"w");
 	for (i=0;i<nrow(dat);i++)
 	{
-		fprintf(tmpf,"%.10e %.10e\n",start+(double)(i)*step,mat_get(dat,i,0));
+		fprintf(tmpf,"%.10e %.10e\n",mat_get(x,i,0),mat_get(dat,i,0));
 	}
 	fclose(tmpf);
 	plot_add_tmpf(p,tmpfname);
@@ -240,8 +239,8 @@ void plot_add_dat(plot p, const mat dat, const double start, const double step,\
 	plot_add_plot(p,plotcmd);
 }
 
-void plot_add_daterr(plot p, const mat dat, const mat err, const double start,\
-					const double step, const stringbuf title)
+void plot_add_daterr(plot p, const mat x, const mat dat, const mat err, \
+					 const stringbuf title)
 {
 	FILE* tmpf;
 	stringbuf tmpfname, plotcmd;
@@ -252,7 +251,7 @@ void plot_add_daterr(plot p, const mat dat, const mat err, const double start,\
 	FOPEN_NOERRET(tmpf,tmpfname,"w");
 	for (i=0;i<nrow(dat);i++)
 	{
-		fprintf(tmpf,"%.10e %.10e %.10e\n",start+(double)(i)*step,\
+		fprintf(tmpf,"%.10e %.10e %.10e\n",mat_get(x,i,0),\
 				mat_get(dat,i,0),mat_get(err,i,0));
 	}
 	fclose(tmpf);

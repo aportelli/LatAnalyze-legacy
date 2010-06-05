@@ -140,9 +140,27 @@ latan_errno mat_set_diag(mat m, const mat diag)
 		LATAN_ERROR("trying to set the diagonal of a matrix with invalid dimensions",\
 					LATAN_EBADLEN);
 	}
+	
 	for (i=0;i<min_dim;i++)
 	{
 		mat_set(m,i,i,mat_get(diag,i,0));
+	}
+	
+	return LATAN_SUCCESS;
+}
+
+latan_errno mat_set_step(mat m, const double x0, const double step)
+{
+	size_t i;
+	
+	if (ncol(m) > 1)
+	{
+		LATAN_ERROR("step matrix output is not a column vector",LATAN_EBADLEN);
+	}
+	
+	for (i=0;i<nrow(m);i++)
+	{
+		mat_set(m,i,0,x0+((double)(i))*step);
 	}
 	
 	return LATAN_SUCCESS;

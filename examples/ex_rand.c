@@ -21,12 +21,13 @@ int main(void)
 	int i,f;
 	double randd;
 	randgen_state state;
-	mat rseq, hist_cont;
+	mat rseq, hist_cont, x;
 	plot dist_plot;
 	stringbuf plotcmd;
 	
 	rseq = mat_create(DIS_SEQ_LENGTH,1);
 	hist_cont = mat_create(HIST_CONT_NINT,1);
+	x = mat_create(HIST_CONT_NINT,1);
 	
 	printf("- GENERATOR STATE I/O TESTS\n");
 	randgen_init_from_time();
@@ -47,7 +48,7 @@ int main(void)
 	randgen_init_from_time();
 	randgen_get_state(state);
 	printf("-- reloading state from ex_rand.rand...\n");
-	randgen_load_state(state,"ex_rand");
+	randgen_load_state(state,"ex_rand.rand");
 	randgen_set_state(state);
 	printf("-- generating a %d steps random sequence...\n",GENTEST_SEQ_LENGTH);
 	for (i=0;i<GENTEST_SEQ_LENGTH;i++) 
@@ -93,8 +94,8 @@ int main(void)
 	mat_eqmuls(hist_cont,\
 			   1.0/DIS_SEQ_LENGTH*HIST_CONT_NINT/(2.0*GAUSS_HIST_MAX));
 	dist_plot = plot_create();
-	plot_add_dat(dist_plot,hist_cont,-GAUSS_HIST_MAX,\
-				 2.0*GAUSS_HIST_MAX/HIST_CONT_NINT,"rand_n distribution");
+	mat_set_step(x,-GAUSS_HIST_MAX,2.0*GAUSS_HIST_MAX/HIST_CONT_NINT);
+	plot_add_dat(dist_plot,x,hist_cont,"rand_n distribution");
 	sprintf(plotcmd,"exp(-(x-%e)**2/(2.0*%e))/%e title \"theoretical distribution\"",\
 			GAUSS_MU,SQ(GAUSS_SIG),sqrt(2*C_PI)*GAUSS_SIG);
 	plot_add_plot(dist_plot,plotcmd);
@@ -103,6 +104,7 @@ int main(void)
 	
 	mat_destroy(rseq);
 	mat_destroy(hist_cont);
+	mat_destroy(x);
 	
 	return EXIT_SUCCESS;
 }

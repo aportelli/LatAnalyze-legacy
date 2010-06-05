@@ -62,10 +62,9 @@ void plot_set_ylabel(plot p, const stringbuf xlabel);
 
 /* plot functions */
 void plot_add_plot(plot p, const stringbuf cmd);
-void plot_add_dat(plot p, const mat dat, const double start, const double step,\
-				  const stringbuf title);
-void plot_add_daterr(plot p, const mat dat, const mat err, const double start,\
-					 const double step, const stringbuf title);
+void plot_add_dat(plot p, const mat x, const mat dat, const stringbuf title);
+void plot_add_daterr(plot p, const mat x, const mat dat, const mat err, \
+					 const stringbuf title);
 void plot_add_hline(plot p, const double y, const stringbuf style,\
 					const stringbuf color);
 void plot_add_hlineerr(plot p, const double y, const double err,		\

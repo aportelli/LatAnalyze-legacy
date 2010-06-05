@@ -2,7 +2,7 @@
 #include <latan/latan_includes.h>
 
 #ifndef INIT_RERROR
-#define INIT_RERROR 0.25
+#define INIT_RERROR 1.0e-2
 #endif
 #ifndef STRATEGY
 #define STRATEGY 2
@@ -11,7 +11,7 @@
 #define MAX_FUNC_CALL 500
 #endif
 #ifndef FIT_TOL
-#define FIT_TOL 1e-6
+#define FIT_TOL 1.0e-6
 #endif
 
 #ifdef HAVE_MINUIT2

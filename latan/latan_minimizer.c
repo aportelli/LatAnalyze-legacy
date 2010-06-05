@@ -90,42 +90,42 @@ const fit_model fm_lin =
 	"%e+%e*x"
 };
 
-/*** exponential decay: y(x) = p0*exp(-p1*x) ***/
+/*** exponential decay: y(x) = p1*exp(-p0*x) ***/
 double fm_expdec_func(const double x, const mat func_param, void* nothing)
 {
 	double res;
 	
 	nothing = NULL;
-	res = mat_get(func_param,0,0)*exp(-mat_get(func_param,1,0)*x);
+	res = mat_get(func_param,1,0)*exp(-mat_get(func_param,0,0)*x);
 	
 	return res;
 }
 
 const fit_model fm_expdec = 
 {
-	"y(x) = p0*exp(-p1*x)",
+	"y(x) = p1*exp(-p0*x)",
 	&fm_expdec_func,
 	2,
-	"%e*exp(-%e*x)"
+	"exp(-%e*x)*%e"
 };
 
-/*** hyperbolic cosine: y(x) = p0*cosh(p1*x) ***/
+/*** hyperbolic cosine: y(x) = p1*cosh(p0*x) ***/
 double fm_cosh_func(const double x, const mat func_param, void* nothing)
 {
 	double res;
 	
 	nothing = NULL;
-	res = mat_get(func_param,0,0)*cosh(mat_get(func_param,1,0)*x);
+	res = mat_get(func_param,1,0)*cosh(mat_get(func_param,0,0)*x);
 	
 	return res;
 }
 
 const fit_model fm_cosh =
 {
-	"y(x) = p0*cosh(p1*x)",
+	"y(x) = p1*cosh(p0*x)",
 	&fm_cosh_func,
 	2,
-	"%e*cosh(%e*x)"
+	"cosh(%e*x)*%e"
 };
 
 /*							fit data structure								*/
@@ -427,8 +427,8 @@ latan_errno fit_data_mass_fit_tune(fit_data d, mat fit_init, const mat prop,\
 			LATAN_ERROR("wrong parity flag",LATAN_EINVAL);
 			break;
 	}
-	mat_set(fit_init,0,0,pref);
-	mat_set(fit_init,1,0,mem);
+	mat_set(fit_init,1,0,pref);
+	mat_set(fit_init,0,0,mem);
 	
 	FREE(em_plat);
 	

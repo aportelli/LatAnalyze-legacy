@@ -60,7 +60,7 @@ int main(void)
 			mat_get(fit_param,1,0));
 	mat_eqsqrt(var);
 	plot_add_plot(p,plotcmd);
-	plot_add_daterr(p,fit_data_pt_data(d),var,0.0,step,"");
+	plot_add_daterr(p,fit_data_pt_x(d),fit_data_pt_data(d),var,"");
 	plot_disp(p);
 	plot_destroy(p);
 	

@@ -25,7 +25,7 @@ typedef enum
 
 /* string buffers */
 #ifndef STRING_LENGTH
-#define STRING_LENGTH 128
+#define STRING_LENGTH 512
 #endif
 
 typedef char stringbuf[STRING_LENGTH];

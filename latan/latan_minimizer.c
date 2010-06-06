@@ -46,7 +46,7 @@ void fit_model_get_plot_fmt(stringbuf plot_fmt, const fit_model* model)
 	strcpy(plot_fmt,model->plot_fmt);
 }
 
-double fit_model_eval(const fit_model* model, const double x,
+double fit_model_eval(const fit_model* model, const mat x,
 					  const mat func_param, void* model_param)
 {
 	return model->func(x,func_param,model_param);
@@ -54,9 +54,9 @@ double fit_model_eval(const fit_model* model, const double x,
 
 /** some useful models **/
 /*** constant: y(x) = p0 ***/
-double fm_const_func(const double x, const mat func_param, void* nothing)
+double fm_const_func(const mat x, const mat func_param, void* nothing)
 {
-	double dummy;
+	mat dummy;
 	
 	nothing = NULL;
 	dummy = x;
@@ -69,15 +69,16 @@ const fit_model fm_const =
 	"y(x) = p0",
 	&fm_const_func,
 	1,
+	1,
 	"%e"
 };
 
-double fm_lin_func(const double x, const mat func_param, void* nothing)
+double fm_lin_func(const mat x, const mat func_param, void* nothing)
 {
 	double res;
 	
 	nothing = NULL;
-	res = mat_get(func_param,0,0) + mat_get(func_param,1,0)*x;
+	res = mat_get(func_param,0,0) + mat_get(func_param,1,0)*mat_get(x,0,0);
 	
 	return res;
 }
@@ -87,16 +88,17 @@ const fit_model fm_lin =
 	"y(x) = p0 + p1*x",
 	&fm_lin_func,
 	2,
+	1,
 	"%e+%e*x"
 };
 
 /*** exponential decay: y(x) = p1*exp(-p0*x) ***/
-double fm_expdec_func(const double x, const mat func_param, void* nothing)
+double fm_expdec_func(const mat x, const mat func_param, void* nothing)
 {
 	double res;
 	
 	nothing = NULL;
-	res = mat_get(func_param,1,0)*exp(-mat_get(func_param,0,0)*x);
+	res = mat_get(func_param,1,0)*exp(-mat_get(func_param,0,0)*mat_get(x,0,0));
 	
 	return res;
 }
@@ -106,16 +108,17 @@ const fit_model fm_expdec =
 	"y(x) = p1*exp(-p0*x)",
 	&fm_expdec_func,
 	2,
+	1,
 	"exp(-%e*x)*%e"
 };
 
 /*** hyperbolic cosine: y(x) = p1*cosh(p0*x) ***/
-double fm_cosh_func(const double x, const mat func_param, void* nothing)
+double fm_cosh_func(const mat x, const mat func_param, void* nothing)
 {
 	double res;
 	
 	nothing = NULL;
-	res = mat_get(func_param,1,0)*cosh(mat_get(func_param,0,0)*x);
+	res = mat_get(func_param,1,0)*cosh(mat_get(func_param,0,0)*mat_get(x,0,0));
 	
 	return res;
 }
@@ -125,19 +128,20 @@ const fit_model fm_cosh =
 	"y(x) = p1*cosh(p0*x)",
 	&fm_cosh_func,
 	2,
+	1,
 	"cosh(%e*x)*%e"
 };
 
 /*							fit data structure								*/
 /****************************************************************************/
 /** allocation **/
-fit_data fit_data_create(const size_t ndata)
+fit_data fit_data_create(const size_t ndata, const size_t ndim)
 {
 	fit_data d;
 	size_t i;
 	
 	MALLOC_ERRVAL(d,fit_data,1,NULL);
-	d->x = mat_create(ndata,1);
+	d->x = mat_create(ndata,ndim);
 	d->data = mat_create(ndata,1);
 	d->var_inveigval = mat_create(ndata,1);
 	d->var_eigvec = mat_create(ndata,ndata);
@@ -177,9 +181,10 @@ double fit_data_get_chi2pdof(fit_data d)
 	return d->chi2pdof;
 }
 
-void fit_data_set_x(fit_data d, const size_t i, const double x_i)
+void fit_data_set_x(fit_data d, const size_t i, const size_t j,\
+					const double x_i)
 {
-	mat_set(d->x,i,0,x_i);
+	mat_set(d->x,i,j,x_i);
 }
 
 double fit_data_get_x(const fit_data d, const size_t i)
@@ -301,9 +306,16 @@ latan_errno fit_data_set_var(fit_data d, const mat var)
 	return status;
 }
 
-void fit_data_set_model(fit_data d, const fit_model* model)
+latan_errno fit_data_set_model(fit_data d, const fit_model* model)
 {
+	if (model->ndim != ncol(d->x))
+	{
+		LATAN_ERROR("fit model and fit data dimension mismatch",LATAN_EBADLEN);
+	}
+	
 	d->model = model;
+	
+	return LATAN_SUCCESS;
 }
 
 const fit_model* fit_data_pt_model(fit_data d)
@@ -319,7 +331,12 @@ void fit_data_set_model_param(fit_data d, void* model_param)
 double fit_data_model_eval(const fit_data d, const size_t i,\
 						   const mat func_param)
 {
-	return fit_model_eval(d->model,mat_get(d->x,i,0),func_param,d->model_param);
+	mat x_i;
+	
+	x_i = mat_create(1,ncol(d->x));
+	
+	mat_cp_subm(x_i,d->x,i,0,i,ncol(x_i)-1);
+	return fit_model_eval(d->model,x_i,func_param,d->model_param);
 }
 
 void fit_data_set_stage(fit_data d, const int stage)
@@ -387,7 +404,7 @@ latan_errno fit_data_mass_fit_tune(fit_data d, mat fit_init, const mat prop,\
 	}
 	for (t=0;t<nt;t++)
 	{
-		fit_data_set_x(d,t,(double)(t)+shift);
+		fit_data_set_x(d,t,0,(double)(t)+shift);
 	}
 	
 	/* searching mass plateaux */

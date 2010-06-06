@@ -20,6 +20,7 @@ liblatan_la_SOURCES =		\
 	latan_minimizer.c		\
 	latan_min_minuit2.h		\
 	latan_min_minuit2.cpp	\
+	latan_models.c			\
 	latan_plot.c			\
 	latan_rand.c			\
 	latan_statistics.c		\
@@ -34,6 +35,7 @@ liblatan_la_HEADERS =		\
 	latan_mat.h				\
 	latan_math.h			\
 	latan_minimizer.h		\
+	latan_models.h			\
 	latan_nunits.h			\
 	latan_plot.h			\
 	latan_statistics.h		\

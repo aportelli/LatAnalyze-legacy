@@ -1,11 +1,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
-#include <latan/latan_minimizer.h>
-#include <latan/latan_rand.h>
-#include <latan/latan_math.h>
 #include <latan/latan_io.h>
+#include <latan/latan_math.h>
+#include <latan/latan_minimizer.h>
+#include <latan/latan_models.h>
 #include <latan/latan_plot.h>
+#include <latan/latan_rand.h>
 
 #define ERR 0.05
 #define NDATA 20

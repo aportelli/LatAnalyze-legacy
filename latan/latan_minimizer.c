@@ -3,14 +3,6 @@
 #include <latan/latan_min_minuit2.h>
 #include <latan/latan_io.h>
 #include <latan/latan_math.h>
-#include <latan/latan_mass.h>
-
-#ifndef PLAT_TOL
-#define PLAT_TOL 0.25
-#endif
-#ifndef NSIGMA
-#define NSIGMA 1.0
-#endif
 
 /*							the minimizer									*/
 /****************************************************************************/
@@ -277,102 +269,6 @@ int fit_data_get_dof(const fit_data d)
 bool fit_data_is_correlated(const fit_data d)
 {
 	return d->is_correlated;
-}
-
-/** tuning **/
-latan_errno fit_data_mass_fit_tune(fit_data d, mat fit_init, const mat prop,\
-								   const mat em, const mat sigem,			\
-								   const int parity)
-{
-	plat* em_plat;
-	size_t nplat,nt,ntmax;
-	size_t p,t;
-	double shift,mem,pref,logslope;
-	stringbuf ranges,buf;
-	const fit_model* model;
-	
-	nt    = nrow(em) + 2;
-	ntmax = (parity == EVEN) ? nt/2 : nt-2;
-	
-	/* setting fit model */
-	switch (parity)
-	{
-		case EVEN:
-			model = &fm_expdec;
-			break;
-		case ODD:
-			model = &fm_cosh;
-			break;
-		default:
-			LATAN_ERROR("wrong parity flag",LATAN_EINVAL);
-			break;
-	}
-	fit_data_set_model(d,model);
-	
-	/* setting datas */
-	switch (parity)
-	{
-		case EVEN:
-			shift = 0.0;
-			break;
-		case ODD:
-			shift = -DRATIO(nt,2.0);
-			break;
-		default:
-			LATAN_ERROR("wrong parity flag",LATAN_EINVAL);
-			break;
-	}
-	for (t=0;t<nt;t++)
-	{
-		fit_data_set_x(d,t,0,(double)(t)+shift);
-	}
-	
-	/* searching mass plateaux */
-	latan_printf(VERB,"searching mass plateaux in range [1,%lu]...\n",
-				 (long unsigned)ntmax);
-	em_plat = search_plat(&nplat,em,sigem,ntmax-1,NSIGMA,PLAT_TOL);
-	
-	/* setting points to fit */
-	fit_data_fit_all_points(d,false);
-	strcpy(ranges,"");
-	for (p=0;p<nplat;p++)
-	{
-		fit_data_fit_range(d,em_plat[p].start+1,em_plat[p].end+1,true);
-		sprintf(buf,"[%u,%u] ",(unsigned int)em_plat[p].start+1,\
-				(unsigned int)em_plat[p].end+1);
-		strcat(ranges,buf);
-	}
-	latan_printf(VERB,"fit ranges set to : %s\n",ranges);
-	
-	/* setting initial fit parameters */
-	latan_printf(VERB,"searching initial parameter values...\n");
-	mem = 0.0;
-	for (p=0;p<nplat;p++)
-	{
-		mem += em_plat[p].mean;
-	}
-	mem /= (double)(nplat);
-	switch (parity)
-	{
-		case EVEN:
-			logslope = log(mat_get(prop,nt/8,0))*(1.0+nt/8) \
-			           - log(mat_get(prop,nt/8+1,0))*nt/8;
-			pref = exp(logslope);
-			break;
-		case ODD:
-			pref = mat_get(prop,nt/2,0);
-			break;
-		default:
-			LATAN_ERROR("wrong parity flag",LATAN_EINVAL);
-			break;
-	}
-	latan_printf(VERB,"prefactor = %e mass = %e\n",pref,mem);
-	mat_set(fit_init,1,0,pref);
-	mat_set(fit_init,0,0,mem);
-	
-	FREE(em_plat);
-	
-	return LATAN_SUCCESS;
 }
 
 /*							chi2 functions									*/

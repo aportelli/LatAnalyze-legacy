@@ -8,6 +8,22 @@
 
 __BEGIN_DECLS
 
+/* loop on lines of a file */
+#define BEGIN_FOR_LINE(str,f_name)\
+{\
+	FILE* _f;\
+	stringbuf _buf;\
+	FOPEN(_f,f_name,"r");\
+	while (!feof(_f))\
+	{\
+		if ((fgets(_buf,STRING_LENGTH,_f))&&(sscanf(_buf,"%s\n",str)>0))\
+		{
+#define END_FOR_LINE\
+		}\
+	}\
+	fclose(_f);\
+}
+	
 /* general I/O */
 int get_nfile(const stringbuf manifestfname);
 latan_errno get_firstfname(stringbuf fname, const stringbuf manifestfname);

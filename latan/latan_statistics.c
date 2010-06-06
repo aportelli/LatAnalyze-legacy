@@ -12,10 +12,12 @@ static latan_errno resample_bootstrap(mat cent_val, mat* sample,			\
 									  const size_t nboot, const mat* dat,	\
 									  const size_t ndat, const size_t nobs,	\
 									  rs_func* f, void* param);
+/*
 static latan_errno resample_jackknife(mat cent_val, mat* sample,			\
 									  const size_t jk_depth, const mat* dat,\
 									  const size_t ndat, const size_t nobs,	\
 									  rs_func* f, void* param);
+*/
 static size_t jackknife_nsample(const size_t ndat, const size_t jk_depth); 
 
 /*						elementary estimators								*/

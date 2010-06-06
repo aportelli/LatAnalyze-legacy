@@ -43,3 +43,35 @@ latan_errno finite_diff(mat ddat, const mat dat)
 	
 	return LATAN_SUCCESS;
 }
+
+size_t coord_to_rowmaj(const size_t* x, const size_t* dim, const size_t ndim)
+{
+	size_t d,ind;
+	
+	ind = dim[1]*x[0];
+	
+	for (d=1;d<ndim-1;d++)
+	{
+		ind = dim[d+1]*(x[d] + ind);
+	}
+	ind += x[ndim-1];
+	
+	return ind;
+}
+
+void rowmaj_to_coord(size_t* x, const size_t* dim, const size_t ndim,\
+					 const size_t ind)
+{
+	size_t j,dimprod;
+	int d;
+	
+	j = ind;
+	dimprod = 1;
+	
+	for (d=ndim-1;d>=0;d--)
+	{
+		x[d] = (j/dimprod)%dim[d];
+		j -= dimprod*x[d];
+		dimprod *= dim[d];
+	}
+}

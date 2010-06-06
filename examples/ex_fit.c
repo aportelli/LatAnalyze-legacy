@@ -27,7 +27,7 @@ int main(void)
 	var = mat_create(NDATA,1);
 	real_param = mat_create(NPAR,1);
 	fit_param = mat_create(NPAR,1);
-	d = fit_data_create(NDATA);
+	d = fit_data_create(NDATA,fm_expdec.ndim);
 	
 	randgen_init_from_time();
 	mat_set(real_param,0,0,0.5);
@@ -40,7 +40,7 @@ int main(void)
 	printf("-- generating exponential decay data with gaussian errors...\n");
 	for (i=0;i<NDATA;i++)
 	{
-		fit_data_set_x(d,i,i*step);
+		fit_data_set_x(d,i,0,i*step);
 		fit_data_set_data(d,i,fit_data_model_eval(d,i,real_param)\
 						  +rand_n(0.0,ERR));
 	}

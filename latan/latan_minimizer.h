@@ -13,7 +13,7 @@ typedef double min_func(const mat var, void* param);
 latan_errno minimize(mat var, double* f_min, min_func* f, void* param);
 
 /* fit model structure */
-typedef double model_func(const double x, const mat func_param,\
+typedef double model_func(const mat x, const mat func_param,\
 						  void* model_param);
 
 typedef struct
@@ -21,27 +21,28 @@ typedef struct
 	stringbuf name;
 	model_func* func;
 	size_t npar;
+	size_t ndim;
 	stringbuf plot_fmt;
 } fit_model;
 
 /** access **/
 void fit_model_get_name(stringbuf name, const fit_model* model);
 void fit_model_get_plot_fmt(stringbuf plot_fmt, const fit_model* model);
-double fit_model_eval(const fit_model* model, const double x,\
+double fit_model_eval(const fit_model* model, const mat x,\
 					  const mat func_param, void* model_param);
 
 /** some useful models **/
 /*** constant: y(x) = p0 ***/
-double fm_const_func(const double x, const mat func_param, void* nothing);
+double fm_const_func(const mat x, const mat func_param, void* nothing);
 extern const fit_model fm_const;
 /*** linear: y(x) = p0 + p1*x ***/
-double fm_lin_func(const double x, const mat func_param, void* nothing);
+double fm_lin_func(const mat x, const mat func_param, void* nothing);
 extern const fit_model fm_lin;
 /*** exponential decay: y(x) = p0*exp(-p1*x) ***/
-double fm_expdec_func(const double x, const mat func_param, void* nothing);
+double fm_expdec_func(const mat x, const mat func_param, void* nothing);
 extern const fit_model fm_expdec;
 /*** hyperbolic cosine: y(x) = p0*cosh(p1*x) ***/
-double fm_cosh_func(const double x, const mat func_param, void* nothing);
+double fm_cosh_func(const mat x, const mat func_param, void* nothing);
 extern const fit_model fm_cosh;
 
 /* fit data structure */
@@ -62,13 +63,14 @@ typedef struct
 }* fit_data;
 
 /** allocation **/
-fit_data fit_data_create(const size_t ndata);
+fit_data fit_data_create(const size_t ndata, const size_t ndim);
 void fit_data_destroy(fit_data d);
 
 /** access **/
 void fit_data_save_chi2pdof(fit_data d, bool save);
 double fit_data_get_chi2pdof(fit_data d);
-void fit_data_set_x(fit_data d, const size_t i, const double x_i);
+void fit_data_set_x(fit_data d, const size_t i, const size_t j,\
+					const double x_i);
 double fit_data_get_x(const fit_data d, const size_t i);
 void fit_data_fit_all_points(fit_data d, bool fit);
 void fit_data_fit_point(fit_data d, size_t i, bool fit);
@@ -80,7 +82,7 @@ void fit_data_set_data(fit_data d, const size_t i, const double data_i);
 double fit_data_get_data(const fit_data d, const size_t i);
 mat fit_data_pt_data(const fit_data d);
 latan_errno fit_data_set_var(fit_data d, const mat var);
-void fit_data_set_model(fit_data d, const fit_model* model);
+latan_errno fit_data_set_model(fit_data d, const fit_model* model);
 const fit_model* fit_data_pt_model(fit_data d);
 void fit_data_set_model_param(fit_data d, void* model_param);
 double fit_data_model_eval(const fit_data d, const size_t i,\

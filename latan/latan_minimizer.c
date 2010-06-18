@@ -391,13 +391,13 @@ latan_errno data_fit(mat fit_param, fit_data d)
 	return status;
 }
 
-latan_errno rs_sample_fit(rs_sample fit_param, rs_sample data, fit_data d)
+latan_errno rs_data_fit(rs_sample fit_param, rs_sample data, fit_data d)
 {
 	latan_errno status;
 	mat datavar;
 	size_t i;
-	bool save_chi2pdof_backup;
 	int verb_backup;
+	double chi2pdof_backup;
 	
 	if (rs_sample_get_method(fit_param) != GENERIC)
 	{
@@ -405,27 +405,80 @@ latan_errno rs_sample_fit(rs_sample fit_param, rs_sample data, fit_data d)
 					  LATAN_EINVAL);
 	}
 	
-	save_chi2pdof_backup = d->save_chi2pdof;
 	verb_backup = latan_get_verb();
 	status = LATAN_SUCCESS;
 	
-	datavar = mat_create_from_dim(rs_sample_pt_cent_val(data));
+	datavar = mat_create(nrow(rs_sample_pt_cent_val(data)),1);
 	
 	LATAN_UPDATE_STATUS(status,rs_sample_varp(datavar,data));
-	LATAN_UPDATE_STATUS(status,fit_data_set_var(d,datavar));
+	LATAN_UPDATE_STATUS(status,fit_data_set_data_var(d,datavar));
 	mat_cp(fit_data_pt_data(d),rs_sample_pt_cent_val(data));
 	LATAN_UPDATE_STATUS(status,data_fit(rs_sample_pt_cent_val(fit_param),d));
-	fit_data_save_chi2pdof(d,false);
+	chi2pdof_backup = fit_data_get_chi2pdof(d);
+	latan_printf(DEBUG,"central value chi^2/dof = %e\n",chi2pdof_backup);
 	if (verb_backup != DEBUG)
 	{
 		latan_set_verb(QUIET);
 	}
 	for (i=0;i<rs_sample_get_nsample(data);i++)
 	{
+		mat_cp(rs_sample_pt_sample(fit_param,i),\
+			   rs_sample_pt_cent_val(fit_param));
 		mat_cp(fit_data_pt_data(d),rs_sample_pt_sample(data,i));
 		LATAN_UPDATE_STATUS(status,data_fit(rs_sample_pt_sample(fit_param,i),d));
+		latan_printf(DEBUG,"sample %lu chi^2/dof = %e\n",(long unsigned)i,\
+					 fit_data_get_chi2pdof(d));
 	}
-	fit_data_save_chi2pdof(d,save_chi2pdof_backup);
+	d->chi2pdof = chi2pdof_backup;
+	latan_set_verb(verb_backup);
+	
+	mat_destroy(datavar);
+	
+	return status;
+}
+
+latan_errno rs_x_data_fit(rs_sample fit_param, rs_sample x, rs_sample data,\
+						  fit_data d)
+{
+	latan_errno status;
+	mat datavar;
+	size_t i;
+	int verb_backup;
+	double chi2pdof_backup;
+	
+	if (rs_sample_get_method(fit_param) != GENERIC)
+	{
+		LATAN_WARNING("resampled sample fit result do not have GENERIC method",\
+					  LATAN_EINVAL);
+	}
+	
+	verb_backup = latan_get_verb();
+	status = LATAN_SUCCESS;
+	
+	datavar = mat_create(nrow(rs_sample_pt_cent_val(data)),1);
+	
+	LATAN_UPDATE_STATUS(status,rs_sample_varp(datavar,data));
+	LATAN_UPDATE_STATUS(status,fit_data_set_data_var(d,datavar));
+	mat_cp(fit_data_pt_data(d),rs_sample_pt_cent_val(data));
+	mat_cp(fit_data_pt_x(d),rs_sample_pt_cent_val(x));
+	LATAN_UPDATE_STATUS(status,data_fit(rs_sample_pt_cent_val(fit_param),d));
+	chi2pdof_backup = fit_data_get_chi2pdof(d);
+	latan_printf(DEBUG,"central value chi^2/dof = %e\n",chi2pdof_backup);
+	if (verb_backup != DEBUG)
+	{
+		latan_set_verb(QUIET);
+	}
+	for (i=0;i<rs_sample_get_nsample(data);i++)
+	{
+		mat_cp(rs_sample_pt_sample(fit_param,i),\
+			   rs_sample_pt_cent_val(fit_param));
+		mat_cp(fit_data_pt_data(d),rs_sample_pt_sample(data,i));
+		mat_cp(fit_data_pt_x(d),rs_sample_pt_sample(x,i));
+		LATAN_UPDATE_STATUS(status,data_fit(rs_sample_pt_sample(fit_param,i),d));
+		latan_printf(DEBUG,"sample %lu chi^2/dof = %e\n",(long unsigned)i,\
+					 fit_data_get_chi2pdof(d));
+	}
+	d->chi2pdof = chi2pdof_backup;
 	latan_set_verb(verb_backup);
 	
 	mat_destroy(datavar);

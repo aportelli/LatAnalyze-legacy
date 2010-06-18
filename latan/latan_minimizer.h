@@ -87,7 +87,9 @@ double chi2(const mat var, void* d);
 
 /* fit functions */
 latan_errno data_fit(mat fit_param, fit_data d);
-latan_errno rs_sample_fit(rs_sample fit_param, rs_sample data, fit_data d);
+latan_errno rs_data_fit(rs_sample fit_param, rs_sample data, fit_data d);
+latan_errno rs_x_data_fit(rs_sample fit_param, rs_sample x, rs_sample data,\
+						  fit_data d);
 
 __END_DECLS
 

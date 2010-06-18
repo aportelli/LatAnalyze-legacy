@@ -53,22 +53,26 @@ fit_data fit_data_create(const size_t ndata, const size_t ndim)
 	size_t i;
 	
 	MALLOC_ERRVAL(d,fit_data,1,NULL);
-	d->x = mat_create(ndata,ndim);
-	d->data = mat_create(ndata,1);
-	d->var_inveigval = mat_create(ndata,1);
-	d->var_eigvec = mat_create(ndata,ndata);
+	d->x           = mat_create(ndata*ndim,1);
+	d->x_varinv    = mat_create(ndata*ndim,ndata*ndim);
+	mat_id(d->x_varinv);
+	d->data        = mat_create(ndata,1);
+	d->data_varinv = mat_create(ndata,ndata);
+	mat_id(d->data_varinv);
 	MALLOC_ERRVAL(d->to_fit,bool*,ndata,NULL);
 	for (i=0;i<ndata;i++)
 	{
 		d->to_fit[i] = false;
 	}
-				  
-	d->model = NULL;
-	d->model_param = NULL;
-	d->stage = 0;
-	d->ndata = ndata;
-	d->save_chi2pdof = true;
+	d->model              = NULL;
+	d->model_param        = NULL;
+	d->stage              = 0;
+	d->ndata              = ndata;
 	d->ndim               = ndim;
+	d->is_data_correlated = false;
+	d->is_x_correlated    = false;
+	d->have_x_var         = false;
+	d->save_chi2pdof      = true;
 	
 	return d;
 }
@@ -76,9 +80,9 @@ fit_data fit_data_create(const size_t ndata, const size_t ndim)
 void fit_data_destroy(fit_data d)
 {
 	mat_destroy(d->x);
+	mat_destroy(d->x_varinv);
 	mat_destroy(d->data);
-	mat_destroy(d->var_inveigval);
-	mat_destroy(d->var_eigvec);
+	mat_destroy(d->data_varinv);
 	FREE(d->to_fit);
 	FREE(d);
 }
@@ -192,27 +196,73 @@ mat fit_data_pt_data(fit_data d)
 	return d->data;
 }
 
-latan_errno fit_data_set_var(fit_data d, const mat var)
+latan_errno fit_data_set_data_var(fit_data d, const mat var)
 {
 	latan_errno status;
 	size_t i;
-	double dieg_i;
+	double diag_i;
+	stringbuf warnmsg;
 	
 	status = LATAN_SUCCESS;
-	d->is_correlated = mat_issquare(var);
-	
-	if (d->is_correlated)
+	d->is_data_correlated = mat_issquare(var);
+	if (d->is_data_correlated)
 	{
-		LATAN_ERROR("correlated fit is not implemented yet",LATAN_FAILURE);
+		LATAN_UPDATE_STATUS(status,mat_inv(d->data_varinv,var));
 	}
 	else
 	{
-		mat_id(d->var_eigvec);
-		mat_cst(d->var_inveigval,1.0);
+		mat_zero(d->data_varinv);
 		for (i=0;i<nrow(var);i++)
 		{
-			dieg_i = (mat_get(var,i,0) == 0) ? (0.0) : (1.0/mat_get(var,i,0));
-			mat_set(d->var_inveigval,i,0,dieg_i);
+			if (mat_get(var,i,0) == 0)
+			{
+				sprintf(warnmsg,"singular point %lu eliminated from fit",\
+						(long unsigned)i);
+				LATAN_WARNING(warnmsg,LATAN_EDOM);
+				diag_i = 0.0;
+			}
+			else
+			{
+				diag_i = 1.0/mat_get(var,i,0);
+			}
+			mat_set(d->data_varinv,i,i,diag_i);
+		}
+	}
+	
+	return status;
+}
+
+latan_errno fit_data_set_x_var(fit_data d, const mat var)
+{
+	latan_errno status;
+	size_t i;
+	double diag_i;
+	stringbuf warnmsg;
+	
+	status = LATAN_SUCCESS;
+	d->have_x_var      = true;
+	d->is_x_correlated = mat_issquare(var);
+	if (d->is_data_correlated)
+	{
+		LATAN_UPDATE_STATUS(status,mat_inv(d->x_varinv,var));
+	}
+	else
+	{
+		mat_zero(d->data_varinv);
+		for (i=0;i<nrow(var);i++)
+		{
+			if (mat_get(var,i,0) == 0)
+			{
+				sprintf(warnmsg,"singular point %lu eliminated from fit",\
+						(long unsigned)i);
+				LATAN_WARNING(warnmsg,LATAN_EDOM);
+				diag_i = 0.0;
+			}
+			else
+			{
+				diag_i = 1.0/mat_get(var,i,0);
+			}
+			mat_set(d->x_varinv,i,i,diag_i);
 		}
 	}
 	
@@ -275,7 +325,7 @@ int fit_data_get_dof(const fit_data d)
 
 bool fit_data_is_correlated(const fit_data d)
 {
-	return d->is_correlated;
+	return d->is_data_correlated;
 }
 
 /*							chi2 functions									*/
@@ -285,15 +335,15 @@ double chi2(const mat fit_param, void* d)
 	fit_data dt;
 	size_t ndata;
 	size_t i;
-	mat X,Xonsig;
+	mat X, sigX;
 	mat mres;
 	double res;
 	
 	dt = (fit_data)d;
 	ndata = nrow(fit_data_pt_data(d));
 	
-	X = mat_create(ndata,1);
-	Xonsig = mat_create(ndata,1);
+	X    = mat_create(ndata,1);
+	sigX = mat_create(ndata,1);
 	mres = mat_create(1,1);
 	
 	for (i=0;i<ndata;i++)
@@ -308,13 +358,12 @@ double chi2(const mat fit_param, void* d)
 			mat_set(X,i,0,0.0);
 		}
 	}
-	mat_mul_nn(X,dt->var_eigvec,X);
-	mat_mulp(Xonsig,X,dt->var_inveigval);
-	mat_mul_tn(mres,Xonsig,X);
+	mat_mul_nn(sigX,dt->data_varinv,X);
+	mat_mul_tn(mres,X,sigX);
 	res = mat_get(mres,0,0);
 	
 	mat_destroy(X);
-	mat_destroy(Xonsig);
+	mat_destroy(sigX);
 	mat_destroy(mres);
 	
 	return res;

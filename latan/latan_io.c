@@ -232,8 +232,7 @@ latan_errno mat_load_ar(mat* m, const stringbuf mark, const stringbuf matid,\
 	return status;
 }
 
-latan_errno mat_save_plotdat(const mat dat, const double xstart,\
-							 const double xstep, const stringbuf fname)
+latan_errno mat_save_plotdat(const mat x, const mat dat, const stringbuf fname)
 {
 	FILE* f = NULL;
 	size_t i;
@@ -242,17 +241,15 @@ latan_errno mat_save_plotdat(const mat dat, const double xstart,\
 	
 	for (i=0;i<nrow(dat);i++)
 	{
-		fprintf(f,"%.10e %.10e\n",(double)(xstart+(int)(i)*xstep),\
-				mat_get(dat,i,0));
+		fprintf(f,"%.10e\t%.10e\n",mat_get(x,i,0),mat_get(dat,i,0));
 	}
 	fclose(f);
 	
 	return LATAN_SUCCESS;
 }
 
-latan_errno mat_save_plotdaterr(const mat dat, const mat sig,				\
-								const double xstart, const double xstep,	\
-								const stringbuf fname)
+latan_errno mat_save_plotdat_yerr(const mat x, const mat dat, const mat yerr,\
+								  const stringbuf fname)
 {
 	FILE* f = NULL;
 	size_t i;
@@ -260,13 +257,31 @@ latan_errno mat_save_plotdaterr(const mat dat, const mat sig,				\
 	FOPEN(f,fname,"w");
 	for (i=0;i<nrow(dat);i++)
 	{
-		fprintf(f,"%.10e %.10e %.10e\n",(double)(xstart+(int)(i)*xstep),\
-				mat_get(dat,i,0),mat_get(sig,i,0));
+		fprintf(f,"%.10e\t%.10e\t%.10e\n",mat_get(x,i,0),mat_get(dat,i,0),\
+				mat_get(yerr,i,0));
 	}
 	fclose(f);
 	
 	return LATAN_SUCCESS;
 }
+
+latan_errno mat_save_plotdat_xyerr(const mat x, const mat dat, const mat xerr,\
+								   const mat yerr, const stringbuf fname)
+{
+	FILE* f = NULL;
+	size_t i;
+	
+	FOPEN(f,fname,"w");
+	for (i=0;i<nrow(dat);i++)
+	{
+		fprintf(f,"%.10e\t%.10e\t%.10e\t%.10e\n",mat_get(x,i,0),mat_get(dat,i,0),\
+				mat_get(xerr,i,0),mat_get(yerr,i,0));
+	}
+	fclose(f);
+	
+	return LATAN_SUCCESS;
+}
+
 
 /*							propagator I/O									*/
 /****************************************************************************/

@@ -35,6 +35,7 @@ double fit_model_eval(const fit_model* model, const mat x,\
 typedef struct
 {
 	size_t ndata;
+	size_t ndim;
 	mat x;
 	mat data;
 	mat var_inveigval;
@@ -57,7 +58,7 @@ void fit_data_save_chi2pdof(fit_data d, bool save);
 double fit_data_get_chi2pdof(fit_data d);
 void fit_data_set_x(fit_data d, const size_t i, const size_t j,\
 					const double x_i);
-double fit_data_get_x(const fit_data d, const size_t i);
+double fit_data_get_x(const fit_data d, const size_t i, const size_t j);
 void fit_data_fit_all_points(fit_data d, bool fit);
 void fit_data_fit_point(fit_data d, size_t i, bool fit);
 void fit_data_fit_range(fit_data d, size_t start, size_t end, bool fit);

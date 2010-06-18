@@ -68,6 +68,7 @@ fit_data fit_data_create(const size_t ndata, const size_t ndim)
 	d->stage = 0;
 	d->ndata = ndata;
 	d->save_chi2pdof = true;
+	d->ndim               = ndim;
 	
 	return d;
 }
@@ -94,14 +95,14 @@ double fit_data_get_chi2pdof(fit_data d)
 }
 
 void fit_data_set_x(fit_data d, const size_t i, const size_t j,\
-					const double x_i)
+					const double x_ij)
 {
-	mat_set(d->x,i,j,x_i);
+	mat_set(d->x,i*d->ndim+j,0,x_ij);
 }
 
-double fit_data_get_x(const fit_data d, const size_t i)
+double fit_data_get_x(const fit_data d, const size_t i, const size_t j)
 {
-	return mat_get(d->x,i,0);
+	return mat_get(d->x,i*d->ndim+j,0);
 }
 
 mat fit_data_pt_x(const fit_data d)
@@ -220,7 +221,7 @@ latan_errno fit_data_set_var(fit_data d, const mat var)
 
 latan_errno fit_data_set_model(fit_data d, const fit_model* model)
 {
-	if (model->ndim != ncol(d->x))
+	if (model->ndim != d->ndim)
 	{
 		LATAN_ERROR("fit model and fit data dimension mismatch",LATAN_EBADLEN);
 	}
@@ -243,12 +244,18 @@ void fit_data_set_model_param(fit_data d, void* model_param)
 double fit_data_model_eval(const fit_data d, const size_t i,\
 						   const mat func_param)
 {
-	mat x_i;
+	mat x_i, x_i_t;
 	
-	x_i = mat_create(1,ncol(d->x));
+	x_i   = mat_create(d->ndim,1);
+	x_i_t = mat_create(1,d->ndim);
 	
-	mat_cp_subm(x_i,d->x,i,0,i,ncol(x_i)-1);
+	mat_cp_subm(x_i,d->x,i*d->ndim,0,i*d->ndim+d->ndim-1,0);
+	mat_transpose(x_i_t,x_i);
+	
 	return fit_model_eval(d->model,x_i,func_param,d->model_param);
+	
+	mat_destroy(x_i);
+	mat_destroy(x_i_t);
 }
 
 void fit_data_set_stage(fit_data d, const int stage)

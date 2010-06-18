@@ -80,8 +80,6 @@ latan_errno rs_effmass(mat res, const mat* dat, const size_t ndat,\
 					   const size_t sampno, void* parity);
 latan_errno rs_effmass_PCAC(mat res, const mat* dat, const size_t ndat,\
 							const size_t sampno, void* nothing);
-latan_errno rs_data_fit(mat res, const mat* dat, const size_t ndat,\
-							const size_t sampno, void* d);
 
 __END_DECLS
 

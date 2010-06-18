@@ -30,13 +30,6 @@ typedef enum
 
 typedef char stringbuf[STRING_LENGTH];
 
-extern const stringbuf latan_name;
-extern const stringbuf latan_version;
-
-/* type for random generator state */
-#define RLXG_STATE_SIZE 105
-typedef int randgen_state[RLXG_STATE_SIZE];
-
 __END_DECLS
 
 /* verbosity flags */

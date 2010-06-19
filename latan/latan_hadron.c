@@ -5,7 +5,7 @@
 static stringbuf channel_id[] = 
 {
 	"SS"	,\
-	"V4V4"	,\
+	"ViVi"	,\
 	"PP"	,\
 	"PA4"	,\
 	"A4P"	,\

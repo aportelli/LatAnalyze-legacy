@@ -93,14 +93,6 @@ void hadron_set_2q_2stmean(hadron h, const stringbuf name, const int parity,\
 						   const quark_no q22);
 void hadron_get_name(stringbuf str, const hadron h);
 
-/* isohadron structure */
-typedef struct
-{
-	stringbuf name;
-	size_t isodim;
-	const hadron* had[MAXISO];
-} isohad;
-
 /* spectrum type */
 typedef struct
 {

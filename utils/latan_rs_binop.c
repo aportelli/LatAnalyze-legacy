@@ -1,11 +1,20 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <latan/latan_statistics.h>
 #include <latan/latan_io.h>
 
 #define INF1_NAME argv[1]
 #define INF2_NAME argv[2]
 #define OUTF_NAME argv[3]
+
+#ifndef BINOP
+#error BINOP macro must be defined to compile this program (use -DBINOP=<op> option)
+#endif
+
+typedef latan_errno mat_binop_f(mat, const mat, const mat);
+
+mat_binop_f* mat_binop = &BINOP;
 
 int main(int argc, char* argv[])
 {
@@ -14,15 +23,18 @@ int main(int argc, char* argv[])
 	size_t i;
 	mat sig;
 	bool do_save_res;
+	stringbuf res_name;
 	
 	/* argument parsing */
 	switch (argc)
 	{
 		case 3:
 			do_save_res = false;
+			strcpy(res_name,"");
 			break;
 		case 4:
 			do_save_res = true;
+			strcpy(res_name,OUTF_NAME);
 			break;
 		default:
 			fprintf(stderr,"usage: %s <sample 1> <sample 2> [<output sample>]\n",\
@@ -49,9 +61,9 @@ int main(int argc, char* argv[])
 	}
 	
 	/* allocation */
-	s1 = rs_sample_create(s1_nrow,s1_nsample,"");
-	s2 = rs_sample_create(s2_nrow,s2_nsample,"");
-	res = rs_sample_create(s1_nrow,s1_nsample,"");
+	s1 = rs_sample_create(s1_nrow,s1_nsample);
+	s2 = rs_sample_create(s2_nrow,s2_nsample);
+	res = rs_sample_create(s1_nrow,s1_nsample);
 	sig = mat_create(s1_nrow,1);
 	
 	/* loading samples */
@@ -60,14 +72,14 @@ int main(int argc, char* argv[])
 	printf("-- loading resampled sample from %s...\n",INF2_NAME);
 	rs_sample_load(s2,INF2_NAME);
 	
-	/* substracting samples */
-	printf("-- substracting samples...\n");
-	mat_add(rs_sample_pt_cent_val(res),rs_sample_pt_cent_val(s1),\
-			rs_sample_pt_cent_val(s2));
+	/* multiplying samples */
+	printf("-- dividing samples...\n");
+	mat_binop(rs_sample_pt_cent_val(res),rs_sample_pt_cent_val(s1),\
+			  rs_sample_pt_cent_val(s2));
 	for (i=0;i<rs_sample_get_nsample(res);i++)
 	{
-		mat_add(rs_sample_pt_sample(res,i),rs_sample_pt_sample(s1,i),\
-				rs_sample_pt_sample(s2,i));
+		mat_binop(rs_sample_pt_sample(res,i),rs_sample_pt_sample(s1,i),\
+				  rs_sample_pt_sample(s2,i));
 	}
 	
 	/* result output */
@@ -79,6 +91,7 @@ int main(int argc, char* argv[])
 	mat_print(sig);
 	if (do_save_res)
 	{
+		rs_sample_set_name(res,res_name);
 		rs_sample_save(res,OUTF_NAME);
 	}
 	

@@ -82,9 +82,9 @@ LATAN_ERROR_VAL(reason,no,NULL)
 ((a) != LATAN_SUCCESS ? (a) : LATAN_ERROR_SELECT_4(b,c,d,e))
 #define LATAN_UPDATE_STATUS(status,instruction)\
 {\
-	int cstat;\
-	cstat=instruction;\
-	status = LATAN_ERROR_SELECT_2(status,cstat);\
+	int _cstat;\
+	_cstat = instruction;\
+	status = LATAN_ERROR_SELECT_2(status,_cstat);\
 }
 
 __END_DECLS

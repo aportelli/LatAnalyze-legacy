@@ -7,8 +7,10 @@ bin_PROGRAMS =				\
 	latan_create_rg_state	\
 	latan_info				\
 	latan_rs_add			\
+	latan_rs_div			\
 	latan_rs_mul			\
-	latan_rs_sub
+	latan_rs_sub			\
+	latan_rs_sqrt
 
 latan_create_rg_state_SOURCES = latan_create_rg_state.c
 latan_create_rg_state_CFLAGS = $(COM_CFLAGS)
@@ -18,16 +20,24 @@ latan_info_SOURCES = latan_info.c
 latan_info_CFLAGS = $(COM_CFLAGS)
 latan_info_LDFLAGS = -llatan -L../latan/.libs
 
-latan_rs_add_SOURCES = latan_rs_add.c
-latan_rs_add_CFLAGS = $(COM_CFLAGS)
+latan_rs_add_SOURCES = latan_rs_binop.c
+latan_rs_add_CFLAGS = $(COM_CFLAGS) -DBINOP=mat_add
 latan_rs_add_LDFLAGS = -llatan -L../latan/.libs
 
-latan_rs_mul_SOURCES = latan_rs_mul.c
-latan_rs_mul_CFLAGS = $(COM_CFLAGS)
+latan_rs_div_SOURCES = latan_rs_binop.c
+latan_rs_div_CFLAGS = $(COM_CFLAGS) -DBINOP=mat_divp
+latan_rs_div_LDFLAGS = -llatan -L../latan/.libs
+
+latan_rs_mul_SOURCES = latan_rs_binop.c
+latan_rs_mul_CFLAGS = $(COM_CFLAGS) -DBINOP=mat_mulp
 latan_rs_mul_LDFLAGS = -llatan -L../latan/.libs
 
-latan_rs_sub_SOURCES = latan_rs_sub.c
-latan_rs_sub_CFLAGS = $(COM_CFLAGS)
+latan_rs_sub_SOURCES = latan_rs_binop.c
+latan_rs_sub_CFLAGS = $(COM_CFLAGS) -DBINOP=mat_sub
 latan_rs_sub_LDFLAGS = -llatan -L../latan/.libs
+
+latan_rs_sqrt_SOURCES = latan_rs_unop.c
+latan_rs_sqrt_CFLAGS = $(COM_CFLAGS) -DUNOP=mat_sqrt
+latan_rs_sqrt_LDFLAGS = -llatan -L../latan/.libs
 
 ACLOCAL_AMFLAGS = -I .buildutils/m4

@@ -62,6 +62,8 @@ int rs_sample_load_nsample(const stringbuf f_name);
 int rs_sample_load_method(const stringbuf f_name);
 latan_errno rs_sample_load(rs_sample s, const stringbuf f_name);
 
+/* plot output */
+
 __END_DECLS
 
 #endif

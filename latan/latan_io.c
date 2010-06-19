@@ -442,42 +442,36 @@ latan_errno randgen_load_state(randgen_state state, const stringbuf f_name)
 /****************************************************************************/
 latan_errno rs_sample_save(const rs_sample s, const stringbuf f_name)
 {
-	stringbuf full_f_name;
+	stringbuf full_f_name, s_name;
 	FILE* f;
 	size_t i,j;
-	size_t sample_nrow;
+	size_t s_nrow, s_nsample;
 	
-	sample_nrow = nrow(s->cent_val);
+	s_nrow    = rs_sample_get_nrow(s);
+	s_nsample = rs_sample_get_nsample(s);
+	rs_sample_get_name(s_name,s);
 	
-	switch (s->resamp_method)
+	
+	if (strlen(s->name) == 0)
 	{
-		case BOOT:
-			sprintf(full_f_name,"%s.boot",f_name);
-			break;
-		case JACK:
-			sprintf(full_f_name,"%s.jack",f_name);
-			break;
-		case GENERIC:
-			sprintf(full_f_name,"%s.rs",f_name);
-			break;
-		default:
-			LATAN_ERROR("resampling method flag invalid",LATAN_EINVAL);
-			break;
+		LATAN_ERROR("cannot save sample with an empty name",LATAN_EINVAL);
 	}
+	
+	sprintf(full_f_name,"%s.rs",f_name);
 	FOPEN(f,full_f_name,"w");
-	fprintf(f,"%s %lu %lu %d\n",s->name,(unsigned long)sample_nrow,\
-			(unsigned long)s->nsample,s->resamp_method);
-	for (i=0;i<sample_nrow;i++)
+	fprintf(f,"%s %lu %lu %d\n",s_name,(unsigned long)s_nrow,\
+			(unsigned long)s_nsample,rs_sample_get_method(s));
+	for (i=0;i<s_nrow;i++)
 	{
-		fprintf(f,"%.10e ",mat_get(s->cent_val,i,0));
-		for (j=0;j<s->nsample-1;j++)
+		fprintf(f,"%.10e ",mat_get(rs_sample_pt_cent_val(s),i,0));
+		for (j=0;j<s_nsample-1;j++)
 		{
-			fprintf(f,"%.10e ",mat_get(s->sample[j],i,0));
+			fprintf(f,"%.10e ",mat_get(rs_sample_pt_sample(s,j),i,0));
 		}
-		fprintf(f,"%.10e\n",mat_get(s->sample[s->nsample-1],i,0));
+		fprintf(f,"%.10e\n",mat_get(rs_sample_pt_sample(s,s_nsample-1),i,0));
 	}
 	fclose(f);
-	if (s->resamp_method == BOOT)
+	if (rs_sample_get_method(s) == BOOT)
 	{
 		randgen_save_state(f_name,s->gen_state);
 	}
@@ -582,7 +576,7 @@ latan_errno rs_sample_load(rs_sample s, const stringbuf f_name)
 				f_name);
 		LATAN_ERROR(errmsg,LATAN_ELATSYN);
 	}
-	if ((size_t)ibuf != nrow(s->cent_val))
+	if ((size_t)ibuf != rs_sample_get_nrow(s))
 	{
 		sprintf(errmsg,"sample dimension (%d) in file %s is invalid",ibuf,\
 				f_name);
@@ -594,7 +588,7 @@ latan_errno rs_sample_load(rs_sample s, const stringbuf f_name)
 				f_name);
 		LATAN_ERROR(errmsg,LATAN_ELATSYN);
 	}
-	if ((size_t)ibuf != s->nsample)
+	if ((size_t)ibuf != rs_sample_get_nsample(s))
 	{
 		sprintf(errmsg,"number of sample (%d) in file %s is invalid",ibuf,\
 				f_name);
@@ -611,9 +605,9 @@ latan_errno rs_sample_load(rs_sample s, const stringbuf f_name)
 		LATAN_WARNING("resampled sample to load do not have GENERIC method",\
 					  LATAN_EINVAL);
 	}
-	for (i=0;i<nrow(s->cent_val);i++)
+	for (i=0;i<rs_sample_get_nrow(s);i++)
 	{
-		for (j=0;j<s->nsample;j++)
+		for (j=0;j<rs_sample_get_nsample(s);j++)
 		{
 			if (fscanf(f,"%lf ",&dbuf)<0)
 			{
@@ -623,22 +617,22 @@ latan_errno rs_sample_load(rs_sample s, const stringbuf f_name)
 			}
 			if (j == 0)
 			{
-				pt = s->cent_val;
+				pt = rs_sample_pt_cent_val(s);
 			}
 			else
 			{
-				pt = s->sample[j-1];
+				pt = rs_sample_pt_sample(s,j-1);
 			}
 			mat_set(pt,i,0,dbuf);
 		}
-		j = s->nsample;
+		j = rs_sample_get_nsample(s);
 		if (fscanf(f,"%lf\n",&dbuf)<0)
 		{
 			sprintf(errmsg,"error reading component %lu of sample %lu in file %s",\
 					(unsigned long)i,(unsigned long)j,f_name);
 			LATAN_ERROR(errmsg,LATAN_ELATSYN);
 		}
-		mat_set(s->sample[j-1],i,0,dbuf);
+		mat_set(rs_sample_pt_sample(s,j-1),i,0,dbuf);
 	}
 	fclose(f);
 	

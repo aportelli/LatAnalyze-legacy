@@ -129,6 +129,26 @@ latan_errno mat_set_subm(mat m, const mat n, const size_t k1, const size_t l1, \
 	return LATAN_SUCCESS;
 }
 
+latan_errno mat_get_diag(mat diag, const mat m)
+{
+	size_t min_dim;
+	size_t i;
+	
+	min_dim = MIN(nrow(m),ncol(m));
+	if (min_dim != nrow(diag))
+	{
+		LATAN_ERROR("trying to set the diagonal of a matrix with invalid dimensions",\
+					LATAN_EBADLEN);
+	}
+	
+	for (i=0;i<min_dim;i++)
+	{
+		mat_set(diag,i,0,mat_get(m,i,i));
+	}
+	
+	return LATAN_SUCCESS;
+}
+
 latan_errno mat_set_diag(mat m, const mat diag)
 {
 	size_t min_dim;
@@ -178,7 +198,18 @@ latan_errno mat_set_from_ar(mat m, const double* ar)
 	return status;
 }
 
-/* tests */
+double mat_get_min(const mat m)
+{
+	return gsl_matrix_min(m);
+}
+
+double mat_get_max(const mat m)
+{
+	return gsl_matrix_max(m);
+}
+
+/*								tests   									*/
+/****************************************************************************/
 bool mat_issamedim(const mat m, const mat n)
 {
 	return ((nrow(m) == nrow(n))&&(ncol(m) == ncol(n)));

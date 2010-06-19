@@ -248,7 +248,7 @@ latan_errno fit_data_mass_fit_tune(fit_data d, mat fit_init, const mat prop,\
 	{
 		case EVEN:
 			logslope = log(mat_get(prop,nt/8,0))*(1.0+nt/8) \
-			- log(mat_get(prop,nt/8+1,0))*nt/8;
+					    - log(mat_get(prop,nt/8+1,0))*nt/8;
 			pref = exp(logslope);
 			break;
 		case ODD:

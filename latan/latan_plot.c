@@ -119,7 +119,8 @@ plot plot_create(void)
 	p->ntmpf = 0;
 	p->tmpfname = NULL;
 	strcpy(p->title,"");
-	strcpy(p->output,DEFTERM);
+	strcpy(p->term,DEFTERM);
+	strcpy(p->output,"");
 	p->scale = AUTO;
 	p->log = NOLOG;
 	p->xmin = 0.0;
@@ -211,6 +212,16 @@ void plot_set_ylabel(plot p, const stringbuf ylabel)
 	strcpy(p->ylabel,ylabel);
 }
 
+void plot_set_term(plot p, const stringbuf term)
+{
+	strcpy(p->term,term);
+}
+
+void plot_set_output(plot p, const stringbuf output)
+{
+	strcpy(p->output,output);
+}
+
 /*								plot functions								*/
 /****************************************************************************/
 void plot_add_plot(plot p, const stringbuf cmd)
@@ -220,10 +231,11 @@ void plot_add_plot(plot p, const stringbuf cmd)
 	strcpy(p->plotbuf[p->nplot-1],cmd);
 }
 
-void plot_add_dat(plot p, const mat x, const mat dat, const stringbuf title)
+void plot_add_dat(plot p, const mat x, const mat dat, const stringbuf title,\
+				  const stringbuf color)
 {
 	FILE* tmpf;
-	stringbuf tmpfname, plotcmd;
+	stringbuf tmpfname, plotcmd, colorcmd;
 	size_t i;
 	
 	strcpy(tmpfname,"latan_plot_tmp_XXXXXX");
@@ -235,15 +247,23 @@ void plot_add_dat(plot p, const mat x, const mat dat, const stringbuf title)
 	}
 	fclose(tmpf);
 	plot_add_tmpf(p,tmpfname);
-	sprintf(plotcmd,"\"%s\" u 1:2 t \"%s\"",tmpfname,title);
+	if (strlen(color) == 0)
+	{
+		strcpy(colorcmd,"");
+	}
+	else
+	{
+		sprintf(colorcmd,"lc %s",color);
+	}
+	sprintf(plotcmd,"'%s' u 1:2 t '%s' lt -1 %s",tmpfname,title,colorcmd);
 	plot_add_plot(p,plotcmd);
 }
 
-void plot_add_daterr(plot p, const mat x, const mat dat, const mat err, \
-					 const stringbuf title)
+void plot_add_dat_yerr(plot p, const mat x, const mat dat, const mat yerr,\
+					 const stringbuf title, const stringbuf color)
 {
 	FILE* tmpf;
-	stringbuf tmpfname, plotcmd;
+	stringbuf tmpfname, plotcmd, colorcmd;
 	size_t i;
 	
 	strcpy(tmpfname,"latan_plot_tmp_XXXXXX");
@@ -252,11 +272,51 @@ void plot_add_daterr(plot p, const mat x, const mat dat, const mat err, \
 	for (i=0;i<nrow(dat);i++)
 	{
 		fprintf(tmpf,"%.10e %.10e %.10e\n",mat_get(x,i,0),\
-				mat_get(dat,i,0),mat_get(err,i,0));
+				mat_get(dat,i,0),mat_get(yerr,i,0));
 	}
 	fclose(tmpf);
 	plot_add_tmpf(p,tmpfname);
-	sprintf(plotcmd,"\"%s\" u 1:2:3 w yerr t \"%s\"",tmpfname,title);
+	if (strlen(color) == 0)
+	{
+		strcpy(colorcmd,"");
+	}
+	else
+	{
+		sprintf(colorcmd,"lc %s",color);
+	}
+	sprintf(plotcmd,"'%s' u 1:2:3 w yerr t '%s' lt -1 %s",tmpfname,title,\
+			colorcmd);
+	plot_add_plot(p,plotcmd);
+}
+
+void plot_add_dat_xyerr(plot p, const mat x, const mat dat, const mat xerr,\
+						const mat yerr, const stringbuf title,             \
+						const stringbuf color)
+{
+	FILE* tmpf;
+	stringbuf tmpfname, plotcmd, colorcmd;
+	size_t i;
+	
+	strcpy(tmpfname,"latan_plot_tmp_XXXXXX");
+	mkstemp(tmpfname);
+	FOPEN_NOERRET(tmpf,tmpfname,"w");
+	for (i=0;i<nrow(dat);i++)
+	{
+		fprintf(tmpf,"%.10e %.10e %.10e %.10e\n",mat_get(x,i,0),\
+				mat_get(dat,i,0),mat_get(xerr,i,0),mat_get(yerr,i,0));
+	}
+	fclose(tmpf);
+	plot_add_tmpf(p,tmpfname);
+	if (strlen(color) == 0)
+	{
+		strcpy(colorcmd,"");
+	}
+	else
+	{
+		sprintf(colorcmd,"lc %s",color);
+	}
+	sprintf(plotcmd,"'%s' u 1:2:3:4 w xyerr t '%s' lt -1 %s",tmpfname,title,\
+			colorcmd);
 	plot_add_plot(p,plotcmd);
 }
 
@@ -288,7 +348,11 @@ latan_errno plot_parse(FILE* outstr, const plot p)
 	stringbuf begin, end;
 	size_t i;
 	
-	gnuplot_cmd(outstr,"set term %s",p->output);
+	gnuplot_cmd(outstr,"set term %s",p->term);
+	if (strlen(p->output) != 0)
+	{
+		gnuplot_cmd(outstr,"set output '%s'",p->output);
+	}
 	switch (p->scale)
 	{
 		case AUTO:
@@ -325,9 +389,9 @@ latan_errno plot_parse(FILE* outstr, const plot p)
 			LATAN_ERROR("plot log mode unknow",LATAN_EINVAL);
 			break;
 	}
-	gnuplot_cmd(outstr,"set title \"%s\"",p->title);
-	gnuplot_cmd(outstr,"set xlabel \"%s\"",p->xlabel);
-	gnuplot_cmd(outstr,"set ylabel \"%s\"",p->ylabel);
+	gnuplot_cmd(outstr,"set title '%s'",p->title);
+	gnuplot_cmd(outstr,"set xlabel '%s'",p->xlabel);
+	gnuplot_cmd(outstr,"set ylabel '%s'",p->ylabel);
 	for (i=0;i<p->nplot;i++)
 	{
 		if (i == 0)

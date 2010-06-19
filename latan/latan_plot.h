@@ -31,15 +31,16 @@ typedef struct
 	size_t ntmpf;			/* number of temporary files opened for this plot */
 	stringbuf* tmpfname;	/* names of the temporary files opened for this plot */
 	stringbuf title;		/* title of the plot */
-	stringbuf output;		/* output terminal of the plot */
+	stringbuf term;			/* output terminal of the plot */
+	stringbuf output;		/* output file of the plot */
 	int scale;				/* scale mode of the plot */
 	int log;				/* logarithmic mode of the axis */
 	double xmin;			/* lower bound of x axis */
 	double xmax;			/* upper bound of x axis */
-	stringbuf xlabel;
+	stringbuf xlabel;		/* label of the x axis */
 	double ymin;			/* lower bound of y axis */
 	double ymax;			/* upper bound of y axis */
-	stringbuf ylabel;
+	stringbuf ylabel;		/* label of the y axis */
 }* plot;
 
 /* allocation */
@@ -59,13 +60,19 @@ void plot_set_scale_xylog(plot p);
 void plot_set_title(plot p, const stringbuf title);
 void plot_set_xlabel(plot p, const stringbuf xlabel);
 void plot_set_ylabel(plot p, const stringbuf xlabel);
+void plot_set_term(plot p, const stringbuf term);
+void plot_set_output(plot p, const stringbuf output);
 
 /* plot functions */
 void plot_add_plot(plot p, const stringbuf cmd);
-void plot_add_dat(plot p, const mat x, const mat dat, const stringbuf title);
-void plot_add_daterr(plot p, const mat x, const mat dat, const mat err, \
-					 const stringbuf title);
-void plot_add_hline(plot p, const double y, const stringbuf style,\
+void plot_add_dat(plot p, const mat x, const mat dat, const stringbuf title,\
+				  const stringbuf color);
+void plot_add_dat_yerr(plot p, const mat x, const mat dat, const mat yerr,\
+					 const stringbuf title, const stringbuf color);
+void plot_add_dat_xyerr(plot p, const mat x, const mat dat, const mat xerr,\
+						const mat yerr, const stringbuf title,             \
+						const stringbuf color);
+void plot_add_hline(plot p, const double y, const stringbuf style,		\
 					const stringbuf color);
 void plot_add_hlineerr(plot p, const double y, const double err,		\
 					   const stringbuf style, const stringbuf color1,	\

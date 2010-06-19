@@ -12,7 +12,7 @@ typedef gsl_matrix* mat;
 /* loop */
 #define FOR_VAL(m,i,j)\
 for (i=0;i<nrow(m);i++)\
-for (j=0;j<ncol(m);j++)\
+for (j=0;j<ncol(m);j++)
 
 /* functions */
 /** allocation **/
@@ -35,11 +35,14 @@ double mat_get(const mat m, const size_t i, const size_t j);
 void mat_set(mat m, const size_t i, const size_t j, const double val);
 latan_errno mat_set_subm(mat m, const mat n, const size_t k1, const size_t l1, \
 						 const size_t k2, const size_t l2);
+latan_errno mat_get_diag(mat diag, const mat m);
 latan_errno mat_set_diag(mat m, const mat diag);
 latan_errno mat_set_step(mat m, const double x0, const double step);
 latan_errno mat_set_from_ar(mat m, const double* ar);
 #define mat_inc(m,i,j,val) mat_set(m,i,j,mat_get(m,i,j)+val)
 #define mat_pp(m,i,j) mat_inc(m,i,j,1.0)
+double mat_get_min(const mat m);
+double mat_get_max(const mat m);
 
 /** tests **/
 bool mat_issamedim(mat m, mat n);
@@ -82,7 +85,6 @@ latan_errno mat_sqrt(mat m, const mat n);
 /** linear algebra **/
 #define mat_eqinv(m) mat_inv(m,m);
 latan_errno mat_inv(mat m, const mat n);
-latan_errno mat_sym_diagonalize(mat eigval, mat eigvec, const mat m);
 
 __END_DECLS
 

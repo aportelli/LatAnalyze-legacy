@@ -37,7 +37,7 @@ int main(void)
 	mat_set(fit_param,1,0,6.1);
 	mat_cst(var,SQ(ERR));
 	fit_data_set_model(d,&fm_expdec);
-	fit_data_set_var(d,var);
+	fit_data_set_data_var(d,var);
 	printf("-- generating exponential decay data with gaussian errors...\n");
 	for (i=0;i<NDATA;i++)
 	{
@@ -61,7 +61,7 @@ int main(void)
 			mat_get(fit_param,1,0));
 	mat_eqsqrt(var);
 	plot_add_plot(p,plotcmd);
-	plot_add_daterr(p,fit_data_pt_x(d),fit_data_pt_data(d),var,"");
+	plot_add_dat_yerr(p,fit_data_pt_x(d),fit_data_pt_data(d),var,"","");
 	plot_disp(p);
 	plot_destroy(p);
 	

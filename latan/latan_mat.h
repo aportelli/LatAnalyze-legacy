@@ -37,6 +37,12 @@ latan_errno mat_get_subm(mat m, const mat n, const size_t k1, const size_t l1, \
 						 const size_t k2, const size_t l2);
 latan_errno mat_set_subm(mat m, const mat n, const size_t k1, const size_t l1, \
 						 const size_t k2, const size_t l2);
+#define MAT_PT_SUBM(m,n,k1,l1,k2,l2)\
+{\
+	gsl_matrix_view _nview;\
+	_nview = gsl_matrix_submatrix(n,k1,l1,k2-k1+1,l2-l1+1);\
+	m = &(_nview.matrix);\
+}
 latan_errno mat_get_diag(mat diag, const mat m);
 latan_errno mat_set_diag(mat m, const mat diag);
 latan_errno mat_set_step(mat m, const double x0, const double step);

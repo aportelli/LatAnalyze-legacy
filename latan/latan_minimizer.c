@@ -117,7 +117,7 @@ latan_errno minimize(mat x, double* f_min, min_func* f, void* param)
 	switch (minimizer_get_lib())
 	{
 		case GSL:
-			LATAN_ERROR("GSL support is not implemented yet",LATAN_FAILURE);
+			status = minimize_gsl(x,f_min,f,param);
 			break;
 		case MINUIT:
 			status = minimize_minuit2(x,f_min,f,param);

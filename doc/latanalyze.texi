@@ -17,7 +17,7 @@ any later version published by the Free Software Foundation.
 
 @titlepage
 @title LatAnalyze
-@subtitle a lattice QCD result analysis library
+@subtitle a lattice QCD data analysis library
 @author Antonin Portelli
 Centre de Physique Th@'eorique, Universit@'e d'Aix-Marseille
 @page

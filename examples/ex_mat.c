@@ -34,7 +34,7 @@ int main(int argc, char *argv[])
 	printf("a =\n");
 	mat_print(a);
 	printf("d <- a(1:2,0:1)\n");
-	mat_cp_subm(d,a,1,0,2,1);
+	mat_get_subm(d,a,1,0,2,1);
 	printf("d =\n");
 	mat_print(d);
 	printf("a(1,0:1) <- c\n");

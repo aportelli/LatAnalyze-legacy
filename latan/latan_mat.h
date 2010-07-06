@@ -33,6 +33,8 @@ size_t nrow(const mat m);
 size_t ncol(const mat m);
 double mat_get(const mat m, const size_t i, const size_t j);
 void mat_set(mat m, const size_t i, const size_t j, const double val);
+latan_errno mat_get_subm(mat m, const mat n, const size_t k1, const size_t l1, \
+						 const size_t k2, const size_t l2);
 latan_errno mat_set_subm(mat m, const mat n, const size_t k1, const size_t l1, \
 						 const size_t k2, const size_t l2);
 latan_errno mat_get_diag(mat diag, const mat m);
@@ -54,8 +56,7 @@ void mat_cst(mat m, const double x);
 void mat_rand_u(mat m, const double a, const double b);
 void mat_id(mat m);
 latan_errno mat_cp(mat m, const mat n);
-latan_errno mat_cp_subm(mat m, const mat n, const size_t k1, const size_t l1, \
-						const size_t k2, const size_t l2);
+
 latan_errno mat_eqadd(mat m, const mat n);
 latan_errno mat_add(mat m, const mat n, const mat o);
 latan_errno mat_eqsub(mat m, const mat n);

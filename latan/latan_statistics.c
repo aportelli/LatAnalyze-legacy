@@ -45,7 +45,7 @@ double mat_elmean(mat m)
 	return mean;
 }
 
-latan_errno mat_mean(mat mean, const mat *m, const size_t size)
+latan_errno mat_mean(mat mean, const mat* m, const size_t size)
 {
 	latan_errno status;
 	size_t i;
@@ -63,7 +63,7 @@ latan_errno mat_mean(mat mean, const mat *m, const size_t size)
 	return status;
 }
 
-latan_errno mat_cov(mat cov, const mat *m, const mat *n, const size_t size)
+latan_errno mat_cov(mat cov, const mat* m, const mat* n, const size_t size)
 {
 	latan_errno status;
 	mat m_mean, n_mean;
@@ -118,7 +118,7 @@ latan_errno mat_cov_m(mat cov, const mat* m, const mat* n, const size_t size,\
 	return status;
 }
 
-latan_errno mat_covp(mat cov, const mat *m, const mat *n, const size_t size)
+latan_errno mat_covp(mat cov, const mat* m, const mat* n, const size_t size)
 {
 	latan_errno status;
 	mat m_mean, n_mean;

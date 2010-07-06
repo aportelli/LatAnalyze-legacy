@@ -1,19 +1,6 @@
 #include <latan/latan_min_minuit2.h>
 #include <latan/latan_includes.h>
 
-#ifndef INIT_RERROR
-#define INIT_RERROR 1.0e-2
-#endif
-#ifndef STRATEGY
-#define STRATEGY 2
-#endif
-#ifndef MAX_FUNC_CALL
-#define MAX_FUNC_CALL 500
-#endif
-#ifndef FIT_TOL
-#define FIT_TOL 1.0e-6
-#endif
-
 #ifdef HAVE_MINUIT2
 
 #include <iostream>
@@ -22,6 +9,16 @@
 #include <Minuit2/CombinedMinimizer.h>
 #include <Minuit2/FunctionMinimum.h>
 #include <Minuit2/MnPrint.h>
+
+#ifndef INIT_RERROR
+#define INIT_RERROR 1.0e-2
+#endif
+#ifndef STRATEGY
+#define STRATEGY 2
+#endif
+#ifndef FIT_TOL
+#define FIT_TOL 1.0e-6
+#endif
 
 // WARNING : std namespace already contain a stringbuf type
 using namespace ROOT;
@@ -51,24 +48,24 @@ Minuit2MinFunc::~Minuit2MinFunc(void)
 {
 }
 
-double Minuit2MinFunc::operator()(const std::vector<double>& v_var) const
+double Minuit2MinFunc::operator()(const std::vector<double>& v_x) const
 {
-	mat var;
-	size_t var_size;
+	mat x;
+	size_t x_size;
 	size_t i;
 	double res;
 	
-	var_size = v_var.size();
+	x_size = v_x.size();
 	
-	var = mat_create(var_size,1);
+	x = mat_create(x_size,1);
 	
-	for (i=0;i<var_size;i++)
+	for (i=0;i<x_size;i++)
 	{
-		mat_set(var,i,0,v_var[i]);
+		mat_set(x,i,0,v_x[i]);
 	}
-	res = f(var,param);
+	res = f(x,param);
 	
-	mat_destroy(var);
+	mat_destroy(x);
 	
 	return res;
 }
@@ -79,32 +76,43 @@ double Minuit2MinFunc::Up(void) const
 }
 #endif
 
-latan_errno minimize_minuit2(mat var, double* f_min, min_func* f, void* param)
+latan_errno minimize_minuit2(mat x, double* f_min, min_func* f, void* param)
 {
 #ifdef HAVE_MINUIT2
 	latan_errno status;
-	size_t var_size;
+	size_t x_size;
 	size_t i;
-	double init_var_i,var_i;
-	std::vector<double> v_init_var;
+	double init_x_i,x_i;
 	unsigned int max_iteration;
+	std::vector<double> v_init_x;
 	std::vector<double> v_init_err;
 	Minuit2MinFunc minuit2_f(f,param);
-	CombinedMinimizer minimizer;
+	VariableMetricMinimizer minimizer_migrad;
+	SimplexMinimizer minimizer_simplex;
+	ModularFunctionMinimizer* minimizer;
 	
 	status = LATAN_SUCCESS;
-	var_size = nrow(var);
+	x_size = nrow(x);
 	max_iteration = minimizer_get_max_iteration();
 	
-	for (i=0;i<var_size;i++)
+	for (i=0;i<x_size;i++)
 	{
-		init_var_i = mat_get(var,i,0);
-		v_init_var.push_back(init_var_i);
-		v_init_err.push_back(init_var_i*INIT_RERROR);
+		init_x_i = mat_get(x,i,0);
+		v_init_x.push_back(init_x_i);
+		v_init_err.push_back(init_x_i*INIT_RERROR);
 	}
-	FunctionMinimum minuit2_min = minimizer.Minimize(minuit2_f,v_init_var,\
-													 v_init_err,STRATEGY,\
-													 MAX_FUNC_CALL,FIT_TOL);
+	switch (minimizer_get_alg())
+	{
+		case MIN_MIGRAD:
+			minimizer = &minimizer_migrad;
+			break;
+		case MIN_SIMPLEX:
+			minimizer = &minimizer_simplex;
+			break;
+		default:
+			LATAN_ERROR("invalid MINUIT minimization algorithm flag",\
+						LATAN_EINVAL);
+	}
 	FunctionMinimum minuit2_min = minimizer->Minimize(minuit2_f,v_init_x, \
 													  v_init_err,STRATEGY,  \
 													  max_iteration,FIT_TOL);
@@ -114,10 +122,10 @@ latan_errno minimize_minuit2(mat var, double* f_min, min_func* f, void* param)
 					  LATAN_FAILURE);
 		status = LATAN_FAILURE;
 	}
-	for (i=0;i<var_size;i++)
+	for (i=0;i<x_size;i++)
 	{
-		var_i = minuit2_min.UserParameters().Parameter((unsigned int)i).Value();
-		mat_set(var,i,0,var_i);
+		x_i = minuit2_min.UserParameters().Parameter((unsigned int)i).Value();
+		mat_set(x,i,0,x_i);
 	}
 	*f_min = minuit2_min.Fval();
 
@@ -129,9 +137,10 @@ latan_errno minimize_minuit2(mat var, double* f_min, min_func* f, void* param)
 		std::cout << "--------------------------------------------------------";
 		std::cout << std::endl;
 	}
+	
 	return status;
 #else
-	var = NULL;
+	x = NULL;
 	f_min = NULL;
 	f = NULL;
 	param = NULL;

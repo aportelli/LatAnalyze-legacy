@@ -5,14 +5,14 @@
 /*								1D models   								*/
 /****************************************************************************/
 /** 1D polynomial models **/
-double fm_polyn_1d_0_func(const mat X, const mat func_param, void* nothing)
+double fm_polyn_1d_0_func(const mat X, const mat p, void* nothing)
 {
 	mat dummy;
 	
 	nothing = NULL;
 	dummy = X;
 	
-	return mat_get(func_param,0,0);
+	return mat_get(p,0,0);
 }
 
 const fit_model fm_polyn_1d_0 =
@@ -24,14 +24,14 @@ const fit_model fm_polyn_1d_0 =
 	"%e"
 };
 
-double fm_polyn_1d_1_func(const mat X, const mat func_param, void* nothing)
+double fm_polyn_1d_1_func(const mat X, const mat p, void* nothing)
 {
 	double x,res;
 	
 	nothing = NULL;
 	x = mat_get(X,0,0);
 	
-	res = mat_get(func_param,0,0) + mat_get(func_param,1,0)*x;
+	res = mat_get(p,0,0) + mat_get(p,1,0)*x;
 	
 	return res;
 }
@@ -45,16 +45,16 @@ const fit_model fm_polyn_1d_1 =
 	"%e+%e*x"
 };
 
-double fm_polyn_1d_2_func(const mat X, const mat func_param, void* nothing)
+double fm_polyn_1d_2_func(const mat X, const mat p, void* nothing)
 {
 	double x,res;
 	
 	nothing = NULL;
 	x = mat_get(X,0,0);
 	
-	res = mat_get(func_param,0,0)             \
-	      + mat_get(func_param,1,0)*x         \
-	      + mat_get(func_param,2,0)*SQ(x);
+	res = mat_get(p,0,0)             \
+	      + mat_get(p,1,0)*x         \
+	      + mat_get(p,2,0)*SQ(x);
 	
 	return res;
 }
@@ -68,17 +68,17 @@ const fit_model fm_polyn_1d_2 =
 	"%e+%e*x+%e*x**2"
 };
 
-double fm_polyn_1d_3_func(const mat X, const mat func_param, void* nothing)
+double fm_polyn_1d_3_func(const mat X, const mat p, void* nothing)
 {
 	double x,res;
 	
 	nothing = NULL;
 	x = mat_get(X,0,0);
 	
-	res = mat_get(func_param,0,0)             \
-	      + mat_get(func_param,1,0)*x         \
-		  + mat_get(func_param,2,0)*SQ(x)     \
-		  + mat_get(func_param,3,0)*x*x*x;
+	res = mat_get(p,0,0)             \
+	      + mat_get(p,1,0)*x         \
+		  + mat_get(p,2,0)*SQ(x)     \
+		  + mat_get(p,3,0)*x*x*x;
 	return res;
 }
 
@@ -91,18 +91,18 @@ const fit_model fm_polyn_1d_3 =
 	"%e+%e*x+%e*x**2+%e*x**3"
 };
 
-double fm_polyn_1d_4_func(const mat X, const mat func_param, void* nothing)
+double fm_polyn_1d_4_func(const mat X, const mat p, void* nothing)
 {
 	double x,res;
 	
 	nothing = NULL;
 	x = mat_get(X,0,0);
 	
-	res = mat_get(func_param,0,0)             \
-	      + mat_get(func_param,1,0)*x         \
-	      + mat_get(func_param,2,0)*SQ(x)     \
-	      + mat_get(func_param,3,0)*x*x*x     \
-	      + mat_get(func_param,4,0)*SQ(SQ(x));
+	res = mat_get(p,0,0)             \
+	      + mat_get(p,1,0)*x         \
+	      + mat_get(p,2,0)*SQ(x)     \
+	      + mat_get(p,3,0)*x*x*x     \
+	      + mat_get(p,4,0)*SQ(SQ(x));
 	return res;
 }
 
@@ -125,12 +125,12 @@ const fit_model* fm_polyn_1d[FM_POLYN_1D_MAXDEG+1] =
 };
 
 /** exponential decay **/
-double fm_expdec_func(const mat x, const mat func_param, void* nothing)
+double fm_expdec_func(const mat x, const mat p, void* nothing)
 {
 	double res;
 	
 	nothing = NULL;
-	res = mat_get(func_param,1,0)*exp(-mat_get(func_param,0,0)*mat_get(x,0,0));
+	res = mat_get(p,1,0)*exp(-mat_get(p,0,0)*mat_get(x,0,0));
 	
 	return res;
 }
@@ -145,12 +145,12 @@ const fit_model fm_expdec =
 };
 
 /** hyperbolic cosine **/
-double fm_cosh_func(const mat x, const mat func_param, void* nothing)
+double fm_cosh_func(const mat x, const mat p, void* nothing)
 {
 	double res;
 	
 	nothing = NULL;
-	res = mat_get(func_param,1,0)*cosh(mat_get(func_param,0,0)*mat_get(x,0,0));
+	res = mat_get(p,1,0)*cosh(mat_get(p,0,0)*mat_get(x,0,0));
 	
 	return res;
 }
@@ -167,7 +167,7 @@ const fit_model fm_cosh =
 /*								2D models   								*/
 /****************************************************************************/
 /** 2D polynomial models **/
-double fm_polyn_2d_00_func(const mat X, const mat func_param, void* nothing)
+double fm_polyn_2d_00_func(const mat X, const mat p, void* nothing)
 {
 	double res,x,y;
 	
@@ -175,7 +175,7 @@ double fm_polyn_2d_00_func(const mat X, const mat func_param, void* nothing)
 	x = mat_get(X,0,0);
 	y = mat_get(X,0,1);
 	
-	res = mat_get(func_param,0,0);
+	res = mat_get(p,0,0);
 	
 	return res;
 }
@@ -189,7 +189,7 @@ const fit_model fm_polyn_2d_00 =
 	"%e"
 };
 
-double fm_polyn_2d_01_func(const mat X, const mat func_param, void* nothing)
+double fm_polyn_2d_01_func(const mat X, const mat p, void* nothing)
 {
 	double res,x,y;
 	
@@ -197,8 +197,8 @@ double fm_polyn_2d_01_func(const mat X, const mat func_param, void* nothing)
 	x = mat_get(X,0,0);
 	y = mat_get(X,0,1);
 	
-	res = mat_get(func_param,0,0)             \
-	      + mat_get(func_param,1,0)*y;
+	res = mat_get(p,0,0)             \
+	      + mat_get(p,1,0)*y;
 	
 	return res;
 }
@@ -212,7 +212,7 @@ const fit_model fm_polyn_2d_01 =
 	"%e+%e*y"
 };
 
-double fm_polyn_2d_02_func(const mat X, const mat func_param, void* nothing)
+double fm_polyn_2d_02_func(const mat X, const mat p, void* nothing)
 {
 	double res,x,y;
 	
@@ -220,9 +220,9 @@ double fm_polyn_2d_02_func(const mat X, const mat func_param, void* nothing)
 	x = mat_get(X,0,0);
 	y = mat_get(X,0,1);
 	
-	res = mat_get(func_param,0,0)             \
-	      + mat_get(func_param,1,0)*y         \
-	      + mat_get(func_param,2,0)*SQ(y);
+	res = mat_get(p,0,0)             \
+	      + mat_get(p,1,0)*y         \
+	      + mat_get(p,2,0)*SQ(y);
 	
 	return res;
 }
@@ -236,7 +236,7 @@ const fit_model fm_polyn_2d_02 =
 	"%e+%e*y+%e*y**2"
 };
 
-double fm_polyn_2d_10_func(const mat X, const mat func_param, void* nothing)
+double fm_polyn_2d_10_func(const mat X, const mat p, void* nothing)
 {
 	double res,x,y;
 	
@@ -244,8 +244,8 @@ double fm_polyn_2d_10_func(const mat X, const mat func_param, void* nothing)
 	x = mat_get(X,0,0);
 	y = mat_get(X,0,1);
 	
-	res = mat_get(func_param,0,0)             \
-	      + mat_get(func_param,1,0)*x;
+	res = mat_get(p,0,0)             \
+	      + mat_get(p,1,0)*x;
 	
 	return res;
 }
@@ -259,7 +259,7 @@ const fit_model fm_polyn_2d_10 =
 	"%e+%e*x"
 };
 
-double fm_polyn_2d_11_func(const mat X, const mat func_param, void* nothing)
+double fm_polyn_2d_11_func(const mat X, const mat p, void* nothing)
 {
 	double res,x,y;
 	
@@ -267,10 +267,10 @@ double fm_polyn_2d_11_func(const mat X, const mat func_param, void* nothing)
 	x = mat_get(X,0,0);
 	y = mat_get(X,0,1);
 	
-	res = mat_get(func_param,0,0)             \
-	      + mat_get(func_param,1,0)*x         \
-	      + mat_get(func_param,2,0)*y         \
-	      + mat_get(func_param,3,0)*x*y;
+	res = mat_get(p,0,0)             \
+	      + mat_get(p,1,0)*x         \
+	      + mat_get(p,2,0)*y         \
+	      + mat_get(p,3,0)*x*y;
 	
 	return res;
 }
@@ -284,7 +284,7 @@ const fit_model fm_polyn_2d_11 =
 	"%e+%e*x+%e*y+%e*x*y"
 };
 
-double fm_polyn_2d_12_func(const mat X, const mat func_param, void* nothing)
+double fm_polyn_2d_12_func(const mat X, const mat p, void* nothing)
 {
 	double res,x,y;
 	
@@ -292,11 +292,11 @@ double fm_polyn_2d_12_func(const mat X, const mat func_param, void* nothing)
 	x = mat_get(X,0,0);
 	y = mat_get(X,0,1);
 	
-	res = mat_get(func_param,0,0)             \
-	      + mat_get(func_param,1,0)*x         \
-	      + mat_get(func_param,2,0)*y         \
-	      + mat_get(func_param,3,0)*x*y       \
-	      + mat_get(func_param,4,0)*SQ(y);
+	res = mat_get(p,0,0)             \
+	      + mat_get(p,1,0)*x         \
+	      + mat_get(p,2,0)*y         \
+	      + mat_get(p,3,0)*x*y       \
+	      + mat_get(p,4,0)*SQ(y);
 	
 	return res;
 }
@@ -310,7 +310,7 @@ const fit_model fm_polyn_2d_12 =
 	"%e+%e*x+%e*y+%e*x*y+%e*y**2"
 };
 
-double fm_polyn_2d_20_func(const mat X, const mat func_param, void* nothing)
+double fm_polyn_2d_20_func(const mat X, const mat p, void* nothing)
 {
 	double res,x,y;
 	
@@ -318,9 +318,9 @@ double fm_polyn_2d_20_func(const mat X, const mat func_param, void* nothing)
 	x = mat_get(X,0,0);
 	y = mat_get(X,0,1);
 	
-	res = mat_get(func_param,0,0)             \
-	      + mat_get(func_param,1,0)*x         \
-	      + mat_get(func_param,2,0)*SQ(x);
+	res = mat_get(p,0,0)             \
+	      + mat_get(p,1,0)*x         \
+	      + mat_get(p,2,0)*SQ(x);
 	
 	return res;
 }
@@ -334,7 +334,7 @@ const fit_model fm_polyn_2d_20 =
 	"%e+%e*x+%e*x**2"
 };
 
-double fm_polyn_2d_21_func(const mat X, const mat func_param, void* nothing)
+double fm_polyn_2d_21_func(const mat X, const mat p, void* nothing)
 {
 	double res,x,y;
 	
@@ -342,11 +342,11 @@ double fm_polyn_2d_21_func(const mat X, const mat func_param, void* nothing)
 	x = mat_get(X,0,0);
 	y = mat_get(X,0,1);
 	
-	res = mat_get(func_param,0,0)             \
-	      + mat_get(func_param,1,0)*x         \
-	      + mat_get(func_param,2,0)*y         \
-	      + mat_get(func_param,3,0)*x*y       \
-	      + mat_get(func_param,4,0)*SQ(x);
+	res = mat_get(p,0,0)             \
+	      + mat_get(p,1,0)*x         \
+	      + mat_get(p,2,0)*y         \
+	      + mat_get(p,3,0)*x*y       \
+	      + mat_get(p,4,0)*SQ(x);
 	
 	return res;
 }
@@ -360,7 +360,7 @@ const fit_model fm_polyn_2d_21 =
 	"%e+%e*x+%e*y+%e*x*y+%e*x**2"
 };
 
-double fm_polyn_2d_22_func(const mat X, const mat func_param, void* nothing)
+double fm_polyn_2d_22_func(const mat X, const mat p, void* nothing)
 {
 	double res,x,y;
 	
@@ -368,12 +368,12 @@ double fm_polyn_2d_22_func(const mat X, const mat func_param, void* nothing)
 	x = mat_get(X,0,0);
 	y = mat_get(X,0,1);
 	
-	res = mat_get(func_param,0,0)             \
-	      + mat_get(func_param,1,0)*x         \
-	      + mat_get(func_param,2,0)*y         \
-	      + mat_get(func_param,3,0)*x*y       \
-	      + mat_get(func_param,4,0)*SQ(x)     \
-	      + mat_get(func_param,5,0)*SQ(y);
+	res = mat_get(p,0,0)             \
+	      + mat_get(p,1,0)*x         \
+	      + mat_get(p,2,0)*y         \
+	      + mat_get(p,3,0)*x*y       \
+	      + mat_get(p,4,0)*SQ(x)     \
+	      + mat_get(p,5,0)*SQ(y);
 	
 	return res;
 }

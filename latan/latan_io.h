@@ -35,7 +35,7 @@ int get_nfile(const stringbuf manifestfname);
 latan_errno get_firstfname(stringbuf fname, const stringbuf manifestfname);
 
 /* mat I/O */
-void mat_dump(FILE* stream, mat m);
+void mat_dump(FILE* stream, const mat m);
 #define mat_print(m) mat_dump(stdout,m)
 int mat_load_nrow(const stringbuf mark, const stringbuf matid,\
 				  const stringbuf inputfname);

@@ -96,8 +96,7 @@ __asm__ __volatile__ ("movaps %4, %%xmm4 \n\t" \
 					: \
 					"xmm2", "xmm3", "xmm4", "xmm5", "xmm6", "xmm7")
 
-
-static void error(int no)
+void error(int no)
 {
 	switch(no)
 	{
@@ -119,8 +118,7 @@ static void error(int no)
 	}         
 }
 
-
-static void update(void)
+void update(void)
 {
 	int k,kmax;
 	rlxd_dble_vec_t *pmin,*pmax,*pi,*pj;
@@ -167,8 +165,7 @@ static void update(void)
 	is_old=is;
 }
 
-
-static void define_constants(void)
+void define_constants(void)
 {
 	int k;
 	float b;
@@ -192,8 +189,7 @@ static void define_constants(void)
 	}
 }
 
-
-static void rlxd_init(int level,int seed)
+void rlxd_init(int level,int seed)
 {
 	int i,k,l;
 	int ibit,jbit,xbit[31];
@@ -258,8 +254,7 @@ static void rlxd_init(int level,int seed)
 	init=1;
 }
 
-
-static void ranlxd(double r[],int n)
+void ranlxd(double r[],int n)
 {
 	int k;
 	
@@ -276,13 +271,12 @@ static void ranlxd(double r[],int n)
 }
 
 
-static int rlxd_size(void)
+int rlxd_size(void)
 {
 	return(RLXG_STATE_SIZE);
 }
 
-
-static void rlxd_get(int state[])
+void rlxd_get(int state[])
 {
 	int k;
 	float base;
@@ -307,7 +301,7 @@ static void rlxd_get(int state[])
 	state[104]=is;
 }
 
-static void rlxd_reset(int state[])
+void rlxd_reset(int state[])
 {
 	int k;
 	
@@ -408,7 +402,7 @@ carry.c4=(d<0); \
 d+=BASE; \
 (*pi).c2.c4=d&MASK
 
-static void error(int no)
+void error(int no)
 {
 	switch(no)
 	{
@@ -437,8 +431,7 @@ static void error(int no)
 	}         
 }
 
-
-static void update(void)
+void update(void)
 {
 	int k,kmax,d;
 	rlxd_dble_vec_t *pmin,*pmax,*pi,*pj;
@@ -470,8 +463,7 @@ static void update(void)
 	is_old=is;
 }
 
-
-static void define_constants(void)
+void define_constants(void)
 {
 	int k;
 	
@@ -485,8 +477,7 @@ static void define_constants(void)
 	}   
 }
 
-
-static void rlxd_init(int level,int seed)
+void rlxd_init(int level,int seed)
 {
 	int i,k,l;
 	int ibit,jbit,xbit[31];
@@ -555,8 +546,7 @@ static void rlxd_init(int level,int seed)
 	init=1;
 }
 
-
-static void ranlxd(double r[],int n)
+void ranlxd(double r[],int n)
 {
 	int k;
 	
@@ -572,14 +562,12 @@ static void ranlxd(double r[],int n)
 	}
 }
 
-
-static int rlxd_size(void)
+int rlxd_size(void)
 {
 	return(RLXG_STATE_SIZE);
 }
 
-
-static void rlxd_get(int state[])
+void rlxd_get(int state[])
 {
 	int k;
 	
@@ -602,8 +590,7 @@ static void rlxd_get(int state[])
 	state[104]=is;
 }
 
-
-static void rlxd_reset(int state[])
+void rlxd_reset(int state[])
 {
 	int k;
 	

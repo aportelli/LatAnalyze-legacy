@@ -39,7 +39,7 @@ static void plot_add_tmpf(plot p, const stringbuf tmpfname);
 	}\
 }
 
-static char* gnuplot_get_program_path(const char *pname)
+char* gnuplot_get_program_path(const char *pname)
 {
     int         i, j, lg;
     char*		path;
@@ -85,7 +85,7 @@ static char* gnuplot_get_program_path(const char *pname)
     return buf ;
 }
 
-static void gnuplot_cmd(FILE* ctrl, const char* cmd, ...)
+void gnuplot_cmd(FILE* ctrl, const char* cmd, ...)
 {
     va_list ap;
     char local_cmd[GP_CMD_SIZE];
@@ -99,7 +99,7 @@ static void gnuplot_cmd(FILE* ctrl, const char* cmd, ...)
 }
 
 /** temporary file management **/
-static void plot_add_tmpf(plot p, const stringbuf tmpfname)
+void plot_add_tmpf(plot p, const stringbuf tmpfname)
 {
 	(p->ntmpf)++;
 	REALLOC_NOERRET(p->tmpfname,p->tmpfname,stringbuf*,p->ntmpf);

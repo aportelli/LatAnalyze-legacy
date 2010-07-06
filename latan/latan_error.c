@@ -53,7 +53,7 @@ latan_error_handler_t* latan_set_error_handler_off (void)
 	return previous_handler;
 }
 
-static void no_error_handler(const char* reason, const char* file, int line,\
+void no_error_handler(const char* reason, const char* file, int line,\
 							 int no)
 {
 	/* do nothing */

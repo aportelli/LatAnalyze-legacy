@@ -47,8 +47,11 @@ double mat_get_min(const mat m);
 double mat_get_max(const mat m);
 
 /** tests **/
-bool mat_issamedim(mat m, mat n);
-bool mat_issquare(mat m);
+bool mat_is_samedim(mat m, mat n);
+bool mat_is_square(mat m);
+bool mat_is_row_vector(mat m);
+bool mat_is_col_vector(mat m);
+bool mat_is_vector(mat m);
 
 /** operations **/
 void mat_zero(mat m);
@@ -56,7 +59,6 @@ void mat_cst(mat m, const double x);
 void mat_rand_u(mat m, const double a, const double b);
 void mat_id(mat m);
 latan_errno mat_cp(mat m, const mat n);
-
 latan_errno mat_eqadd(mat m, const mat n);
 latan_errno mat_add(mat m, const mat n, const mat o);
 latan_errno mat_eqsub(mat m, const mat n);

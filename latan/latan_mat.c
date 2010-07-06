@@ -232,14 +232,29 @@ double mat_get_max(const mat m)
 
 /*								tests   									*/
 /****************************************************************************/
-bool mat_issamedim(const mat m, const mat n)
+bool mat_is_samedim(const mat m, const mat n)
 {
 	return ((nrow(m) == nrow(n))&&(ncol(m) == ncol(n)));
 }
 
-bool mat_issquare(const mat m)
+bool mat_is_square(const mat m)
 {
 	return (nrow(m) == ncol(m));
+}
+
+bool mat_is_row_vector(mat m)
+{
+	return (ncol(m) == 1);
+}
+
+bool mat_is_col_vector(mat m)
+{
+	return (nrow(m) == 1);
+}
+
+bool mat_is_vector(mat m)
+{
+	return ((nrow(m) == 1)||(ncol(m) == 1));
 }
 
 /*								operations									*/
@@ -275,7 +290,7 @@ latan_errno mat_cp(mat m, const mat n)
 	
 	status = LATAN_SUCCESS;
 	
-	if (!mat_issamedim(m,n))
+	if (!mat_is_samedim(m,n))
 	{
 		LATAN_ERROR("matrix copy with dimension mismatch",LATAN_EBADLEN);
 	}
@@ -291,7 +306,7 @@ latan_errno mat_eqadd(mat m, const mat n)
 	
 	status = LATAN_SUCCESS;
 	
-	if (!(mat_issamedim(m,n)))
+	if (!(mat_is_samedim(m,n)))
 	{
 		LATAN_ERROR("operation between matrices with dimension mismatch",\
 					LATAN_EBADLEN);
@@ -321,7 +336,7 @@ latan_errno mat_eqsub(mat m, const mat n)
 	
 	status = LATAN_SUCCESS;
 	
-	if (!(mat_issamedim(m,n)))
+	if (!(mat_is_samedim(m,n)))
 	{
 		LATAN_ERROR("operation between matrices with dimension mismatch",\
 					LATAN_EBADLEN);
@@ -444,7 +459,7 @@ latan_errno mat_eqtranspose(mat m)
 {
 	latan_errno status;
 	
-	if (!mat_issquare(m))
+	if (!mat_is_square(m))
 	{
 		LATAN_ERROR("cannot auto-transpose a non-square matrix",LATAN_ENOTSQR);
 	}
@@ -480,7 +495,7 @@ latan_errno mat_inv(mat m, const mat n)
 	
 	status = LATAN_SUCCESS;
 	
-	if (!mat_issquare(m))
+	if (!mat_is_square(m))
 	{
 		LATAN_ERROR("cannot invert a non-square matrix",LATAN_ENOTSQR);
 	}
@@ -512,7 +527,7 @@ latan_errno mat_eqmulp(mat m, const mat n)
 	
 	status = LATAN_SUCCESS;
 	
-	if (!(mat_issamedim(m,n)))
+	if (!(mat_is_samedim(m,n)))
 	{
 		LATAN_ERROR("operation between matrices with dimension mismatch",\
 					LATAN_EBADLEN);
@@ -564,7 +579,7 @@ latan_errno mat_eqdivp(mat m, const mat n)
 	
 	status = LATAN_SUCCESS;
 	
-	if (!(mat_issamedim(m,n)))
+	if (!(mat_is_samedim(m,n)))
 	{
 		LATAN_ERROR("operation between matrices with dimension mismatch",\
 					LATAN_EBADLEN);
@@ -591,7 +606,7 @@ latan_errno mat_abs(mat m, const mat n)
 {
 	size_t i,j;
 	
-	if (!mat_issamedim(m,n))
+	if (!mat_is_samedim(m,n))
 	{
 		LATAN_ERROR("operation between matrices with dimension mismatch",\
 					LATAN_EBADLEN);
@@ -609,7 +624,7 @@ latan_errno mat_sqrt(mat m, const mat n)
 {
 	size_t i,j;
 	
-	if (!mat_issamedim(m,n))
+	if (!mat_is_samedim(m,n))
 	{
 		LATAN_ERROR("operation between matrices with dimension mismatch",\
 					LATAN_EBADLEN);

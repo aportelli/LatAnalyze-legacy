@@ -6,8 +6,6 @@
 #include <latan/latan_rand.h>
 #include <latan/latan_statistics.h>
 
-__BEGIN_DECLS
-
 /* loop on lines of a file */
 #define BEGIN_FOR_LINE(str,f_name)\
 {\
@@ -23,7 +21,15 @@ __BEGIN_DECLS
 	}\
 	fclose(_f);\
 }
-	
+
+__BEGIN_DECLS
+
+/* I/O options */
+void io_get_prop_mark(stringbuf prop_mark);
+void io_set_prop_mark(const stringbuf prop_mark);
+void io_get_prop_idfmt(stringbuf prop_idfmt);
+void io_set_prop_idfmt(const stringbuf prop_idfmt);
+
 /* general I/O */
 int get_nfile(const stringbuf manifestfname);
 latan_errno get_firstfname(stringbuf fname, const stringbuf manifestfname);

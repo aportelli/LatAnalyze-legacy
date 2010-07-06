@@ -2,6 +2,40 @@
 #include <latan/latan_includes.h>
 #include <latan/latan_math.h>
 
+/*							I/O options										*/
+/****************************************************************************/
+typedef struct
+{
+	stringbuf prop_mark;
+	stringbuf prop_idfmt;
+} io_env;
+
+static io_env env = 
+{
+	"PROP",\
+	"%s_%s_%s_%s"
+};
+
+void io_get_prop_mark(stringbuf prop_mark)
+{
+	strcpy(prop_mark,env.prop_mark);
+}
+
+void io_set_prop_mark(const stringbuf prop_mark)
+{
+	strcpy(env.prop_mark,prop_mark);
+}
+
+void io_get_prop_idfmt(stringbuf prop_idfmt)
+{
+	strcpy(prop_idfmt,env.prop_idfmt);
+}
+
+void io_set_prop_idfmt(const stringbuf prop_idfmt)
+{
+	strcpy(env.prop_idfmt,prop_idfmt);
+}
+
 /*							general I/O										*/
 /****************************************************************************/
 int get_nfile(const stringbuf manifestfname)
@@ -291,8 +325,8 @@ int hadron_getnt(const hadron h, const ss_no source, const ss_no sink,\
 	stringbuf ffname,fullpropid,prop_mark,prop_idfmt,source_id,sink_id;
 	int nt;
 	
-	latan_get_prop_mark(prop_mark);
-	latan_get_prop_idfmt(prop_idfmt);
+	io_get_prop_mark(prop_mark);
+	io_get_prop_idfmt(prop_idfmt);
 	ss_id_get(source_id,source);
 	ss_id_get(sink_id,sink);
 	get_firstfname(ffname,manfname);
@@ -330,8 +364,8 @@ latan_errno hadron_propbin(mat* prop, const hadron h, const ss_no source,	\
 	
 	prop_prebin = mat_ar_create(ndat,nt,1);
 	
-	latan_get_prop_mark(prop_mark);
-	latan_get_prop_idfmt(prop_idfmt);
+	io_get_prop_mark(prop_mark);
+	io_get_prop_idfmt(prop_idfmt);
 	ss_id_get(source_id,source);
 	ss_id_get(sink_id,sink);
 	

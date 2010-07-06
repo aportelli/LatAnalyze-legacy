@@ -406,10 +406,10 @@ double fit_data_model_eval(const fit_data d, const size_t i,\
 	mat_get_subm(x_i,d->x,i,0,i,d->ndim-1);
 	mat_transpose(x_i_t,x_i);
 	
-	return fit_model_eval(d->model,x_i,p,d->model_param);
-	
 	mat_destroy(x_i);
 	mat_destroy(x_i_t);
+	
+	return fit_model_eval(d->model,x_i,p,d->model_param);
 }
 
 void fit_data_set_stage(fit_data d, const int stage)

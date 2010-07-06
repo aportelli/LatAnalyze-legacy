@@ -226,7 +226,7 @@ latan_errno histogram(mat hist, const mat data, const double xmin,\
 /*					resampled samples manipulation							*/
 /****************************************************************************/
 /** jackknife sample number calculation **/
-static size_t jackknife_nsample(const size_t ndat, const size_t jk_depth)
+size_t jackknife_nsample(const size_t ndat, const size_t jk_depth)
 {
 	unsigned int i;
 	size_t nsample;
@@ -366,10 +366,10 @@ latan_errno rs_sample_covp(mat cov, const rs_sample s, const rs_sample t)
 }
 /*						resampling functions								*/
 /****************************************************************************/
-static latan_errno resample_bootstrap(mat cent_val, mat* sample,			\
-									  const size_t nboot, const mat* dat,	\
-									  const size_t ndat, const size_t nobs,	\
-									  rs_func* f, void* param)
+latan_errno resample_bootstrap(mat cent_val, mat* sample,			\
+							   const size_t nboot, const mat* dat,	\
+							   const size_t ndat, const size_t nobs,	\
+							   rs_func* f, void* param)
 {
 	mat* fakedat;
 	size_t i,j,k;

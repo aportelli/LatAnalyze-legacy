@@ -308,7 +308,7 @@ latan_errno fit_data_set_data_var(fit_data d, const mat var)
 	stringbuf warnmsg;
 	
 	status = LATAN_SUCCESS;
-	d->is_data_correlated = mat_issquare(var);
+	d->is_data_correlated = mat_is_square(var);
 	if (d->is_data_correlated)
 	{
 		LATAN_UPDATE_STATUS(status,mat_inv(d->data_varinv,var));
@@ -345,7 +345,7 @@ latan_errno fit_data_set_x_var(fit_data d, const mat var)
 	
 	status = LATAN_SUCCESS;
 	d->have_x_var      = true;
-	d->is_x_correlated = mat_issquare(var);
+	d->is_x_correlated = mat_is_square(var);
 	if (d->is_data_correlated)
 	{
 		LATAN_UPDATE_STATUS(status,mat_inv(d->x_varinv,var));

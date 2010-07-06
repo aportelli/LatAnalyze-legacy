@@ -53,7 +53,7 @@ latan_errno effmass_PCAC(mat res, const mat mprop_AP, const mat mprop_PP)
 	latan_errno status;
 	size_t t;
 	
-	if (!mat_issamedim(mprop_AP,mprop_PP))
+	if (!mat_is_samedim(mprop_AP,mprop_PP))
 	{
 		LATAN_ERROR("AP and PP propagators have different dimensions",\
 					LATAN_EBADLEN);
@@ -79,6 +79,7 @@ plat* search_plat(size_t *nplat, const mat data, const mat sigdata,\
 	plat *plat_ar;
 	
 	in        = false;
+	toend     = false;
 	j         = 0;
 	length    = 0;
 	maxlength = 0;

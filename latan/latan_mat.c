@@ -11,7 +11,7 @@
 /****************************************************************************/
 mat mat_create(const size_t init_nrow, const size_t init_ncol)
 {
-	gsl_error_handler_t* error_handler;
+	gsl_error_handler_t *error_handler;
 	mat m;
 	
 	error_handler = gsl_set_error_handler(&latan_error);
@@ -32,7 +32,7 @@ mat mat_create_from_mat(const mat n)
 	return m;
 }
 
-mat mat_create_from_ar(const double* ar, const size_t init_nrow,\
+mat mat_create_from_ar(const double *ar, const size_t init_nrow,\
 					   const size_t init_ncol)
 {
 	mat m;
@@ -44,11 +44,11 @@ mat mat_create_from_ar(const double* ar, const size_t init_nrow,\
 	return m;
 }
 
-mat* mat_ar_create(const size_t nmat, const size_t init_nrow,\
+mat *mat_ar_create(const size_t nmat, const size_t init_nrow,\
 				   const size_t init_ncol)
 {
 	size_t i;
-	mat* m;
+	mat *m;
 	
 	MALLOC_NOERRET(m,mat*,nmat);
 	for (i=0;i<nmat;i++)
@@ -64,7 +64,7 @@ void mat_destroy(mat m)
 	gsl_matrix_free(m);
 }
 
-void mat_ar_destroy(mat* m, const size_t nmat)
+void mat_ar_destroy(mat *m, const size_t nmat)
 {
 	size_t i;
 	
@@ -208,7 +208,7 @@ latan_errno mat_set_step(mat m, const double x0, const double step)
 	return LATAN_SUCCESS;
 }
 
-latan_errno mat_set_from_ar(mat m, const double* ar)
+latan_errno mat_set_from_ar(mat m, const double *ar)
 {
 	gsl_matrix_const_view ar_view = gsl_matrix_const_view_array(ar,\
 																nrow(m),\
@@ -534,8 +534,8 @@ latan_errno mat_inv(mat m, const mat n)
 	int signum;
 	mat LU;
 	size_t i;
-	gsl_permutation* perm;
-	gsl_error_handler_t* error_handler;
+	gsl_permutation *perm;
+	gsl_error_handler_t *error_handler;
 	
 	status = LATAN_SUCCESS;
 	

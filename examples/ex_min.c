@@ -1,6 +1,6 @@
 #include <latan/latan_minimizer.h>
 
-double polynom(const mat var, void* param)
+double polynom(const mat var, void *param)
 {
 	double x;
 	

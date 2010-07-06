@@ -1,8 +1,8 @@
 #include <latan/latan_plot.h>
 #include <latan/latan_includes.h>
 
-static char* gnuplot_get_program_path(const char* pname);
-static void gnuplot_cmd(FILE *ctrl, const char* cmd, ...);
+static char *gnuplot_get_program_path(const char *pname);
+static void gnuplot_cmd(FILE *ctrl, const char *cmd, ...);
 static void plot_add_tmpf(plot p, const stringbuf tmpfname);
 
 /*								internal code								*/
@@ -39,10 +39,10 @@ static void plot_add_tmpf(plot p, const stringbuf tmpfname);
 	}\
 }
 
-char* gnuplot_get_program_path(const char *pname)
+char *gnuplot_get_program_path(const char *pname)
 {
     int         i, j, lg;
-    char*		path;
+    char *		path;
     static char buf[PATH_MAXNAMESZ];
 	
     /* Trivial case: try in CWD */
@@ -85,7 +85,7 @@ char* gnuplot_get_program_path(const char *pname)
     return buf ;
 }
 
-void gnuplot_cmd(FILE* ctrl, const char* cmd, ...)
+void gnuplot_cmd(FILE* ctrl, const char *cmd, ...)
 {
     va_list ap;
     char local_cmd[GP_CMD_SIZE];

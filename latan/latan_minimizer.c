@@ -109,7 +109,7 @@ void minimizer_set_max_iteration(unsigned int max_iteration)
 
 /*							the minimizer									*/
 /****************************************************************************/
-latan_errno minimize(mat x, double* f_min, min_func* f, void* param)
+latan_errno minimize(mat x, double *f_min, min_func *f, void *param)
 {
 	latan_errno status;
 	stringbuf name;
@@ -134,18 +134,18 @@ latan_errno minimize(mat x, double* f_min, min_func* f, void* param)
 /*							fit model structure								*/
 /****************************************************************************/
 /** access **/
-void fit_model_get_name(stringbuf name, const fit_model* model)
+void fit_model_get_name(stringbuf name, const fit_model *model)
 {
 	strcpy(name,model->name);
 }
 
-void fit_model_get_plot_fmt(stringbuf plot_fmt, const fit_model* model)
+void fit_model_get_plot_fmt(stringbuf plot_fmt, const fit_model *model)
 {
 	strcpy(plot_fmt,model->plot_fmt);
 }
 
-double fit_model_eval(const fit_model* model, const mat x,
-					  const mat p, void* param)
+double fit_model_eval(const fit_model *model, const mat x,
+					  const mat p, void *param)
 {
 	return model->func(x,p,param);
 }
@@ -375,7 +375,7 @@ latan_errno fit_data_set_x_var(fit_data d, const mat var)
 	return status;
 }
 
-latan_errno fit_data_set_model(fit_data d, const fit_model* model)
+latan_errno fit_data_set_model(fit_data d, const fit_model *model)
 {
 	if (model->ndim != d->ndim)
 	{
@@ -387,12 +387,12 @@ latan_errno fit_data_set_model(fit_data d, const fit_model* model)
 	return LATAN_SUCCESS;
 }
 
-const fit_model* fit_data_pt_model(fit_data d)
+const fit_model *fit_data_pt_model(fit_data d)
 {
 	return d->model;
 }
 
-void fit_data_set_model_param(fit_data d, void* model_param)
+void fit_data_set_model_param(fit_data d, void *model_param)
 {
 	d->model_param = model_param;
 }
@@ -436,7 +436,7 @@ bool fit_data_is_correlated(const fit_data d)
 
 /*							chi2 function									*/
 /****************************************************************************/
-double chi2(const mat p, void* d)
+double chi2(const mat p, void *d)
 {
 	fit_data dt;
 	size_t ndata;

@@ -7,47 +7,41 @@
 
 #define DIFF_PREC 1e-8
 
-static double gsl_f(const gsl_vector* v, void* gparam);
-static double gsl_f_i(double v_i, void* param);
-static void gsl_df(const gsl_vector* v, void* gparam, gsl_vector* df);
-static void gsl_fdf(const gsl_vector* v, void* v_gf_param, double* f,\
-					gsl_vector* df);
+static double gsl_f(const gsl_vector *v, void *gparam);
+static double gsl_f_i(double v_i, void *param);
+static void gsl_df(const gsl_vector *v, void *gparam, gsl_vector *df);
+static void gsl_fdf(const gsl_vector *v, void *v_gf_param, double *f,\
+					gsl_vector *df);
 
 typedef struct
 {
-	void* param;
-	min_func* f;
+	void *param;
+	min_func *f;
 } gsl_f_eval_param;
 
 typedef struct
 {
-	gsl_f_eval_param* gf_param;
-	const gsl_vector* v;
+	gsl_f_eval_param *gf_param;
+	const gsl_vector *v;
 	size_t i;
 } gsl_f_i_param;
 
-double gsl_f(const gsl_vector* v, void* v_gf_param)
+double gsl_f(const gsl_vector *v, void *v_gf_param)
 {
-	gsl_f_eval_param* gf_param;
-	mat x;
+	gsl_f_eval_param *gf_param;
+	gsl_matrix_const_view x_view = gsl_matrix_const_view_vector(v,v->size,1);
 	double f_val;
 	
 	gf_param = (gsl_f_eval_param*)v_gf_param;
-	
-	x = mat_create(v->size,1);
-	
-	gsl_matrix_set_col(x,0,v);
-	f_val = gf_param->f(x,gf_param->param);
-	
-	mat_destroy(x);
+	f_val    = gf_param->f(&(x_view.matrix),gf_param->param);
 	
 	return f_val;
 }
 
-double gsl_f_i(double v_i, void* v_gfi_param)
+double gsl_f_i(double v_i, void *v_gfi_param)
 {
-	gsl_f_i_param* gfi_param;
-	gsl_vector* v_mod;
+	gsl_f_i_param *gfi_param;
+	gsl_vector *v_mod;
 	double f_val;
 	
 	gfi_param = (gsl_f_i_param*)v_gfi_param;
@@ -63,7 +57,7 @@ double gsl_f_i(double v_i, void* v_gfi_param)
 	return f_val;
 }
 
-void gsl_df(const gsl_vector* v, void* v_gf_param, gsl_vector* df)
+void gsl_df(const gsl_vector *v, void *v_gf_param, gsl_vector *df)
 {
 	size_t i;
 	double dfodvi, dummy;
@@ -84,28 +78,28 @@ void gsl_df(const gsl_vector* v, void* v_gf_param, gsl_vector* df)
 	}
 }
 
-void gsl_fdf(const gsl_vector* v, void* v_gf_param, double* f, gsl_vector* df)
+void gsl_fdf(const gsl_vector *v, void *v_gf_param, double *f, gsl_vector *df)
 {
 	*f = gsl_f(v,v_gf_param);
 	gsl_df(v,v_gf_param,df);
 }
 
-latan_errno minimize_gsl(mat x, double* f_min, min_func* f, void* param)
+latan_errno minimize_gsl(mat x, double *f_min, min_func *f, void *param)
 {
 	latan_errno status;
 	size_t n;
 	size_t i;
 	unsigned int iter, max_iteration;
-	gsl_vector* gsl_x;
-	gsl_vector* step_size;
+	gsl_vector *gsl_x;
+	gsl_vector *step_size;
 	gsl_f_eval_param gf_param;
 	gsl_multimin_function_fdf gsl_min_func_fdf;
 	gsl_multimin_function gsl_min_func_f;
 	bool need_df;
-	const gsl_multimin_fdfminimizer_type* minimizer_fdf_t;
-	gsl_multimin_fdfminimizer* minimizer_fdf;
-	const gsl_multimin_fminimizer_type* minimizer_f_t;
-	gsl_multimin_fminimizer* minimizer_f;
+	const gsl_multimin_fdfminimizer_type *minimizer_fdf_t;
+	gsl_multimin_fdfminimizer *minimizer_fdf;
+	const gsl_multimin_fminimizer_type *minimizer_f_t;
+	gsl_multimin_fminimizer *minimizer_f;
 	stringbuf buf, x_dump;
 	
 	n                       = nrow(x);

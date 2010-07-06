@@ -11,26 +11,26 @@
 
 __BEGIN_DECLS
 
-typedef latan_errno rs_func(mat res, const mat* dat, const size_t ndat,\
-							const size_t sampno, void* param);
+typedef latan_errno rs_func(mat res, const mat *dat, const size_t ndat,\
+							const size_t sampno, void *param);
 
 /* elementary estimators */
 double mat_elsum(mat m);
 double mat_elmean(mat m);
-latan_errno mat_mean(mat mean, const mat* m, const size_t size);
-latan_errno mat_cov(mat cov, const mat* m, const mat* n, const size_t size);
-latan_errno mat_cov_m(mat cov, const mat* m, const mat* n, const size_t size,\
+latan_errno mat_mean(mat mean, const mat *m, const size_t size);
+latan_errno mat_cov(mat cov, const mat *m, const mat *n, const size_t size);
+latan_errno mat_cov_m(mat cov, const mat *m, const mat *n, const size_t size,\
 					  const mat m_mean, const mat n_mean);
 #define mat_var(var,m,size) mat_cov(var,m,m,size)
 #define mat_var_m(var,m,size,mean) mat_cov(var,m,m,size,mean,mean)
-latan_errno mat_covp(mat cov, const mat* m, const mat* n, const size_t size);
-latan_errno mat_covp_m(mat cov, const mat* m, const mat* n, const size_t size,\
+latan_errno mat_covp(mat cov, const mat *m, const mat *n, const size_t size);
+latan_errno mat_covp_m(mat cov, const mat *m, const mat *n, const size_t size,\
 					   const mat m_mean, const mat n_mean);
 #define mat_varp(var,m,size) mat_covp(var,m,m,size)
 #define mat_varp_m(var,m,size,mean) mat_covp_m(var,m,m,size,mean,mean)
 
 /* data binning */
-latan_errno mat_ar_bin(mat* bindat, const mat* dat, const size_t ndat,\
+latan_errno mat_ar_bin(mat *bindat, const mat *dat, const size_t ndat,\
 					   const size_t binsize);
 
 /* histogram */
@@ -42,7 +42,7 @@ typedef struct
 {
 	stringbuf name;
 	mat cent_val;
-	mat* sample;
+	mat *sample;
 	size_t nsample;
 	int resamp_method;
 	randgen_state gen_state;
@@ -71,18 +71,18 @@ latan_errno rs_sample_covp(mat cov, const rs_sample s, const rs_sample t);
 #define rs_sample_varp(cov,s) rs_sample_covp(cov,s,s);
 
 /* resampling function */
-latan_errno resample(rs_sample s, const mat* dat, const size_t ndat,\
-					 const size_t nobs, rs_func* f, void* param);
+latan_errno resample(rs_sample s, const mat *dat, const size_t ndat,\
+					 const size_t nobs, rs_func *f, void *param);
 
 /* useful rs_func */
-latan_errno rs_mean(mat res, const mat* dat, const size_t ndat,\
-					const size_t sampno, void* nothing);
-latan_errno rs_finite_diff(mat res, const mat* dat, const size_t ndat,\
-						   const size_t sampno, void* nothing);
-latan_errno rs_effmass(mat res, const mat* dat, const size_t ndat,\
-					   const size_t sampno, void* parity);
-latan_errno rs_effmass_PCAC(mat res, const mat* dat, const size_t ndat,\
-							const size_t sampno, void* nothing);
+latan_errno rs_mean(mat res, const mat *dat, const size_t ndat,\
+					const size_t sampno, void *nothing);
+latan_errno rs_finite_diff(mat res, const mat *dat, const size_t ndat,\
+						   const size_t sampno, void *nothing);
+latan_errno rs_effmass(mat res, const mat *dat, const size_t ndat,\
+					   const size_t sampno, void *parity);
+latan_errno rs_effmass_PCAC(mat res, const mat *dat, const size_t ndat,\
+							const size_t sampno, void *nothing);
 
 __END_DECLS
 

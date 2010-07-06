@@ -18,6 +18,8 @@ liblatan_la_SOURCES =		\
 	latan_mat.c				\
 	latan_math.c			\
 	latan_minimizer.c		\
+	latan_min_gsl.h			\
+	latan_min_gsl.c			\
 	latan_min_minuit2.h		\
 	latan_min_minuit2.cpp	\
 	latan_models.c			\

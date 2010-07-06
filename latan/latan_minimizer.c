@@ -4,6 +4,8 @@
 #include <latan/latan_min_minuit2.h>
 #include <latan/latan_io.h>
 #include <latan/latan_math.h>
+#include <gsl/gsl_matrix.h>
+#include <gsl/gsl_vector.h>
 
 /*						minimizer options									*/
 /****************************************************************************/
@@ -395,21 +397,21 @@ void fit_data_set_model_param(fit_data d, void* model_param)
 	d->model_param = model_param;
 }
 
+/* CRITICALLY CALLED FUNCTION
+ * fit_data_model_eval is heavily called during one call of minimize function,
+ * optimization is done using vector/matrix views from GSL
+ */
 double fit_data_model_eval(const fit_data d, const size_t i,\
 						   const mat p)
 {
-	mat x_i, x_i_t;
+	gsl_vector_view x_i_vview;
+	gsl_matrix_view x_i_t_mview;
 	
-	x_i   = mat_create(d->ndim,1);
-	x_i_t = mat_create(1,d->ndim);
+	x_i_vview   = gsl_matrix_row(d->x,i);
+	x_i_t_mview = gsl_matrix_view_vector(&(x_i_vview.vector),   \
+										 x_i_vview.vector.size,1);
 	
-	mat_get_subm(x_i,d->x,i,0,i,d->ndim-1);
-	mat_transpose(x_i_t,x_i);
-	
-	mat_destroy(x_i);
-	mat_destroy(x_i_t);
-	
-	return fit_model_eval(d->model,x_i,p,d->model_param);
+	return fit_model_eval(d->model,&(x_i_t_mview.matrix),p,d->model_param);
 }
 
 void fit_data_set_stage(fit_data d, const int stage)
@@ -432,7 +434,7 @@ bool fit_data_is_correlated(const fit_data d)
 	return d->is_data_correlated;
 }
 
-/*							chi2 functions									*/
+/*							chi2 function									*/
 /****************************************************************************/
 double chi2(const mat p, void* d)
 {

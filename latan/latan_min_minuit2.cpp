@@ -87,12 +87,14 @@ latan_errno minimize_minuit2(mat var, double* f_min, min_func* f, void* param)
 	size_t i;
 	double init_var_i,var_i;
 	std::vector<double> v_init_var;
+	unsigned int max_iteration;
 	std::vector<double> v_init_err;
 	Minuit2MinFunc minuit2_f(f,param);
 	CombinedMinimizer minimizer;
 	
 	status = LATAN_SUCCESS;
 	var_size = nrow(var);
+	max_iteration = minimizer_get_max_iteration();
 	
 	for (i=0;i<var_size;i++)
 	{
@@ -103,6 +105,9 @@ latan_errno minimize_minuit2(mat var, double* f_min, min_func* f, void* param)
 	FunctionMinimum minuit2_min = minimizer.Minimize(minuit2_f,v_init_var,\
 													 v_init_err,STRATEGY,\
 													 MAX_FUNC_CALL,FIT_TOL);
+	FunctionMinimum minuit2_min = minimizer->Minimize(minuit2_f,v_init_x, \
+													  v_init_err,STRATEGY,  \
+													  max_iteration,FIT_TOL);
 	if (!minuit2_min.IsValid())
 	{
 		LATAN_WARNING("MINUIT library reported that minimization result is not valid",\

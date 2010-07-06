@@ -6,6 +6,31 @@
 
 __BEGIN_DECLS
 
+/* minimize lib flags */
+typedef enum
+{
+	GSL    = 0,\
+	MINUIT = 1
+} minlib_no;
+
+typedef enum
+{
+	GSL_GRAD_FR    = 0,\
+	GSL_GRAD_PR    = 1,\
+	GSL_VEC_BFGS   = 2,\
+	GSL_SIMPLEX_NM = 3,\
+	MIN_MIGRAD     = 4,\
+	MIN_SIMPLEX    = 5
+} minalg_no;
+
+/* minimizer options */
+minlib_no minimizer_get_lib(void);
+minalg_no minimizer_get_alg(void);
+latan_errno minimizer_set_alg(minalg_no alg);
+latan_errno minimizer_get_alg_name(stringbuf name);
+unsigned int minimizer_get_max_iteration(void);
+void minimizer_set_max_iteration(unsigned int max_iteration);
+
 /* prototype of function to minimize */
 typedef double min_func(const mat var, void* param);
 

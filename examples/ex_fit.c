@@ -46,7 +46,6 @@ int main(void)
 						  +rand_n(0.0,ERR));
 	}
 	fit_data_fit_all_points(d,true);
-	latan_set_minimize_lib(LIB);
 	latan_set_verb(DEBUG);
 	printf("-- fitting datas...\n");
 	data_fit(fit_param,d);

@@ -37,10 +37,6 @@ __END_DECLS
 #define VERB 1
 #define DEBUG 2
 
-/* minimize lib flags */
-#define GSL 0
-#define MINUIT 1
-
 /* parity flags */
 #define EVEN 0
 #define ODD 1
@@ -151,15 +147,9 @@ __BEGIN_DECLS
 void latan_get_name(stringbuf name);
 void latan_get_version(stringbuf version);
 int latan_get_verb(void);
-int latan_get_minimize_lib(void);
 #ifdef LATAN_ERRNO_DEF
 latan_errno latan_set_verb(int verb);
-latan_errno latan_set_minimize_lib(int minimize_lib);
 #endif
-void latan_get_prop_mark(stringbuf prop_mark);
-void latan_set_prop_mark(const stringbuf prop_mark);
-void latan_get_prop_idfmt(stringbuf prop_idfmt);
-void latan_set_prop_idfmt(const stringbuf prop_idfmt);
 
 /* LatAnalyze message function */
 void latan_printf(const int verb, const stringbuf fmt, ...);

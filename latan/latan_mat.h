@@ -20,13 +20,13 @@ mat mat_create(const size_t init_nrow, const size_t init_ncol);
 #define mat_create_from_dim(n) mat_create(nrow(n),ncol(n))
 #define mat_create_from_trdim(n) mat_create(ncol(n),nrow(n))
 mat mat_create_from_mat(const mat n);
-mat mat_create_from_ar(const double* ar, const size_t init_nrow,\
+mat mat_create_from_ar(const double *ar, const size_t init_nrow,\
 					   const size_t init_ncol);
-mat* mat_ar_create(const size_t nmat, const size_t init_nrow,\
+mat *mat_ar_create(const size_t nmat, const size_t init_nrow,\
 				   const size_t init_ncol);
 #define mat_ar_create_from_dim(nmat,n) mat_ar_create(nmat,nrow(n),ncol(n))
 void mat_destroy(mat m);
-void mat_ar_destroy(mat* m, const size_t nmat);
+void mat_ar_destroy(mat *m, const size_t nmat);
 
 /** access **/
 size_t nrow(const mat m);
@@ -46,7 +46,7 @@ latan_errno mat_set_subm(mat m, const mat n, const size_t k1, const size_t l1, \
 latan_errno mat_get_diag(mat diag, const mat m);
 latan_errno mat_set_diag(mat m, const mat diag);
 latan_errno mat_set_step(mat m, const double x0, const double step);
-latan_errno mat_set_from_ar(mat m, const double* ar);
+latan_errno mat_set_from_ar(mat m, const double *ar);
 #define mat_inc(m,i,j,val) mat_set(m,i,j,mat_get(m,i,j)+val)
 #define mat_pp(m,i,j) mat_inc(m,i,j,1.0)
 double mat_get_min(const mat m);

@@ -13,8 +13,8 @@ __BEGIN_DECLS
 
 unsigned int binomial(const unsigned int n, const unsigned int p);
 latan_errno finite_diff(mat ddat, const mat dat);
-size_t coord_to_rowmaj(const size_t* x, const size_t* dim, const size_t ndim);
-void rowmaj_to_coord(size_t* x, const size_t* dim, const size_t ndim,\
+size_t coord_to_rowmaj(const size_t *x, const size_t *dim, const size_t ndim);
+void rowmaj_to_coord(size_t *x, const size_t *dim, const size_t ndim,\
 					 const size_t ind);
 __END_DECLS
 

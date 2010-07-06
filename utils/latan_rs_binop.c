@@ -14,9 +14,9 @@
 
 typedef latan_errno mat_binop_f(mat, const mat, const mat);
 
-mat_binop_f* mat_binop = &BINOP;
+mat_binop_f *mat_binop = &BINOP;
 
-int main(int argc, char* argv[])
+int main(int argc, char *argv[])
 {
 	rs_sample s1,s2,res;
 	size_t s1_nrow,s2_nrow,s1_nsample,s2_nsample;

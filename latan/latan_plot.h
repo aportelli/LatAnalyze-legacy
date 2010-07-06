@@ -27,9 +27,9 @@ __BEGIN_DECLS
 typedef struct 
 {
 	size_t nplot;			/* number of plot commands the buffer*/
-	stringbuf* plotbuf;		/* buffer of plot commands */
+	stringbuf *plotbuf;		/* buffer of plot commands */
 	size_t ntmpf;			/* number of temporary files opened for this plot */
-	stringbuf* tmpfname;	/* names of the temporary files opened for this plot */
+	stringbuf *tmpfname;	/* names of the temporary files opened for this plot */
 	stringbuf title;		/* title of the plot */
 	stringbuf term;			/* output terminal of the plot */
 	stringbuf output;		/* output file of the plot */

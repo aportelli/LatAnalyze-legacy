@@ -241,7 +241,7 @@ latan_errno mat_load(mat m, const stringbuf mark, const stringbuf matid,\
 	return LATAN_SUCCESS;
 }
 
-latan_errno mat_load_ar(mat* m, const stringbuf mark, const stringbuf matid,\
+latan_errno mat_load_ar(mat *m, const stringbuf mark, const stringbuf matid,\
 						const stringbuf manifestfname)
 {
 	stringbuf buf, fname;
@@ -337,7 +337,7 @@ int hadron_getnt(const hadron h, const ss_no source, const ss_no sink,\
 	return nt;
 }
 
-latan_errno hadron_propbin(mat* prop, const hadron h, const ss_no source,	\
+latan_errno hadron_propbin(mat *prop, const hadron h, const ss_no source,	\
 						   const ss_no sink, const stringbuf manfname,	\
 						   const size_t binsize)
 {
@@ -346,8 +346,8 @@ latan_errno hadron_propbin(mat* prop, const hadron h, const ss_no source,	\
 	int ndat, chmix, stmix;
 	size_t nt;
 	double mean;
-	mat* dat[MAXPROP][MAXQUARKST];
-	mat* prop_prebin;
+	mat *dat[MAXPROP][MAXQUARKST];
+	mat *prop_prebin;
 	stringbuf fullpropid,prop_mark,prop_idfmt,source_id,sink_id;
 	latan_errno status;
 	

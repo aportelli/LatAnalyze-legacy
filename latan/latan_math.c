@@ -3,7 +3,7 @@
 
 unsigned int binomial(const unsigned int n, const unsigned int p)
 {
-	unsigned int* b;
+	unsigned int *b;
 	unsigned int i,j;
 	unsigned int res;
 	
@@ -44,7 +44,7 @@ latan_errno finite_diff(mat ddat, const mat dat)
 	return LATAN_SUCCESS;
 }
 
-size_t coord_to_rowmaj(const size_t* x, const size_t* dim, const size_t ndim)
+size_t coord_to_rowmaj(const size_t *x, const size_t *dim, const size_t ndim)
 {
 	size_t d,ind;
 	
@@ -59,7 +59,7 @@ size_t coord_to_rowmaj(const size_t* x, const size_t* dim, const size_t ndim)
 	return ind;
 }
 
-void rowmaj_to_coord(size_t* x, const size_t* dim, const size_t ndim,\
+void rowmaj_to_coord(size_t *x, const size_t *dim, const size_t ndim,\
 					 const size_t ind)
 {
 	size_t j,dimprod;

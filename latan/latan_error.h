@@ -23,13 +23,13 @@ typedef enum
 #define LATAN_ERRNO_DEF
 #endif
 
-typedef void latan_error_handler_t(const char*, const char*, int, int);
+typedef void latan_error_handler_t(const char *, const char *, int, int);
 
-void latan_error(const char* reason, const char *file, int line, int no);
-void latan_warning(const char* reason, const char* file, int line, int no);
+void latan_error(const char *reason, const char *file, int line, int no);
+void latan_warning(const char *reason, const char *file, int line, int no);
 latan_error_handler_t*\
-latan_set_error_handler(latan_error_handler_t* new_handler);
-latan_error_handler_t* latan_set_error_handler_off(void);
+latan_set_error_handler(latan_error_handler_t *new_handler);
+latan_error_handler_t *latan_set_error_handler_off(void);
 
 #define LATAN_ERROR(reason,no)\
 {\

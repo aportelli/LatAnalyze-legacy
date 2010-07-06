@@ -27,18 +27,18 @@ using namespace Minuit2;
 class Minuit2MinFunc: public FCNBase
 {
 public:
-	Minuit2MinFunc(min_func* init_f, void* init_param);
+	Minuit2MinFunc(min_func *init_f, void *init_param);
 	~Minuit2MinFunc(void);
 	
 	virtual double operator()(const std::vector<double>& v_var) const;
 	virtual double Up(void) const;
 	
 private:
-	min_func* f;
-	void* param;
+	min_func *f;
+	void *param;
 };
 
-Minuit2MinFunc::Minuit2MinFunc(min_func* init_f, void* init_param)
+Minuit2MinFunc::Minuit2MinFunc(min_func *init_f, void *init_param)
 {
 	f = init_f;
 	param = init_param;
@@ -76,7 +76,7 @@ double Minuit2MinFunc::Up(void) const
 }
 #endif
 
-latan_errno minimize_minuit2(mat x, double* f_min, min_func* f, void* param)
+latan_errno minimize_minuit2(mat x, double *f_min, min_func *f, void *param)
 {
 #ifdef HAVE_MINUIT2
 	latan_errno status;
@@ -89,7 +89,7 @@ latan_errno minimize_minuit2(mat x, double* f_min, min_func* f, void* param)
 	Minuit2MinFunc minuit2_f(f,param);
 	VariableMetricMinimizer minimizer_migrad;
 	SimplexMinimizer minimizer_simplex;
-	ModularFunctionMinimizer* minimizer;
+	ModularFunctionMinimizer *minimizer;
 	
 	status = LATAN_SUCCESS;
 	x_size = nrow(x);

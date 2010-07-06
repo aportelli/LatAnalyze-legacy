@@ -4,7 +4,7 @@
 
 #define OUTF_NAME argv[1]
 
-int main(int argc, char* argv[])
+int main(int argc, char *argv[])
 {
 	randgen_state state;
 	

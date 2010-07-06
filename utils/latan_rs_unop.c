@@ -13,9 +13,9 @@
 
 typedef latan_errno mat_unop_f(mat, const mat);
 
-mat_unop_f* mat_unop = &UNOP;
+mat_unop_f *mat_unop = &UNOP;
 
-int main(int argc, char* argv[])
+int main(int argc, char *argv[])
 {
 	rs_sample s1,res;
 	size_t s1_nrow,s1_nsample;

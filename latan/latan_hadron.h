@@ -96,7 +96,7 @@ void hadron_get_name(stringbuf str, const hadron h);
 /* spectrum type */
 typedef struct
 {
-	hadron* particle;
+	hadron *particle;
 	size_t nparticle;
 }* spectrum;
 

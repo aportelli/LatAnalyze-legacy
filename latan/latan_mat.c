@@ -362,23 +362,34 @@ latan_errno mat_sub(mat m, const mat n, const mat o)
 latan_errno mat_mul_nn(mat m, const mat n, const mat o)
 {
 	latan_errno status;
-	mat buf;
+	bool have_duplicate_arg;
+	mat pt,buf;
 	
-	status = LATAN_SUCCESS;
+	status             = LATAN_SUCCESS;
+	have_duplicate_arg = ((m == n)||(m == o));
 	
 	if ((nrow(m) != nrow(n))||(ncol(m) != ncol(o))||(ncol(n) != nrow(o)))
 	{
 		LATAN_ERROR("operation between matrices with dimension mismatch",\
 					LATAN_EBADLEN);
 	}
-
-	buf = mat_create_from_dim(m);
 	
+	if (have_duplicate_arg)
+	{
+		buf = mat_create_from_dim(m);
+		pt  = buf;
+	}
+	else
+	{
+		pt = m;
+	}
 	LATAN_UPDATE_STATUS(status,gsl_blas_dgemm(CblasNoTrans,CblasNoTrans,\
-											  1.0,n,o,0.0,buf));
-	LATAN_UPDATE_STATUS(status,mat_cp(m,buf));
-	
-	mat_destroy(buf);
+											  1.0,n,o,0.0,pt));
+	if (have_duplicate_arg)
+	{
+		LATAN_UPDATE_STATUS(status,mat_cp(m,buf));
+		mat_destroy(buf);
+	}
 	
 	return status;
 }
@@ -386,9 +397,11 @@ latan_errno mat_mul_nn(mat m, const mat n, const mat o)
 latan_errno mat_mul_nt(mat m, const mat n, const mat o)
 {
 	latan_errno status;
-	mat buf;
+	bool have_duplicate_arg;
+	mat pt,buf;
 	
-	status = LATAN_SUCCESS;
+	status             = LATAN_SUCCESS;
+	have_duplicate_arg = ((m == n)||(m == o));
 	
 	if ((nrow(m) != nrow(n))||(ncol(m) != nrow(o))||(ncol(n) != ncol(o)))
 	{
@@ -396,13 +409,22 @@ latan_errno mat_mul_nt(mat m, const mat n, const mat o)
 					LATAN_EBADLEN);
 	}
 	
-	buf = mat_create_from_dim(m);
-	
+	if (have_duplicate_arg)
+	{
+		buf = mat_create_from_dim(m);
+		pt  = buf;
+	}
+	else
+	{
+		pt = m;
+	}
 	LATAN_UPDATE_STATUS(status,gsl_blas_dgemm(CblasNoTrans,CblasTrans,\
-											  1.0,n,o,0.0,buf));
-	LATAN_UPDATE_STATUS(status,mat_cp(m,buf));
-	
-	mat_destroy(buf);
+											  1.0,n,o,0.0,pt));
+	if (have_duplicate_arg)
+	{
+		LATAN_UPDATE_STATUS(status,mat_cp(m,buf));
+		mat_destroy(buf);
+	}
 	
 	return status;
 }
@@ -410,9 +432,11 @@ latan_errno mat_mul_nt(mat m, const mat n, const mat o)
 latan_errno mat_mul_tn(mat m, const mat n, const mat o)
 {
 	latan_errno status;
-	mat buf;
+	bool have_duplicate_arg;
+	mat pt,buf;
 	
-	status = LATAN_SUCCESS;
+	status             = LATAN_SUCCESS;
+	have_duplicate_arg = ((m == n)||(m == o));
 	
 	if ((nrow(m) != ncol(n))||(ncol(m) != ncol(o))||(nrow(n) != nrow(o)))
 	{
@@ -420,13 +444,22 @@ latan_errno mat_mul_tn(mat m, const mat n, const mat o)
 					LATAN_EBADLEN);
 	}
 	
-	buf = mat_create_from_dim(m);
-	
+	if (have_duplicate_arg)
+	{
+		buf = mat_create_from_dim(m);
+		pt  = buf;
+	}
+	else
+	{
+		pt = m;
+	}
 	LATAN_UPDATE_STATUS(status,gsl_blas_dgemm(CblasTrans,CblasNoTrans,\
-											  1.0,n,o,0.0,buf));
-	LATAN_UPDATE_STATUS(status,mat_cp(m,buf));
-	
-	mat_destroy(buf);
+											  1.0,n,o,0.0,pt));
+	if (have_duplicate_arg)
+	{
+		LATAN_UPDATE_STATUS(status,mat_cp(m,buf));
+		mat_destroy(buf);
+	}
 	
 	return status;
 }
@@ -434,9 +467,11 @@ latan_errno mat_mul_tn(mat m, const mat n, const mat o)
 latan_errno mat_mul_tt(mat m, const mat n, const mat o)
 {
 	latan_errno status;
-	mat buf;
+	bool have_duplicate_arg;
+	mat pt,buf;
 	
-	status = LATAN_SUCCESS;
+	status             = LATAN_SUCCESS;
+	have_duplicate_arg = ((m == n)||(m == o));
 	
 	if ((nrow(m) != ncol(n))||(ncol(m) != nrow(o))||(nrow(n) != ncol(o)))
 	{
@@ -444,13 +479,22 @@ latan_errno mat_mul_tt(mat m, const mat n, const mat o)
 					LATAN_EBADLEN);
 	}
 	
-	buf = mat_create_from_dim(m);
-	
+	if (have_duplicate_arg)
+	{
+		buf = mat_create_from_dim(m);
+		pt  = buf;
+	}
+	else
+	{
+		pt = m;
+	}
 	LATAN_UPDATE_STATUS(status,gsl_blas_dgemm(CblasTrans,CblasTrans,\
-											  1.0,n,o,0.0,buf));
-	LATAN_UPDATE_STATUS(status,mat_cp(m,buf));
-	
-	mat_destroy(buf);
+											  1.0,n,o,0.0,pt));
+	if (have_duplicate_arg)
+	{
+		LATAN_UPDATE_STATUS(status,mat_cp(m,buf));
+		mat_destroy(buf);
+	}
 	
 	return status;
 }

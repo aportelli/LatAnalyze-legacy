@@ -55,7 +55,7 @@ latan_errno minalg_id_get(stringbuf m_id, const minalg_no n)
 #define DEF_ALG MIN_MIGRAD
 #else
 #define DEF_LIB GSL
-#define DEF_ALG GSL_GRAD
+#define DEF_ALG GSL_GRAD_FR
 #endif
 
 #ifndef DEF_MAX_ITERATION

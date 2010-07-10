@@ -4,6 +4,7 @@
 #include <latan/latan_min_minuit2.h>
 #include <latan/latan_io.h>
 #include <latan/latan_math.h>
+#include <gsl/gsl_blas.h>
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_vector.h>
 
@@ -204,6 +205,8 @@ fit_data *fit_data_create(const size_t ndata, const size_t ndim)
 	d->data        = mat_create(ndata,1);
 	d->data_varinv = mat_create(ndata,ndata);
 	mat_id(d->data_varinv);
+	d->buf_chi2[0] = mat_create(ndata,1);
+	d->buf_chi2[1] = mat_create(ndata,1);
 	MALLOC_ERRVAL(d->to_fit,bool*,ndata,NULL);
 	for (i=0;i<ndata;i++)
 	{
@@ -228,6 +231,8 @@ void fit_data_destroy(fit_data *d)
 	mat_destroy(d->x_varinv);
 	mat_destroy(d->data);
 	mat_destroy(d->data_varinv);
+	mat_destroy(d->buf_chi2[0]);
+	mat_destroy(d->buf_chi2[1]);
 	FREE(d->to_fit);
 	FREE(d);
 }
@@ -475,21 +480,26 @@ bool fit_data_is_correlated(const fit_data *d)
 
 /*							chi2 function									*/
 /****************************************************************************/
+/* CRITICALLY CALLED FUNCTION
+ * chi2 is heavily called during one call of minimize function,
+ * optimization is done using vector/matrix views from GSL, matrix buffers
+ * in fit_data structure, and ddot BLAS operation
+ */
 double chi2(const mat *p, void *d)
 {
 	fit_data *dt;
 	size_t ndata;
 	size_t i;
 	mat *X,*sigX;
-	mat *mres;
+	gsl_vector_view X_vview,sigX_vview;
 	double res;
 	
 	dt = (fit_data *)d;
 	ndata = nrow(fit_data_pt_data(d));
-	
-	X    = mat_create(ndata,1);
-	sigX = mat_create(ndata,1);
-	mres = mat_create(1,1);
+	X          = dt->buf_chi2[0];
+	X_vview    = gsl_matrix_column(X,0);
+	sigX       = dt->buf_chi2[1];
+	sigX_vview = gsl_matrix_column(sigX,0);
 	
 	for (i=0;i<ndata;i++)
 	{
@@ -504,12 +514,7 @@ double chi2(const mat *p, void *d)
 		}
 	}
 	mat_mul_nn(sigX,dt->data_varinv,X);
-	mat_mul_tn(mres,X,sigX);
-	res = mat_get(mres,0,0);
-	
-	mat_destroy(X);
-	mat_destroy(sigX);
-	mat_destroy(mres);
+	gsl_blas_ddot(&(sigX_vview.vector),&(X_vview.vector),&res);
 	
 	return res;
 }

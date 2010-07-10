@@ -231,7 +231,7 @@ void plot_add_plot(plot p, const stringbuf cmd)
 	strcpy(p->plotbuf[p->nplot-1],cmd);
 }
 
-void plot_add_dat(plot p, const mat x, const mat dat, const stringbuf title,\
+void plot_add_dat(plot p, const mat *x, const mat *dat, const stringbuf title,\
 				  const stringbuf color)
 {
 	FILE* tmpf;
@@ -259,7 +259,7 @@ void plot_add_dat(plot p, const mat x, const mat dat, const stringbuf title,\
 	plot_add_plot(p,plotcmd);
 }
 
-void plot_add_dat_yerr(plot p, const mat x, const mat dat, const mat yerr,\
+void plot_add_dat_yerr(plot p, const mat *x, const mat *dat, const mat *yerr,\
 					 const stringbuf title, const stringbuf color)
 {
 	FILE* tmpf;
@@ -289,8 +289,8 @@ void plot_add_dat_yerr(plot p, const mat x, const mat dat, const mat yerr,\
 	plot_add_plot(p,plotcmd);
 }
 
-void plot_add_dat_xyerr(plot p, const mat x, const mat dat, const mat xerr,\
-						const mat yerr, const stringbuf title,             \
+void plot_add_dat_xyerr(plot p, const mat *x, const mat *dat, const mat *xerr,\
+						const mat *yerr, const stringbuf title,             \
 						const stringbuf color)
 {
 	FILE* tmpf;

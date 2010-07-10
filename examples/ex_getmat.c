@@ -4,7 +4,7 @@
 
 int main(int argc, char *argv[])
 {
-    mat a,b;
+    mat *a,*b;
 	int dat_nrow;
 	
 	dat_nrow = mat_load_nrow("FOO","id1","ex_getmat_f1");
@@ -24,7 +24,7 @@ int main(int argc, char *argv[])
 	mat_destroy(a);
 	mat_destroy(b);
 	
-	mat *c;
+	mat **c;
 	stringbuf ffname;
 	int nfile, i;
 	

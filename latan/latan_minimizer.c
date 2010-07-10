@@ -109,7 +109,7 @@ void minimizer_set_max_iteration(unsigned int max_iteration)
 
 /*							the minimizer									*/
 /****************************************************************************/
-latan_errno minimize(mat x, double *f_min, min_func *f, void *param)
+latan_errno minimize(mat *x, double *f_min, min_func *f, void *param)
 {
 	latan_errno status;
 	stringbuf name;
@@ -144,8 +144,8 @@ void fit_model_get_plot_fmt(stringbuf plot_fmt, const fit_model *model)
 	strcpy(plot_fmt,model->plot_fmt);
 }
 
-double fit_model_eval(const fit_model *model, const mat x,
-					  const mat p, void *param)
+double fit_model_eval(const fit_model *model, const mat *x,
+					  const mat *p, void *param)
 {
 	return model->func(x,p,param);
 }
@@ -215,7 +215,7 @@ double fit_data_get_x(const fit_data d, const size_t i, const size_t j)
 	return mat_get(d->x,i,j);
 }
 
-mat fit_data_pt_x(const fit_data d)
+mat *fit_data_pt_x(const fit_data d)
 {
 	return d->x;
 }
@@ -297,12 +297,12 @@ double fit_data_get_data(const fit_data d, const size_t i)
 	return mat_get(d->data,i,0);
 }
 
-mat fit_data_pt_data(fit_data d)
+mat *fit_data_pt_data(fit_data d)
 {
 	return d->data;
 }
 
-latan_errno fit_data_set_data_var(fit_data d, const mat var)
+latan_errno fit_data_set_data_var(fit_data d, const mat *var)
 {
 	latan_errno status;
 	size_t i;
@@ -338,7 +338,7 @@ latan_errno fit_data_set_data_var(fit_data d, const mat var)
 	return status;
 }
 
-latan_errno fit_data_set_x_var(fit_data d, const mat var)
+latan_errno fit_data_set_x_var(fit_data d, const mat *var)
 {
 	latan_errno status;
 	size_t i;
@@ -402,7 +402,7 @@ void fit_data_set_model_param(fit_data d, void *model_param)
  * optimization is done using vector/matrix views from GSL
  */
 double fit_data_model_eval(const fit_data d, const size_t i,\
-						   const mat p)
+						   const mat *p)
 {
 	gsl_vector_view x_i_vview;
 	gsl_matrix_view x_i_t_mview;
@@ -436,13 +436,13 @@ bool fit_data_is_correlated(const fit_data d)
 
 /*							chi2 function									*/
 /****************************************************************************/
-double chi2(const mat p, void *d)
+double chi2(const mat *p, void *d)
 {
 	fit_data dt;
 	size_t ndata;
 	size_t i;
-	mat X, sigX;
-	mat mres;
+	mat *X,*sigX;
+	mat *mres;
 	double res;
 	
 	dt = (fit_data)d;
@@ -477,7 +477,7 @@ double chi2(const mat p, void *d)
 
 /*							fit functions									*/
 /****************************************************************************/
-latan_errno data_fit(mat p, fit_data d)
+latan_errno data_fit(mat *p, fit_data d)
 {
 	latan_errno status;
 	stringbuf cor_status;
@@ -500,7 +500,7 @@ latan_errno data_fit(mat p, fit_data d)
 latan_errno rs_data_fit(rs_sample p, rs_sample data, fit_data d)
 {
 	latan_errno status;
-	mat datavar;
+	mat *datavar;
 	size_t i;
 	int verb_backup;
 	double chi2pdof_backup;
@@ -546,7 +546,7 @@ latan_errno rs_data_fit(rs_sample p, rs_sample data, fit_data d)
 latan_errno rs_x_data_fit(rs_sample p, rs_sample x, rs_sample data, fit_data d)
 {
 	latan_errno status;
-	mat datavar;
+	mat *datavar;
 	size_t i;
 	int verb_backup;
 	double chi2pdof_backup;

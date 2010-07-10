@@ -9,10 +9,10 @@
 
 /*								allocation									*/
 /****************************************************************************/
-mat mat_create(const size_t init_nrow, const size_t init_ncol)
+mat *mat_create(const size_t init_nrow, const size_t init_ncol)
 {
 	gsl_error_handler_t *error_handler;
-	mat m;
+	mat *m;
 	
 	error_handler = gsl_set_error_handler(&latan_error);
 	m = gsl_matrix_alloc(init_nrow,init_ncol);
@@ -21,9 +21,9 @@ mat mat_create(const size_t init_nrow, const size_t init_ncol)
 	return m;
 }
 
-mat mat_create_from_mat(const mat n)
+mat *mat_create_from_mat(const mat *n)
 {
-	mat m;
+	mat *m;
 	
 	m = mat_create_from_dim(n);
 	
@@ -32,10 +32,10 @@ mat mat_create_from_mat(const mat n)
 	return m;
 }
 
-mat mat_create_from_ar(const double *ar, const size_t init_nrow,\
+mat *mat_create_from_ar(const double *ar, const size_t init_nrow,\
 					   const size_t init_ncol)
 {
-	mat m;
+	mat *m;
 	
 	m = mat_create(init_nrow,init_ncol);
 	
@@ -44,13 +44,13 @@ mat mat_create_from_ar(const double *ar, const size_t init_nrow,\
 	return m;
 }
 
-mat *mat_ar_create(const size_t nmat, const size_t init_nrow,\
+mat **mat_ar_create(const size_t nmat, const size_t init_nrow,\
 				   const size_t init_ncol)
 {
 	size_t i;
-	mat *m;
+	mat **m;
 	
-	MALLOC_NOERRET(m,mat*,nmat);
+	MALLOC_NOERRET(m,mat**,nmat);
 	for (i=0;i<nmat;i++)
 	{
 		m[i] = mat_create(init_nrow,init_ncol);
@@ -59,12 +59,12 @@ mat *mat_ar_create(const size_t nmat, const size_t init_nrow,\
 	return m;
 }
 
-void mat_destroy(mat m)
+void mat_destroy(mat *m)
 {
 	gsl_matrix_free(m);
 }
 
-void mat_ar_destroy(mat *m, const size_t nmat)
+void mat_ar_destroy(mat **m, const size_t nmat)
 {
 	size_t i;
 	
@@ -77,17 +77,17 @@ void mat_ar_destroy(mat *m, const size_t nmat)
 
 /*								access										*/
 /****************************************************************************/
-size_t nrow(const mat m)
+size_t nrow(const mat *m)
 {
 	return m->size1;
 }
 
-size_t ncol(const mat m)
+size_t ncol(const mat *m)
 {
 	return m->size2;
 }
 
-double mat_get(const mat m, const size_t i, const size_t j)
+double mat_get(const mat *m, const size_t i, const size_t j)
 {
 	if ((i>=nrow(m))||(j>=ncol(m)))
 	{
@@ -97,7 +97,7 @@ double mat_get(const mat m, const size_t i, const size_t j)
 	return gsl_matrix_get(m,i,j);
 }
 
-void mat_set(mat m, const size_t i, const size_t j, const double val)
+void mat_set(mat *m, const size_t i, const size_t j, const double val)
 {
 	if ((i>=nrow(m))||(j>=ncol(m)))
 	{
@@ -107,10 +107,13 @@ void mat_set(mat m, const size_t i, const size_t j, const double val)
 	gsl_matrix_set(m,i,j,val);
 }
 
-latan_errno mat_get_subm(mat m, const mat n, const size_t k1, const size_t l1, \
+latan_errno mat_get_subm(mat *m, const mat *n, const size_t k1, const size_t l1, \
 						 const size_t k2, const size_t l2)
 {
-	gsl_matrix_view nview;
+	gsl_matrix_const_view nview = gsl_matrix_const_submatrix(n,(size_t)(k1),   \
+															 (size_t)(l1),     \
+															 (size_t)(k2-k1+1),\
+															 (size_t)(l2-l1+1));
 	
 	if ((k2-k1+1>nrow(n))||(k2-k1+1<1)||(l2-l1+1>ncol(n))||(l2-l1+1<1))
 	{
@@ -122,14 +125,12 @@ latan_errno mat_get_subm(mat m, const mat n, const size_t k1, const size_t l1, \
 					,LATAN_EBADLEN);
 	}
 	
-	nview =	gsl_matrix_submatrix(n,(size_t)(k1),(size_t)(l1),			\
-								 (size_t)(k2-k1+1),(size_t)(l2-l1+1));
 	mat_cp(m,&(nview.matrix));
 	
 	return LATAN_SUCCESS;
 }
 
-latan_errno mat_set_subm(mat m, const mat n, const size_t k1, const size_t l1, \
+latan_errno mat_set_subm(mat *m, const mat *n, const size_t k1, const size_t l1, \
 						 const size_t k2, const size_t l2)
 {
 	gsl_matrix_view mview;
@@ -144,14 +145,14 @@ latan_errno mat_set_subm(mat m, const mat n, const size_t k1, const size_t l1, \
 					,LATAN_EBADLEN);
 	}
 	
-	mview =	gsl_matrix_submatrix(m,(size_t)(k1),(size_t)(l1),			\
+	mview =	gsl_matrix_submatrix(m,(size_t)(k1),(size_t)(l1),		\
 								 (size_t)(k2-k1+1),(size_t)(l2-l1+1));
 	mat_cp(&(mview.matrix),n);
 	
 	return LATAN_SUCCESS;
 }
 
-latan_errno mat_get_diag(mat diag, const mat m)
+latan_errno mat_get_diag(mat *diag, const mat *m)
 {
 	size_t min_dim;
 	size_t i;
@@ -171,7 +172,7 @@ latan_errno mat_get_diag(mat diag, const mat m)
 	return LATAN_SUCCESS;
 }
 
-latan_errno mat_set_diag(mat m, const mat diag)
+latan_errno mat_set_diag(mat *m, const mat *diag)
 {
 	size_t min_dim;
 	size_t i;
@@ -191,7 +192,7 @@ latan_errno mat_set_diag(mat m, const mat diag)
 	return LATAN_SUCCESS;
 }
 
-latan_errno mat_set_step(mat m, const double x0, const double step)
+latan_errno mat_set_step(mat *m, const double x0, const double step)
 {
 	size_t i;
 	
@@ -208,7 +209,7 @@ latan_errno mat_set_step(mat m, const double x0, const double step)
 	return LATAN_SUCCESS;
 }
 
-latan_errno mat_set_from_ar(mat m, const double *ar)
+latan_errno mat_set_from_ar(mat *m, const double *ar)
 {
 	gsl_matrix_const_view ar_view = gsl_matrix_const_view_array(ar,\
 																nrow(m),\
@@ -220,56 +221,56 @@ latan_errno mat_set_from_ar(mat m, const double *ar)
 	return status;
 }
 
-double mat_get_min(const mat m)
+double mat_get_min(const mat *m)
 {
 	return gsl_matrix_min(m);
 }
 
-double mat_get_max(const mat m)
+double mat_get_max(const mat *m)
 {
 	return gsl_matrix_max(m);
 }
 
 /*								tests   									*/
 /****************************************************************************/
-bool mat_is_samedim(const mat m, const mat n)
+bool mat_is_samedim(const mat *m, const mat *n)
 {
 	return ((nrow(m) == nrow(n))&&(ncol(m) == ncol(n)));
 }
 
-bool mat_is_square(const mat m)
+bool mat_is_square(const mat *m)
 {
 	return (nrow(m) == ncol(m));
 }
 
-bool mat_is_row_vector(mat m)
+bool mat_is_row_vector(const mat *m)
 {
 	return (ncol(m) == 1);
 }
 
-bool mat_is_col_vector(mat m)
+bool mat_is_col_vector(const mat *m)
 {
 	return (nrow(m) == 1);
 }
 
-bool mat_is_vector(mat m)
+bool mat_is_vector(const mat *m)
 {
 	return ((nrow(m) == 1)||(ncol(m) == 1));
 }
 
 /*								operations									*/
 /****************************************************************************/
-void mat_zero(mat m)
+void mat_zero(mat *m)
 {
 	gsl_matrix_set_zero(m);
 }
 
-void mat_cst(mat m, const double x)
+void mat_cst(mat *m, const double x)
 {
 	gsl_matrix_set_all(m,x);
 }
 
-void mat_rand_u(mat m, const double a, const double b)
+void mat_rand_u(mat *m, const double a, const double b)
 {
 	size_t i,j;
 	
@@ -279,12 +280,12 @@ void mat_rand_u(mat m, const double a, const double b)
 	}
 }
 
-void mat_id(mat m)
+void mat_id(mat *m)
 {
 	gsl_matrix_set_identity(m);
 }
 
-latan_errno mat_cp(mat m, const mat n)
+latan_errno mat_cp(mat *m, const mat *n)
 {
 	latan_errno status;
 	
@@ -300,7 +301,7 @@ latan_errno mat_cp(mat m, const mat n)
 	return status;
 }
 
-latan_errno mat_eqadd(mat m, const mat n)
+latan_errno mat_eqadd(mat *m, const mat *n)
 {
 	latan_errno status;
 	
@@ -317,7 +318,7 @@ latan_errno mat_eqadd(mat m, const mat n)
 	return status;
 }
 
-latan_errno mat_add(mat m, const mat n, const mat o)
+latan_errno mat_add(mat *m, const mat *n, const mat *o)
 {
 	latan_errno status;
 	
@@ -330,7 +331,7 @@ latan_errno mat_add(mat m, const mat n, const mat o)
 }
 
 
-latan_errno mat_eqsub(mat m, const mat n)
+latan_errno mat_eqsub(mat *m, const mat *n)
 {
 	latan_errno status;
 	
@@ -347,7 +348,7 @@ latan_errno mat_eqsub(mat m, const mat n)
 	return status;
 }
 
-latan_errno mat_sub(mat m, const mat n, const mat o)
+latan_errno mat_sub(mat *m, const mat *n, const mat *o)
 {
 	latan_errno status;
 	
@@ -359,11 +360,11 @@ latan_errno mat_sub(mat m, const mat n, const mat o)
 	return status;
 }
 
-latan_errno mat_mul_nn(mat m, const mat n, const mat o)
+latan_errno mat_mul_nn(mat *m, const mat *n, const mat *o)
 {
 	latan_errno status;
 	bool have_duplicate_arg;
-	mat pt,buf;
+	mat *pt,*buf;
 	
 	status             = LATAN_SUCCESS;
 	have_duplicate_arg = ((m == n)||(m == o));
@@ -394,11 +395,11 @@ latan_errno mat_mul_nn(mat m, const mat n, const mat o)
 	return status;
 }
 
-latan_errno mat_mul_nt(mat m, const mat n, const mat o)
+latan_errno mat_mul_nt(mat *m, const mat *n, const mat *o)
 {
 	latan_errno status;
 	bool have_duplicate_arg;
-	mat pt,buf;
+	mat *pt,*buf;
 	
 	status             = LATAN_SUCCESS;
 	have_duplicate_arg = ((m == n)||(m == o));
@@ -429,11 +430,11 @@ latan_errno mat_mul_nt(mat m, const mat n, const mat o)
 	return status;
 }
 
-latan_errno mat_mul_tn(mat m, const mat n, const mat o)
+latan_errno mat_mul_tn(mat *m, const mat *n, const mat *o)
 {
 	latan_errno status;
 	bool have_duplicate_arg;
-	mat pt,buf;
+	mat *pt,*buf;
 	
 	status             = LATAN_SUCCESS;
 	have_duplicate_arg = ((m == n)||(m == o));
@@ -464,11 +465,11 @@ latan_errno mat_mul_tn(mat m, const mat n, const mat o)
 	return status;
 }
 
-latan_errno mat_mul_tt(mat m, const mat n, const mat o)
+latan_errno mat_mul_tt(mat *m, const mat *n, const mat *o)
 {
 	latan_errno status;
 	bool have_duplicate_arg;
-	mat pt,buf;
+	mat *pt,*buf;
 	
 	status             = LATAN_SUCCESS;
 	have_duplicate_arg = ((m == n)||(m == o));
@@ -499,7 +500,7 @@ latan_errno mat_mul_tt(mat m, const mat n, const mat o)
 	return status;
 }
 
-latan_errno mat_eqtranspose(mat m)
+latan_errno mat_eqtranspose(mat *m)
 {
 	latan_errno status;
 	
@@ -513,7 +514,7 @@ latan_errno mat_eqtranspose(mat m)
 	return status;
 }
 
-latan_errno mat_transpose(mat m, const mat n)
+latan_errno mat_transpose(mat *m, const mat *n)
 {
 	latan_errno status;
 	
@@ -528,11 +529,11 @@ latan_errno mat_transpose(mat m, const mat n)
 	return status;
 }
 
-latan_errno mat_inv(mat m, const mat n)
+latan_errno mat_inv(mat *m, const mat *n)
 {
 	latan_errno status;
 	int signum;
-	mat LU;
+	mat *LU;
 	size_t i;
 	gsl_permutation *perm;
 	gsl_error_handler_t *error_handler;
@@ -565,7 +566,7 @@ latan_errno mat_inv(mat m, const mat n)
 	return status;
 }
 
-latan_errno mat_eqmulp(mat m, const mat n)
+latan_errno mat_eqmulp(mat *m, const mat *n)
 {
 	latan_errno status;
 	
@@ -582,7 +583,7 @@ latan_errno mat_eqmulp(mat m, const mat n)
 	return status;
 }
 
-latan_errno mat_mulp(mat m, const mat n, const mat o)
+latan_errno mat_mulp(mat *m, const mat *n, const mat *o)
 {
 	latan_errno status;
 	
@@ -594,7 +595,7 @@ latan_errno mat_mulp(mat m, const mat n, const mat o)
 	return status;
 }
 
-latan_errno mat_eqmuls(mat m, const double s)
+latan_errno mat_eqmuls(mat *m, const double s)
 {
 	latan_errno status;
 	
@@ -605,7 +606,7 @@ latan_errno mat_eqmuls(mat m, const double s)
 	return status;
 }
 
-latan_errno mat_muls(mat m, const mat n, const double s)
+latan_errno mat_muls(mat *m, const mat *n, const double s)
 {
 	latan_errno status;
 	
@@ -617,7 +618,7 @@ latan_errno mat_muls(mat m, const mat n, const double s)
 	return status;
 }
 
-latan_errno mat_eqdivp(mat m, const mat n)
+latan_errno mat_eqdivp(mat *m, const mat *n)
 {
 	latan_errno status;
 	
@@ -634,7 +635,7 @@ latan_errno mat_eqdivp(mat m, const mat n)
 	return status;
 }
 
-latan_errno mat_divp(mat m, const mat n, const mat o)
+latan_errno mat_divp(mat *m, const mat *n, const mat *o)
 {
 	latan_errno status;
 	
@@ -646,7 +647,7 @@ latan_errno mat_divp(mat m, const mat n, const mat o)
 	return status;
 }
 
-latan_errno mat_abs(mat m, const mat n)
+latan_errno mat_abs(mat *m, const mat *n)
 {
 	size_t i,j;
 	
@@ -664,7 +665,7 @@ latan_errno mat_abs(mat m, const mat n)
 	return LATAN_SUCCESS;
 }
 
-latan_errno mat_sqrt(mat m, const mat n)
+latan_errno mat_sqrt(mat *m, const mat *n)
 {
 	size_t i,j;
 	

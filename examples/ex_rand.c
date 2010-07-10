@@ -21,7 +21,7 @@ int main(void)
 	int i,f;
 	double randd;
 	randgen_state state;
-	mat rseq, hist_cont, x;
+	mat *rseq,*hist_cont,*x;
 	plot dist_plot;
 	stringbuf plotcmd;
 	

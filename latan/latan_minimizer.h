@@ -13,6 +13,8 @@ typedef enum
 	MINUIT = 1
 } minlib_no;
 
+/* minization algorithms */
+#define NMINALG 6
 typedef enum
 {
 	GSL_GRAD_FR    = 0,\
@@ -22,6 +24,9 @@ typedef enum
 	MIN_MIGRAD     = 4,\
 	MIN_SIMPLEX    = 5
 } minalg_no;
+
+minalg_no minalg_no_get(const stringbuf m_id);
+latan_errno minalg_id_get(stringbuf m_id, const minalg_no n);
 
 /* minimizer options */
 minlib_no minimizer_get_lib(void);

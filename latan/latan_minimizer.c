@@ -7,6 +7,45 @@
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_vector.h>
 
+/*						minimizer algorithms								*/
+/****************************************************************************/
+
+static const stringbuf minalg_id[NMINALG] =
+{
+	"GSL_GRAD_FR"   ,\
+	"GSL_GRAD_PR"   ,\
+	"GSL_VEC_BFGS"  ,\
+	"GSL_SIMPLEX_NM",\
+	"MIN_MIGRAD"    ,\
+	"MIN_SIMPLEX"   
+};
+
+minalg_no minalg_no_get(const stringbuf m_id)
+{
+	minalg_no i;
+	
+	for (i=0;i<NMINALG;i++)
+	{
+		if (strcmp(m_id,minalg_id[i]) == 0)
+		{
+			return i;
+		}
+	}
+	LATAN_ERROR("wrong minimizer name",LATAN_FAILURE);
+}
+
+latan_errno minalg_id_get(stringbuf m_id, const minalg_no n)
+{
+	if (n >= NMINALG)
+	{
+		LATAN_ERROR("wrong minimizer flag",LATAN_EINVAL);
+	}
+	
+	strcpy(m_id,minalg_id[n]);
+	
+	return LATAN_SUCCESS;
+}
+
 /*						minimizer options									*/
 /****************************************************************************/
 
@@ -45,7 +84,7 @@ minalg_no minimizer_get_alg(void)
 {
 	return env.alg;
 }
-
+			  
 latan_errno minimizer_set_alg(minalg_no alg)
 {
 	if (alg <= GSL_SIMPLEX_NM)

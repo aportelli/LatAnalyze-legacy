@@ -9,7 +9,7 @@ int main(void)
 	
 	p = plot_create();
 	
-	plot_add_plot(p,"x^2");
+	plot_add_plot(p,"x**2");
 	plot_disp(p);
 	plot_print(p);
 	

@@ -7,13 +7,13 @@
 #include <gsl/gsl_histogram.h>
 #include <gsl/gsl_errno.h>
 
-static latan_errno resample_bootstrap(mat cent_val, mat *sample,			\
-									  const size_t nboot, const mat *dat,	\
+static latan_errno resample_bootstrap(mat *cent_val, mat **sample,			\
+									  const size_t nboot, mat **dat,	\
 									  const size_t ndat, const size_t nobs,	\
 									  rs_func *f, void *param);
 /*
-static latan_errno resample_jackknife(mat cent_val, mat *sample,			\
-									  const size_t jk_depth, const mat *dat,\
+static latan_errno resample_jackknife(mat *cent_val, mat **sample,			\
+									  const size_t jk_depth, mat **dat,\
 									  const size_t ndat, const size_t nobs,	\
 									  rs_func *f, void *param);
 */
@@ -21,7 +21,7 @@ static size_t jackknife_nsample(const size_t ndat, const size_t jk_depth);
 
 /*						elementary estimators								*/
 /****************************************************************************/
-double mat_elsum(mat m)
+double mat_elsum(mat *m)
 {
 	size_t i,j;
 	double sum;
@@ -36,7 +36,7 @@ double mat_elsum(mat m)
 	return sum;
 }
 
-double mat_elmean(mat m)
+double mat_elmean(mat *m)
 {
 	double mean;
 	
@@ -45,7 +45,7 @@ double mat_elmean(mat m)
 	return mean;
 }
 
-latan_errno mat_mean(mat mean, const mat *m, const size_t size)
+latan_errno mat_mean(mat *mean, mat **m, const size_t size)
 {
 	latan_errno status;
 	size_t i;
@@ -63,10 +63,10 @@ latan_errno mat_mean(mat mean, const mat *m, const size_t size)
 	return status;
 }
 
-latan_errno mat_cov(mat cov, const mat *m, const mat *n, const size_t size)
+latan_errno mat_cov(mat *cov, mat **m, mat **n, const size_t size)
 {
 	latan_errno status;
-	mat m_mean, n_mean;
+	mat *m_mean,*n_mean;
 	
 	status = LATAN_SUCCESS;
 	
@@ -83,16 +83,16 @@ latan_errno mat_cov(mat cov, const mat *m, const mat *n, const size_t size)
 	return status;
 }
 
-latan_errno mat_cov_m(mat cov, const mat *m, const mat *n, const size_t size,\
-					  const mat m_mean, const mat n_mean)
+latan_errno mat_cov_m(mat *cov, mat **m, mat **n, const size_t size,\
+					  const mat *m_mean, const mat *n_mean)
 {
 	latan_errno status;
 	size_t i;
 	size_t subdim;
 	double dsubdim;
-	mat *mctnc;
-	mat *mc;
-	mat *nc;
+	mat **mctnc;
+	mat **mc;
+	mat **nc;
 	
 	status = LATAN_SUCCESS;
 	subdim = ncol(m[0]);
@@ -118,10 +118,10 @@ latan_errno mat_cov_m(mat cov, const mat *m, const mat *n, const size_t size,\
 	return status;
 }
 
-latan_errno mat_covp(mat cov, const mat *m, const mat *n, const size_t size)
+latan_errno mat_covp(mat *cov, mat **m, mat **n, const size_t size)
 {
 	latan_errno status;
-	mat m_mean, n_mean;
+	mat *m_mean,*n_mean;
 	
 	status = LATAN_SUCCESS;
 	
@@ -138,13 +138,13 @@ latan_errno mat_covp(mat cov, const mat *m, const mat *n, const size_t size)
 	return status;
 }
 
-latan_errno mat_covp_m(mat cov, const mat *m, const mat *n, const size_t size,\
-					   const mat m_mean, const mat n_mean)
+latan_errno mat_covp_m(mat *cov, mat **m, mat **n, const size_t size,\
+					   const mat *m_mean, const mat *n_mean)
 {
 	latan_errno status;
 	size_t i;
-	mat *mcnc;
-	mat *nc;
+	mat **mcnc;
+	mat **nc;
 	
 	status = LATAN_SUCCESS;
 	
@@ -167,7 +167,7 @@ latan_errno mat_covp_m(mat cov, const mat *m, const mat *n, const size_t size,\
 
 /*								data binning								*/
 /****************************************************************************/
-latan_errno mat_ar_bin(mat *bindat, const mat *dat, const size_t ndat,\
+latan_errno mat_ar_bin(mat **bindat, mat **dat, const size_t ndat,\
 					   const size_t binsize)
 {
 	size_t nbindat;
@@ -192,7 +192,7 @@ latan_errno mat_ar_bin(mat *bindat, const mat *dat, const size_t ndat,\
 
 /*								histogram									*/
 /****************************************************************************/
-latan_errno histogram(mat hist, const mat data, const double xmin,\
+latan_errno histogram(mat *hist, const mat *data, const double xmin,\
 					  const double xmax, const size_t nint)
 {
 	size_t i;
@@ -317,12 +317,12 @@ void rs_sample_get_name(stringbuf name, const rs_sample s)
 	strcpy(name,s->name);
 }
 
-mat rs_sample_pt_cent_val(const rs_sample s)
+mat *rs_sample_pt_cent_val(const rs_sample s)
 {
 	return s->cent_val;
 }
 
-mat rs_sample_pt_sample(const rs_sample s, const size_t i)
+mat *rs_sample_pt_sample(const rs_sample s, const size_t i)
 {
 	return (s->sample)[i];
 }
@@ -333,7 +333,7 @@ void rs_sample_set_name(rs_sample s, const stringbuf name)
 }
 
 /** estimators **/
-latan_errno rs_sample_cov(mat cov, const rs_sample s, const rs_sample t)
+latan_errno rs_sample_cov(mat *cov, const rs_sample s, const rs_sample t)
 {
 	latan_errno status;
 	
@@ -349,7 +349,7 @@ latan_errno rs_sample_cov(mat cov, const rs_sample s, const rs_sample t)
 	return status;
 }
 
-latan_errno rs_sample_covp(mat cov, const rs_sample s, const rs_sample t)
+latan_errno rs_sample_covp(mat *cov, const rs_sample s, const rs_sample t)
 {
 	latan_errno status;
 	
@@ -366,19 +366,19 @@ latan_errno rs_sample_covp(mat cov, const rs_sample s, const rs_sample t)
 }
 /*						resampling functions								*/
 /****************************************************************************/
-latan_errno resample_bootstrap(mat cent_val, mat *sample,			\
-							   const size_t nboot, const mat *dat,	\
+latan_errno resample_bootstrap(mat *cent_val, mat **sample,			\
+							   const size_t nboot, mat **dat,	\
 							   const size_t ndat, const size_t nobs,	\
 							   rs_func *f, void *param)
 {
-	mat *fakedat;
+	mat **fakedat;
 	size_t i,j,k;
 	unsigned int rj;
 	latan_errno status;
 	
 	status = LATAN_SUCCESS;
 	
-	MALLOC(fakedat,mat*,ndat*nobs);
+	MALLOC(fakedat,mat**,ndat*nobs);
 	
 	LATAN_UPDATE_STATUS(status,f(cent_val,dat,ndat,0,param));
 	for (i=0;i<nboot;i++)
@@ -400,7 +400,7 @@ latan_errno resample_bootstrap(mat cent_val, mat *sample,			\
 	return status;
 }
 
-latan_errno resample(rs_sample s, const mat *dat, const size_t ndat,\
+latan_errno resample(rs_sample s, mat **dat, const size_t ndat,\
 					 const size_t nobs, rs_func *f, void *param)
 {
 	latan_errno status;
@@ -425,7 +425,7 @@ latan_errno resample(rs_sample s, const mat *dat, const size_t ndat,\
 }
 
 /* some basic rs_func */
-latan_errno rs_mean(mat res, const mat *dat, const size_t ndat,\
+latan_errno rs_mean(mat *res, mat **dat, const size_t ndat,\
 					const size_t sampno, void *nothing)
 {
 	latan_errno status;
@@ -439,11 +439,11 @@ latan_errno rs_mean(mat res, const mat *dat, const size_t ndat,\
 	return status;
 }
 
-latan_errno rs_finite_diff(mat res, const mat *dat, const size_t ndat,\
+latan_errno rs_finite_diff(mat *res, mat **dat, const size_t ndat,\
 						   const size_t sampno, void *nothing)
 {
 	latan_errno status;
-	mat mean;
+	mat *mean;
 	size_t st_nothing;
 	
 	nothing = NULL;
@@ -460,11 +460,11 @@ latan_errno rs_finite_diff(mat res, const mat *dat, const size_t ndat,\
 	return status;
 }
 
-latan_errno rs_effmass(mat res, const mat *dat, const size_t ndat,\
+latan_errno rs_effmass(mat *res, mat **dat, const size_t ndat,\
 					   const size_t sampno, void *parity)
 {
 	latan_errno status;
-	mat mean;
+	mat *mean;
 	int parityt;
 	size_t st_nothing;
 	
@@ -482,13 +482,13 @@ latan_errno rs_effmass(mat res, const mat *dat, const size_t ndat,\
 	return status;
 }
 
-latan_errno rs_effmass_PCAC(mat res, const mat *dat, const size_t ndat,\
+latan_errno rs_effmass_PCAC(mat *res, mat **dat, const size_t ndat,\
 							const size_t sampno, void *nothing)
 {
 	latan_errno status;
-	const mat *prop_AP;
-	const mat *prop_PP;
-	mat mprop_AP, mprop_PP;
+	mat **prop_AP;
+	mat **prop_PP;
+	mat *mprop_AP,*mprop_PP;
 	size_t st_nothing;
 	
 	nothing = NULL;

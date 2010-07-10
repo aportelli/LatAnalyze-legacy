@@ -17,7 +17,7 @@
 int main(void)
 {
 	plot p;
-	mat x, data, var, real_param, fit_param;
+	mat *x,*data,*var,*real_param,*fit_param;
 	size_t i;
 	double step;
 	fit_data d;

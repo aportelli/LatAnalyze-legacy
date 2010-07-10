@@ -50,7 +50,7 @@ Minuit2MinFunc::~Minuit2MinFunc(void)
 
 double Minuit2MinFunc::operator()(const std::vector<double>& v_x) const
 {
-	mat x;
+	mat *x;
 	size_t x_size;
 	size_t i;
 	double res;
@@ -76,7 +76,7 @@ double Minuit2MinFunc::Up(void) const
 }
 #endif
 
-latan_errno minimize_minuit2(mat x, double *f_min, min_func *f, void *param)
+latan_errno minimize_minuit2(mat *x, double *f_min, min_func *f, void *param)
 {
 #ifdef HAVE_MINUIT2
 	latan_errno status;

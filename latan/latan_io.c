@@ -72,9 +72,9 @@ latan_errno get_firstfname(stringbuf fname, const stringbuf manifestfname)
 	return LATAN_SUCCESS;
 }
 
-/*								mat I/O										*/
+/*								mat *I/O										*/
 /****************************************************************************/
-void mat_dump(FILE* stream, const mat m)
+void mat_dump(FILE* stream, const mat *m)
 {
 	size_t i,j;
 	
@@ -156,7 +156,7 @@ int mat_load_nrow(const stringbuf mark, const stringbuf matid,\
 	return dat_nrow;
 }
 
-latan_errno mat_load(mat m, const stringbuf mark, const stringbuf matid,\
+latan_errno mat_load(mat *m, const stringbuf mark, const stringbuf matid,\
 					 const stringbuf inputfname)
 {
 	stringbuf buf1, buf2, startfmt, datfmt, tmp, end;
@@ -241,7 +241,7 @@ latan_errno mat_load(mat m, const stringbuf mark, const stringbuf matid,\
 	return LATAN_SUCCESS;
 }
 
-latan_errno mat_load_ar(mat *m, const stringbuf mark, const stringbuf matid,\
+latan_errno mat_load_ar(mat **m, const stringbuf mark, const stringbuf matid,\
 						const stringbuf manifestfname)
 {
 	stringbuf buf, fname;
@@ -266,7 +266,7 @@ latan_errno mat_load_ar(mat *m, const stringbuf mark, const stringbuf matid,\
 	return status;
 }
 
-latan_errno mat_save_plotdat(const mat x, const mat dat, const stringbuf fname)
+latan_errno mat_save_plotdat(const mat *x, const mat *dat, const stringbuf fname)
 {
 	FILE* f = NULL;
 	size_t i;
@@ -282,7 +282,7 @@ latan_errno mat_save_plotdat(const mat x, const mat dat, const stringbuf fname)
 	return LATAN_SUCCESS;
 }
 
-latan_errno mat_save_plotdat_yerr(const mat x, const mat dat, const mat yerr,\
+latan_errno mat_save_plotdat_yerr(const mat *x, const mat *dat, const mat *yerr,\
 								  const stringbuf fname)
 {
 	FILE* f = NULL;
@@ -299,8 +299,8 @@ latan_errno mat_save_plotdat_yerr(const mat x, const mat dat, const mat yerr,\
 	return LATAN_SUCCESS;
 }
 
-latan_errno mat_save_plotdat_xyerr(const mat x, const mat dat, const mat xerr,\
-								   const mat yerr, const stringbuf fname)
+latan_errno mat_save_plotdat_xyerr(const mat *x, const mat *dat, const mat *xerr,\
+								   const mat *yerr, const stringbuf fname)
 {
 	FILE* f = NULL;
 	size_t i;
@@ -337,7 +337,7 @@ int hadron_getnt(const hadron h, const ss_no source, const ss_no sink,\
 	return nt;
 }
 
-latan_errno hadron_propbin(mat *prop, const hadron h, const ss_no source,	\
+latan_errno hadron_propbin(mat **prop, const hadron h, const ss_no source,	\
 						   const ss_no sink, const stringbuf manfname,	\
 						   const size_t binsize)
 {
@@ -346,8 +346,8 @@ latan_errno hadron_propbin(mat *prop, const hadron h, const ss_no source,	\
 	int ndat, chmix, stmix;
 	size_t nt;
 	double mean;
-	mat *dat[MAXPROP][MAXQUARKST];
-	mat *prop_prebin;
+	mat **dat[MAXPROP][MAXQUARKST];
+	mat **prop_prebin;
 	stringbuf fullpropid,prop_mark,prop_idfmt,source_id,sink_id;
 	latan_errno status;
 	
@@ -595,7 +595,7 @@ latan_errno rs_sample_load(rs_sample s, const stringbuf f_name)
 	stringbuf dumstr,errmsg;
 	double dbuf;
 	int ibuf;
-	mat pt;
+	mat *pt;
 	
 	FOPEN(f,f_name,"r");
 	if (fscanf(f,"%s ",dumstr)<0)

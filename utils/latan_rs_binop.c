@@ -12,7 +12,7 @@
 #error BINOP macro must be defined to compile this program (use -DBINOP=<op> option)
 #endif
 
-typedef latan_errno mat_binop_f(mat, const mat, const mat);
+typedef latan_errno mat_binop_f(mat *, const mat *, const mat *);
 
 mat_binop_f *mat_binop = &BINOP;
 
@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
 	rs_sample s1,s2,res;
 	size_t s1_nrow,s2_nrow,s1_nsample,s2_nsample;
 	size_t i;
-	mat sig;
+	mat *sig;
 	bool do_save_res;
 	stringbuf res_name;
 	

@@ -11,7 +11,7 @@
 #error UNOP macro must be defined to compile this program (use -DUNOP=<op> option)
 #endif
 
-typedef latan_errno mat_unop_f(mat, const mat);
+typedef latan_errno mat_unop_f(mat *, const mat *);
 
 mat_unop_f *mat_unop = &UNOP;
 
@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
 	rs_sample s1,res;
 	size_t s1_nrow,s1_nsample;
 	size_t i;
-	mat sig;
+	mat *sig;
 	bool do_save_res;
 	stringbuf res_name;
 	

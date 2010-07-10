@@ -84,7 +84,7 @@ void gsl_fdf(const gsl_vector *v, void *v_gf_param, double *f, gsl_vector *df)
 	gsl_df(v,v_gf_param,df);
 }
 
-latan_errno minimize_gsl(mat x, double *f_min, min_func *f, void *param)
+latan_errno minimize_gsl(mat *x, double *f_min, min_func *f, void *param)
 {
 	latan_errno status;
 	size_t n;

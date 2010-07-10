@@ -34,25 +34,25 @@ void io_set_prop_idfmt(const stringbuf prop_idfmt);
 int get_nfile(const stringbuf manifestfname);
 latan_errno get_firstfname(stringbuf fname, const stringbuf manifestfname);
 
-/* mat I/O */
-void mat_dump(FILE* stream, const mat m);
+/* mat *I/O */
+void mat_dump(FILE* stream, const mat *m);
 #define mat_print(m) mat_dump(stdout,m)
 int mat_load_nrow(const stringbuf mark, const stringbuf matid,\
 				  const stringbuf inputfname);
-latan_errno mat_load(mat m, const stringbuf mark, const stringbuf matid,\
+latan_errno mat_load(mat *m, const stringbuf mark, const stringbuf matid,\
 					 const stringbuf inputfname);
-latan_errno mat_load_ar(mat *m, const stringbuf mark,\
+latan_errno mat_load_ar(mat **m, const stringbuf mark,\
 						const stringbuf matid, const stringbuf manifestfname);
-latan_errno mat_save_plotdat(const mat x, const mat m, const stringbuf fname);
-latan_errno mat_save_plotdat_yerr(const mat x, const mat dat, const mat yerr,\
+latan_errno mat_save_plotdat(const mat *x, const mat *m, const stringbuf fname);
+latan_errno mat_save_plotdat_yerr(const mat *x, const mat *dat, const mat *yerr,\
 								  const stringbuf fname);
-latan_errno mat_save_plotdat_xyerr(const mat x, const mat dat, const mat xerr,\
-								   const mat yerr, const stringbuf fname);
+latan_errno mat_save_plotdat_xyerr(const mat *x, const mat *dat, const mat *xerr,\
+								   const mat *yerr, const stringbuf fname);
 
 /* propagator I/O */
 int hadron_getnt(const hadron h, const ss_no source, const ss_no sink,\
 				 const stringbuf manfname);
-latan_errno hadron_propbin(mat *prop, const hadron h, const ss_no source,	\
+latan_errno hadron_propbin(mat **prop, const hadron h, const ss_no source,	\
 						   const ss_no sink, const stringbuf manfname,	\
 						   const size_t binsize);
 

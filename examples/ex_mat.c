@@ -5,7 +5,7 @@
 
 int main(int argc, char *argv[])
 {
-	mat a,b,c,d,e,f;
+	mat *a,*b,*c,*d,*e,*f;
 	const double b_init[] =
 	{
 		2.5,\

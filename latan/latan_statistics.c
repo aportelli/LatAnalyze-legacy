@@ -243,11 +243,11 @@ size_t jackknife_nsample(const size_t ndat, const size_t jk_depth)
 }
 
 /** allocation **/
-rs_sample rs_sample_create_boot(const size_t init_nrow, const size_t nboot)
+rs_sample *rs_sample_create_boot(const size_t init_nrow, const size_t nboot)
 {
-	rs_sample s;
+	rs_sample *s;
 	
-	MALLOC_ERRVAL(s,rs_sample,1,NULL);
+	MALLOC_ERRVAL(s,rs_sample *,1,NULL);
 	
 	s->nsample = nboot;
 	s->resamp_method = BOOT;
@@ -258,12 +258,12 @@ rs_sample rs_sample_create_boot(const size_t init_nrow, const size_t nboot)
 	return s;
 }
 
-rs_sample rs_sample_create_jack(const size_t init_nrow, const size_t ndat,\
+rs_sample *rs_sample_create_jack(const size_t init_nrow, const size_t ndat,\
 								const size_t jk_depth)
 {
-	rs_sample s;
+	rs_sample *s;
 	
-	MALLOC_ERRVAL(s,rs_sample,1,NULL);
+	MALLOC_ERRVAL(s,rs_sample *,1,NULL);
 	
 	s->nsample = jackknife_nsample(ndat,jk_depth);
 	s->resamp_method = JACK;
@@ -274,11 +274,11 @@ rs_sample rs_sample_create_jack(const size_t init_nrow, const size_t ndat,\
 	return s;
 }
 
-rs_sample rs_sample_create(const size_t init_nrow, const size_t nsample)
+rs_sample *rs_sample_create(const size_t init_nrow, const size_t nsample)
 {
-	rs_sample s;
+	rs_sample *s;
 	
-	MALLOC_ERRVAL(s,rs_sample,1,NULL);
+	MALLOC_ERRVAL(s,rs_sample *,1,NULL);
 	
 	s->nsample = nsample;
 	s->resamp_method = GENERIC;
@@ -289,7 +289,7 @@ rs_sample rs_sample_create(const size_t init_nrow, const size_t nsample)
 	return s;
 }
 
-void rs_sample_destroy(rs_sample s)
+void rs_sample_destroy(rs_sample *s)
 {
 	mat_destroy(s->cent_val);
 	mat_ar_destroy(s->sample,s->nsample);
@@ -297,43 +297,43 @@ void rs_sample_destroy(rs_sample s)
 }
 
 /** access **/
-size_t rs_sample_get_nrow(const rs_sample s)
+size_t rs_sample_get_nrow(const rs_sample *s)
 {
 	return nrow(s->cent_val);
 }
 
-size_t rs_sample_get_nsample(const rs_sample s)
+size_t rs_sample_get_nsample(const rs_sample *s)
 {
 	return s->nsample;
 }
 
-int rs_sample_get_method(const rs_sample s)
+int rs_sample_get_method(const rs_sample *s)
 {
 	return s->resamp_method;
 }
 
-void rs_sample_get_name(stringbuf name, const rs_sample s)
+void rs_sample_get_name(stringbuf name, const rs_sample *s)
 {
 	strcpy(name,s->name);
 }
 
-mat *rs_sample_pt_cent_val(const rs_sample s)
+mat *rs_sample_pt_cent_val(const rs_sample *s)
 {
 	return s->cent_val;
 }
 
-mat *rs_sample_pt_sample(const rs_sample s, const size_t i)
+mat *rs_sample_pt_sample(const rs_sample *s, const size_t i)
 {
 	return (s->sample)[i];
 }
 
-void rs_sample_set_name(rs_sample s, const stringbuf name)
+void rs_sample_set_name(rs_sample *s, const stringbuf name)
 {
 	strcpy(s->name,name);
 }
 
 /** estimators **/
-latan_errno rs_sample_cov(mat *cov, const rs_sample s, const rs_sample t)
+latan_errno rs_sample_cov(mat *cov, const rs_sample *s, const rs_sample *t)
 {
 	latan_errno status;
 	
@@ -349,7 +349,7 @@ latan_errno rs_sample_cov(mat *cov, const rs_sample s, const rs_sample t)
 	return status;
 }
 
-latan_errno rs_sample_covp(mat *cov, const rs_sample s, const rs_sample t)
+latan_errno rs_sample_covp(mat *cov, const rs_sample *s, const rs_sample *t)
 {
 	latan_errno status;
 	
@@ -400,7 +400,7 @@ latan_errno resample_bootstrap(mat *cent_val, mat **sample,			\
 	return status;
 }
 
-latan_errno resample(rs_sample s, mat **dat, const size_t ndat,\
+latan_errno resample(rs_sample *s, mat **dat, const size_t ndat,\
 					 const size_t nobs, rs_func *f, void *param)
 {
 	latan_errno status;

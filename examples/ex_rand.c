@@ -22,7 +22,7 @@ int main(void)
 	double randd;
 	randgen_state state;
 	mat *rseq,*hist_cont,*x;
-	plot dist_plot;
+	plot *dist_plot;
 	stringbuf plotcmd;
 	
 	rseq = mat_create(DIS_SEQ_LENGTH,1);

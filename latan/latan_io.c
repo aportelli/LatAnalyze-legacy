@@ -319,7 +319,7 @@ latan_errno mat_save_plotdat_xyerr(const mat *x, const mat *dat, const mat *xerr
 
 /*							propagator I/O									*/
 /****************************************************************************/
-int hadron_getnt(const hadron h, const ss_no source, const ss_no sink,\
+int hadron_getnt(const hadron *h, const ss_no source, const ss_no sink,\
 				 const stringbuf manfname)
 {
 	stringbuf ffname,fullpropid,prop_mark,prop_idfmt,source_id,sink_id;
@@ -337,7 +337,7 @@ int hadron_getnt(const hadron h, const ss_no source, const ss_no sink,\
 	return nt;
 }
 
-latan_errno hadron_propbin(mat **prop, const hadron h, const ss_no source,	\
+latan_errno hadron_propbin(mat **prop, const hadron *h, const ss_no source,	\
 						   const ss_no sink, const stringbuf manfname,	\
 						   const size_t binsize)
 {
@@ -474,7 +474,7 @@ latan_errno randgen_load_state(randgen_state state, const stringbuf f_name)
 
 /*							resampled sample I/O							*/
 /****************************************************************************/
-latan_errno rs_sample_save(const rs_sample s, const stringbuf f_name)
+latan_errno rs_sample_save(const rs_sample *s, const stringbuf f_name)
 {
 	stringbuf full_f_name, s_name;
 	FILE* f;
@@ -588,7 +588,7 @@ int rs_sample_load_method(const stringbuf f_name)
 	return method;
 }
 
-latan_errno rs_sample_load(rs_sample s, const stringbuf f_name)
+latan_errno rs_sample_load(rs_sample *s, const stringbuf f_name)
 {
 	FILE* f;
 	size_t i,j;

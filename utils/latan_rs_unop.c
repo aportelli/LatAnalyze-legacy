@@ -17,7 +17,7 @@ mat_unop_f *mat_unop = &UNOP;
 
 int main(int argc, char *argv[])
 {
-	rs_sample s1,res;
+	rs_sample *s1,*res;
 	size_t s1_nrow,s1_nsample;
 	size_t i;
 	mat *sig;

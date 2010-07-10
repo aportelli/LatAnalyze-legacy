@@ -153,12 +153,12 @@ double fit_model_eval(const fit_model *model, const mat *x,
 /*							fit data structure								*/
 /****************************************************************************/
 /** allocation **/
-fit_data fit_data_create(const size_t ndata, const size_t ndim)
+fit_data *fit_data_create(const size_t ndata, const size_t ndim)
 {
-	fit_data d;
+	fit_data *d;
 	size_t i;
 	
-	MALLOC_ERRVAL(d,fit_data,1,NULL);
+	MALLOC_ERRVAL(d,fit_data *,1,NULL);
 	d->x           = mat_create(ndata,ndim);
 	d->x_varinv    = mat_create(ndata*ndim,ndata*ndim);
 	mat_id(d->x_varinv);
@@ -183,7 +183,7 @@ fit_data fit_data_create(const size_t ndata, const size_t ndim)
 	return d;
 }
 
-void fit_data_destroy(fit_data d)
+void fit_data_destroy(fit_data *d)
 {
 	mat_destroy(d->x);
 	mat_destroy(d->x_varinv);
@@ -194,33 +194,33 @@ void fit_data_destroy(fit_data d)
 }
 
 /** access **/
-void fit_data_save_chi2pdof(fit_data d, bool save)
+void fit_data_save_chi2pdof(fit_data *d, bool save)
 {
 	d->save_chi2pdof = save;
 }
 
-double fit_data_get_chi2pdof(fit_data d)
+double fit_data_get_chi2pdof(fit_data *d)
 {
 	return d->chi2pdof;
 }
 
-void fit_data_set_x(fit_data d, const size_t i, const size_t j,\
+void fit_data_set_x(fit_data *d, const size_t i, const size_t j,\
 					const double x_ij)
 {
 	mat_set(d->x,i,j,x_ij);
 }
 
-double fit_data_get_x(const fit_data d, const size_t i, const size_t j)
+double fit_data_get_x(const fit_data *d, const size_t i, const size_t j)
 {
 	return mat_get(d->x,i,j);
 }
 
-mat *fit_data_pt_x(const fit_data d)
+mat *fit_data_pt_x(const fit_data *d)
 {
 	return d->x;
 }
 
-void fit_data_fit_all_points(fit_data d, bool fit)
+void fit_data_fit_all_points(fit_data *d, bool fit)
 {
 	size_t i;
 	
@@ -230,7 +230,7 @@ void fit_data_fit_all_points(fit_data d, bool fit)
 	}
 }
 
-void fit_data_fit_point(fit_data d, size_t i, bool fit)
+void fit_data_fit_point(fit_data *d, size_t i, bool fit)
 {
 	if (i>=d->ndata)
 	{
@@ -240,7 +240,7 @@ void fit_data_fit_point(fit_data d, size_t i, bool fit)
 	d->to_fit[i] = fit;
 }
 
-void fit_data_fit_range(fit_data d, size_t start, size_t end, bool fit)
+void fit_data_fit_range(fit_data *d, size_t start, size_t end, bool fit)
 {
 	size_t i;
 	
@@ -259,7 +259,7 @@ void fit_data_fit_range(fit_data d, size_t start, size_t end, bool fit)
 	}
 }
 
-bool fit_data_is_fit_point(fit_data d, size_t i)
+bool fit_data_is_fit_point(const fit_data *d, size_t i)
 {
 	if (i>=d->ndata)
 	{
@@ -269,7 +269,7 @@ bool fit_data_is_fit_point(fit_data d, size_t i)
 	return d->to_fit[i];
 }
 
-size_t fit_data_fit_point_num(fit_data d)
+size_t fit_data_fit_point_num(const fit_data *d)
 {
 	size_t nfitpt;
 	size_t i;
@@ -287,22 +287,22 @@ size_t fit_data_fit_point_num(fit_data d)
 	return nfitpt;
 }
 
-void fit_data_set_data(fit_data d, const size_t i, const double data_i)
+void fit_data_set_data(fit_data *d, const size_t i, const double data_i)
 {
 	mat_set(d->data,i,0,data_i);
 }
 
-double fit_data_get_data(const fit_data d, const size_t i)
+double fit_data_get_data(const fit_data *d, const size_t i)
 {
 	return mat_get(d->data,i,0);
 }
 
-mat *fit_data_pt_data(fit_data d)
+mat *fit_data_pt_data(const fit_data *d)
 {
 	return d->data;
 }
 
-latan_errno fit_data_set_data_var(fit_data d, const mat *var)
+latan_errno fit_data_set_data_var(fit_data *d, const mat *var)
 {
 	latan_errno status;
 	size_t i;
@@ -338,7 +338,7 @@ latan_errno fit_data_set_data_var(fit_data d, const mat *var)
 	return status;
 }
 
-latan_errno fit_data_set_x_var(fit_data d, const mat *var)
+latan_errno fit_data_set_x_var(fit_data *d, const mat *var)
 {
 	latan_errno status;
 	size_t i;
@@ -375,7 +375,7 @@ latan_errno fit_data_set_x_var(fit_data d, const mat *var)
 	return status;
 }
 
-latan_errno fit_data_set_model(fit_data d, const fit_model *model)
+latan_errno fit_data_set_model(fit_data *d, const fit_model *model)
 {
 	if (model->ndim != d->ndim)
 	{
@@ -387,12 +387,12 @@ latan_errno fit_data_set_model(fit_data d, const fit_model *model)
 	return LATAN_SUCCESS;
 }
 
-const fit_model *fit_data_pt_model(fit_data d)
+const fit_model *fit_data_pt_model(fit_data *d)
 {
 	return d->model;
 }
 
-void fit_data_set_model_param(fit_data d, void *model_param)
+void fit_data_set_model_param(fit_data *d, void *model_param)
 {
 	d->model_param = model_param;
 }
@@ -401,7 +401,7 @@ void fit_data_set_model_param(fit_data d, void *model_param)
  * fit_data_model_eval is heavily called during one call of minimize function,
  * optimization is done using vector/matrix views from GSL
  */
-double fit_data_model_eval(const fit_data d, const size_t i,\
+double fit_data_model_eval(const fit_data *d, const size_t i,\
 						   const mat *p)
 {
 	gsl_vector_view x_i_vview;
@@ -414,22 +414,22 @@ double fit_data_model_eval(const fit_data d, const size_t i,\
 	return fit_model_eval(d->model,&(x_i_t_mview.matrix),p,d->model_param);
 }
 
-void fit_data_set_stage(fit_data d, const int stage)
+void fit_data_set_stage(fit_data *d, const int stage)
 {
 	d->stage = stage;
 }
 
-int fit_data_get_stage(const fit_data d)
+int fit_data_get_stage(const fit_data *d)
 {
 	return d->stage;
 }
 
-int fit_data_get_dof(const fit_data d)
+int fit_data_get_dof(const fit_data *d)
 {
 	return fit_data_fit_point_num(d) - d->model->npar;
 }
 
-bool fit_data_is_correlated(const fit_data d)
+bool fit_data_is_correlated(const fit_data *d)
 {
 	return d->is_data_correlated;
 }
@@ -438,14 +438,14 @@ bool fit_data_is_correlated(const fit_data d)
 /****************************************************************************/
 double chi2(const mat *p, void *d)
 {
-	fit_data dt;
+	fit_data *dt;
 	size_t ndata;
 	size_t i;
 	mat *X,*sigX;
 	mat *mres;
 	double res;
 	
-	dt = (fit_data)d;
+	dt = (fit_data *)d;
 	ndata = nrow(fit_data_pt_data(d));
 	
 	X    = mat_create(ndata,1);
@@ -477,7 +477,7 @@ double chi2(const mat *p, void *d)
 
 /*							fit functions									*/
 /****************************************************************************/
-latan_errno data_fit(mat *p, fit_data d)
+latan_errno data_fit(mat *p, fit_data *d)
 {
 	latan_errno status;
 	stringbuf cor_status;
@@ -497,7 +497,7 @@ latan_errno data_fit(mat *p, fit_data d)
 	return status;
 }
 
-latan_errno rs_data_fit(rs_sample p, rs_sample data, fit_data d)
+latan_errno rs_data_fit(rs_sample *p, rs_sample *data, fit_data *d)
 {
 	latan_errno status;
 	mat *datavar;
@@ -543,7 +543,7 @@ latan_errno rs_data_fit(rs_sample p, rs_sample data, fit_data d)
 	return status;
 }
 
-latan_errno rs_x_data_fit(rs_sample p, rs_sample x, rs_sample data, fit_data d)
+latan_errno rs_x_data_fit(rs_sample *p, rs_sample *x, rs_sample *data, fit_data *d)
 {
 	latan_errno status;
 	mat *datavar;

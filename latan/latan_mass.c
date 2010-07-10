@@ -173,7 +173,7 @@ plat *search_plat(size_t *nplat, const mat *data, const mat *sigdata,\
 	return plat_ar;
 }
 
-latan_errno fit_data_mass_fit_tune(fit_data d, mat *fit_init, const mat *prop,\
+latan_errno fit_data_mass_fit_tune(fit_data *d, mat *fit_init, const mat *prop,\
 								   const mat *em, const mat *sigem,			\
 								   const int parity)
 {

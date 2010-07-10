@@ -3,7 +3,7 @@
 
 static char *gnuplot_get_program_path(const char *pname);
 static void gnuplot_cmd(FILE *ctrl, const char *cmd, ...);
-static void plot_add_tmpf(plot p, const stringbuf tmpfname);
+static void plot_add_tmpf(plot *p, const stringbuf tmpfname);
 
 /*								internal code								*/
 /****************************************************************************/
@@ -99,7 +99,7 @@ void gnuplot_cmd(FILE* ctrl, const char *cmd, ...)
 }
 
 /** temporary file management **/
-void plot_add_tmpf(plot p, const stringbuf tmpfname)
+void plot_add_tmpf(plot *p, const stringbuf tmpfname)
 {
 	(p->ntmpf)++;
 	REALLOC_NOERRET(p->tmpfname,p->tmpfname,stringbuf*,p->ntmpf);
@@ -108,11 +108,11 @@ void plot_add_tmpf(plot p, const stringbuf tmpfname)
 
 /*								allocation									*/
 /****************************************************************************/
-plot plot_create(void)
+plot *plot_create(void)
 {
-	plot p;
+	plot *p;
 	
-	MALLOC_ERRVAL(p,plot,1,NULL);
+	MALLOC_ERRVAL(p,plot *,1,NULL);
 	
 	p->nplot = 0;
 	p->plotbuf = NULL;
@@ -133,7 +133,7 @@ plot plot_create(void)
 	return p;
 }
 
-void plot_destroy(plot p)
+void plot_destroy(plot *p)
 {
 	size_t i;
 	
@@ -148,12 +148,12 @@ void plot_destroy(plot p)
 
 /*								plot configuration 							*/
 /****************************************************************************/
-void plot_set_scale_auto(plot p)
+void plot_set_scale_auto(plot *p)
 {
 	p->scale = AUTO;
 }
 
-void plot_set_scale_manual(plot p, const double xmin, const double xmax,\
+void plot_set_scale_manual(plot *p, const double xmin, const double xmax,\
 						   const double ymin, const double ymax)
 {
 	p->scale = MANUAL;
@@ -163,75 +163,75 @@ void plot_set_scale_manual(plot p, const double xmin, const double xmax,\
 	p->ymax = ymax;
 }
 
-void plot_set_scale_xmanual(plot p, const double xmin, const double xmax)
+void plot_set_scale_xmanual(plot *p, const double xmin, const double xmax)
 {
 	p->scale = XMANUAL;
 	p->xmin = xmin;
 	p->xmax = xmax;
 }
 
-void plot_set_scale_ymanual(plot p, const double ymin, const double ymax)
+void plot_set_scale_ymanual(plot *p, const double ymin, const double ymax)
 {
 	p->scale = YMANUAL;
 	p->ymin = ymin;
 	p->ymax = ymax;
 }
 
-void plot_set_scale_lin(plot p)
+void plot_set_scale_lin(plot *p)
 {
 	p->log = NOLOG;
 }
 
-void plot_set_scale_xlog(plot p)
+void plot_set_scale_xlog(plot *p)
 {
 	p->log = XLOG;
 }
 
-void plot_set_scale_ylog(plot p)
+void plot_set_scale_ylog(plot *p)
 {
 	p->log = YLOG;
 }
 
-void plot_set_scale_xylog(plot p)
+void plot_set_scale_xylog(plot *p)
 {
 	p->log = XYLOG;
 }
 
-void plot_set_title(plot p, const stringbuf title)
+void plot_set_title(plot *p, const stringbuf title)
 {
 	strcpy(p->title,title);
 }
 
-void plot_set_xlabel(plot p, const stringbuf xlabel)
+void plot_set_xlabel(plot *p, const stringbuf xlabel)
 {
 	strcpy(p->xlabel,xlabel);
 }
 
-void plot_set_ylabel(plot p, const stringbuf ylabel)
+void plot_set_ylabel(plot *p, const stringbuf ylabel)
 {
 	strcpy(p->ylabel,ylabel);
 }
 
-void plot_set_term(plot p, const stringbuf term)
+void plot_set_term(plot *p, const stringbuf term)
 {
 	strcpy(p->term,term);
 }
 
-void plot_set_output(plot p, const stringbuf output)
+void plot_set_output(plot *p, const stringbuf output)
 {
 	strcpy(p->output,output);
 }
 
 /*								plot functions								*/
 /****************************************************************************/
-void plot_add_plot(plot p, const stringbuf cmd)
+void plot_add_plot(plot *p, const stringbuf cmd)
 {
 	(p->nplot)++;
 	REALLOC_NOERRET(p->plotbuf,p->plotbuf,stringbuf*,p->nplot);
 	strcpy(p->plotbuf[p->nplot-1],cmd);
 }
 
-void plot_add_dat(plot p, const mat *x, const mat *dat, const stringbuf title,\
+void plot_add_dat(plot *p, const mat *x, const mat *dat, const stringbuf title,\
 				  const stringbuf color)
 {
 	FILE* tmpf;
@@ -259,7 +259,7 @@ void plot_add_dat(plot p, const mat *x, const mat *dat, const stringbuf title,\
 	plot_add_plot(p,plotcmd);
 }
 
-void plot_add_dat_yerr(plot p, const mat *x, const mat *dat, const mat *yerr,\
+void plot_add_dat_yerr(plot *p, const mat *x, const mat *dat, const mat *yerr,\
 					 const stringbuf title, const stringbuf color)
 {
 	FILE* tmpf;
@@ -289,7 +289,7 @@ void plot_add_dat_yerr(plot p, const mat *x, const mat *dat, const mat *yerr,\
 	plot_add_plot(p,plotcmd);
 }
 
-void plot_add_dat_xyerr(plot p, const mat *x, const mat *dat, const mat *xerr,\
+void plot_add_dat_xyerr(plot *p, const mat *x, const mat *dat, const mat *xerr,\
 						const mat *yerr, const stringbuf title,             \
 						const stringbuf color)
 {
@@ -320,7 +320,7 @@ void plot_add_dat_xyerr(plot p, const mat *x, const mat *dat, const mat *xerr,\
 	plot_add_plot(p,plotcmd);
 }
 
-void plot_add_hline(plot p, const double y, const stringbuf style,\
+void plot_add_hline(plot *p, const double y, const stringbuf style,\
 					const stringbuf color)
 {
 	stringbuf plotcmd;
@@ -329,7 +329,7 @@ void plot_add_hline(plot p, const double y, const stringbuf style,\
 	plot_add_plot(p,plotcmd);
 }
 
-void plot_add_hlineerr(plot p, const double y, const double err,		\
+void plot_add_hlineerr(plot *p, const double y, const double err,		\
 					   const stringbuf style, const stringbuf color1,	\
 					   const stringbuf color2)
 {
@@ -343,7 +343,7 @@ void plot_add_hlineerr(plot p, const double y, const double err,		\
 
 /*								plot parsing								*/
 /****************************************************************************/
-latan_errno plot_parse(FILE* outstr, const plot p)
+latan_errno plot_parse(FILE* outstr, const plot *p)
 {
 	stringbuf begin, end;
 	size_t i;
@@ -416,7 +416,7 @@ latan_errno plot_parse(FILE* outstr, const plot p)
 	return LATAN_SUCCESS;
 }
 
-latan_errno plot_disp(const plot p)
+latan_errno plot_disp(const plot *p)
 {
 	latan_errno status;
 	FILE* ctrl;

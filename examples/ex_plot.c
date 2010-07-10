@@ -5,7 +5,7 @@
 
 int main(void)
 {
-	plot p;
+	plot *p;
 	
 	p = plot_create();
 	

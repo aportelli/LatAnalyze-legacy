@@ -494,27 +494,33 @@ double chi2(const mat *p, void *d)
 	gsl_vector_view X_vview,sigX_vview;
 	double res;
 	
-	dt = (fit_data *)d;
-	ndata = nrow(fit_data_pt_data(d));
-	X          = dt->buf_chi2[0];
-	X_vview    = gsl_matrix_column(X,0);
-	sigX       = dt->buf_chi2[1];
-	sigX_vview = gsl_matrix_column(sigX,0);
+	dt         = (fit_data *)d;
+	ndata      = nrow(fit_data_pt_data(d));
 	
-	for (i=0;i<ndata;i++)
+	#pragma omp critical
 	{
-		if (fit_data_is_fit_point(d,i))
+		X          = dt->buf_chi2[0];
+		X_vview    = gsl_matrix_column(X,0);
+		sigX       = dt->buf_chi2[1];
+		sigX_vview = gsl_matrix_column(sigX,0);
+		
+		mat_zero(X);
+		mat_zero(sigX);
+		for (i=0;i<ndata;i++)
 		{
-			mat_set(X,i,0,fit_data_model_eval(d,i,p)
-					- fit_data_get_data(d,i));
+			if (fit_data_is_fit_point(d,i))
+			{
+				mat_set(X,i,0,fit_data_model_eval(d,i,p)
+						- fit_data_get_data(d,i));
+			}
+			else
+			{
+				mat_set(X,i,0,0.0);
+			}
 		}
-		else
-		{
-			mat_set(X,i,0,0.0);
-		}
+		mat_mul_nn(sigX,dt->data_varinv,X);
+		gsl_blas_ddot(&(sigX_vview.vector),&(X_vview.vector),&res);
 	}
-	mat_mul_nn(sigX,dt->data_varinv,X);
-	gsl_blas_ddot(&(sigX_vview.vector),&(X_vview.vector),&res);
 	
 	return res;
 }

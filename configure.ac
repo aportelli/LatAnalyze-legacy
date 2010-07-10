@@ -81,6 +81,13 @@ AC_RUN_IFELSE(
 	[AC_MSG_RESULT([yes])],
 	[AC_MSG_RESULT([no])])
 
+# Check for OpenMP
+AC_OPENMP
+AM_CFLAGS="$AM_CFLAGS $OPENMP_CFLAGS"
+CFLAGS="$AM_CFLAGS $CFLAGS"
+AM_CXXFLAGS="$AM_CXXFLAGS $OPENMP_CXXFLAGS"
+CXXFLAGS="$AM_CXXFLAGS $CXXFLAGS"
+
 # Checks for libraries.
 AC_CHECK_LIB([m],[cos],[],[AC_MSG_ERROR([libm library not found])])
 AC_CHECK_LIB([cblas],[cblas_dgemm],[],

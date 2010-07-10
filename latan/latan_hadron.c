@@ -172,22 +172,22 @@ void ss_id_get(stringbuf str, const ss_no i)
 
 /* hadron */
 /** allocation **/
-hadron hadron_create(void)
+hadron *hadron_create(void)
 {
-	hadron h;
+	hadron *h;
 	
-	MALLOC_ERRVAL(h,hadron,1,NULL);
+	MALLOC_ERRVAL(h,hadron *,1,NULL);
 	
 	return h;
 }
 
-void hadron_destroy(hadron h)
+void hadron_destroy(hadron *h)
 {
 	FREE(h);
 }
 
 /** access **/
-void hadron_set_2q_nomix(hadron h, const stringbuf name, const int parity,	\
+void hadron_set_2q_nomix(hadron *h, const stringbuf name, const int parity,	\
 						 const channel_no channel, const quark_no q1,		\
 						 const quark_no q2)
 {
@@ -199,7 +199,7 @@ void hadron_set_2q_nomix(hadron h, const stringbuf name, const int parity,	\
 	diquark_id_get(h->quarkst[0],q1,q2);
 }
 
-void hadron_set_2q_2stmean(hadron h, const stringbuf name, const int parity,\
+void hadron_set_2q_2stmean(hadron *h, const stringbuf name, const int parity,\
 						   const channel_no channel, const quark_no q11,	\
 						   const quark_no q12, const quark_no q21,			\
 						   const quark_no q22)
@@ -213,23 +213,23 @@ void hadron_set_2q_2stmean(hadron h, const stringbuf name, const int parity,\
 	diquark_id_get(h->quarkst[1],q21,q22);
 }
 
-void hadron_get_name(stringbuf str, const hadron h)
+void hadron_get_name(stringbuf str, const hadron *h)
 {
 	strcpy(str,h->name);
 }
 
 /* spectrum */
 /** allocation **/
-spectrum spectrum_create(const size_t nparticle)
+spectrum *spectrum_create(const size_t nparticle)
 {
-	spectrum s;
+	spectrum *s;
 	size_t i;
 	
-	MALLOC_ERRVAL(s,spectrum,1,NULL);
+	MALLOC_ERRVAL(s,spectrum *,1,NULL);
 	
 	s->nparticle = nparticle;
 	
-	MALLOC_ERRVAL(s->particle,hadron*,s->nparticle,NULL);
+	MALLOC_ERRVAL(s->particle,hadron **,s->nparticle,NULL);
 	for (i=0;i<s->nparticle;i++)
 	{
 		s->particle[i] = hadron_create();
@@ -238,7 +238,7 @@ spectrum spectrum_create(const size_t nparticle)
 	return s;
 }
 
-void spectrum_destroy(spectrum s)
+void spectrum_destroy(spectrum *s)
 {
 	size_t i;
 	
@@ -269,9 +269,9 @@ enum
 	h_Omega		= 11
 };
 
-spectrum spectrum_create_qcd(void)
+spectrum *spectrum_create_qcd(void)
 {
-	spectrum s_qcd;
+	spectrum *s_qcd;
 	
 	s_qcd = spectrum_create(SPECT_QCD_SIZE);
 	
@@ -330,9 +330,9 @@ enum
 	h_VV_dd		= 25
 };
 
-spectrum spectrum_create_qcdqed(void)
+spectrum *spectrum_create_qcdqed(void)
 {
-	spectrum s_qcdqed;
+	spectrum *s_qcdqed;
 	
 	s_qcdqed = spectrum_create(SPECT_QCDQED_SIZE);
 	
@@ -385,10 +385,10 @@ spectrum spectrum_create_qcdqed(void)
 }
 
 /** access **/
-hadron spectrum_get(const spectrum s, const stringbuf part_name)
+hadron *spectrum_get(const spectrum *s, const stringbuf part_name)
 {
 	size_t i;
-	hadron h;
+	hadron *h;
 	bool found;
 	stringbuf errmsg;
 	

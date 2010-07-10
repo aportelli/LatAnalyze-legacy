@@ -16,11 +16,11 @@
 
 int main(void)
 {
-	plot p;
+	plot *p;
 	mat *x,*data,*var,*real_param,*fit_param;
 	size_t i;
 	double step;
-	fit_data d;
+	fit_data *d;
 	stringbuf plotfmt,plotcmd;
 	
 	step = DRATIO(XMAX,NDATA);

@@ -18,7 +18,7 @@ mat_binop_f *mat_binop = &BINOP;
 
 int main(int argc, char *argv[])
 {
-	rs_sample s1,s2,res;
+	rs_sample *s1,*s2,*res;
 	size_t s1_nrow,s2_nrow,s1_nsample,s2_nsample;
 	size_t i;
 	mat *sig;

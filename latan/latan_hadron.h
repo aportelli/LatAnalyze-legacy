@@ -77,37 +77,37 @@ typedef struct
 	int chmix;
 	int stmix;
 	int parity;
-}* hadron;
+} hadron;
 
 /** allocation **/
-hadron hadron_create(void);
-void hadron_destroy(hadron h);
+hadron *hadron_create(void);
+void hadron_destroy(hadron *h);
 
 /** access **/
-void hadron_set_2q_nomix(hadron h, const stringbuf name, const int parity,	\
+void hadron_set_2q_nomix(hadron *h, const stringbuf name, const int parity,	\
 						 const channel_no channel, const quark_no q1,		\
 						 const quark_no q2);
-void hadron_set_2q_2stmean(hadron h, const stringbuf name, const int parity,\
+void hadron_set_2q_2stmean(hadron *h, const stringbuf name, const int parity,\
 						   const channel_no channel, const quark_no q11,	\
 						   const quark_no q12, const quark_no q21,			\
 						   const quark_no q22);
-void hadron_get_name(stringbuf str, const hadron h);
+void hadron_get_name(stringbuf str, const hadron *h);
 
 /* spectrum type */
 typedef struct
 {
-	hadron *particle;
+	hadron **particle;
 	size_t nparticle;
-}* spectrum;
+} spectrum;
 
 /** allocation **/
-spectrum spectrum_create(const size_t nparticle);
-spectrum spectrum_create_qcd(void);
-spectrum spectrum_create_qcdqed(void);
-void spectrum_destroy(spectrum s);
+spectrum *spectrum_create(const size_t nparticle);
+spectrum *spectrum_create_qcd(void);
+spectrum *spectrum_create_qcdqed(void);
+void spectrum_destroy(spectrum *s);
 
 /** access **/
-hadron spectrum_get(const spectrum s, const stringbuf part_name);
+hadron *spectrum_get(const spectrum *s, const stringbuf part_name);
 
 __END_DECLS
 

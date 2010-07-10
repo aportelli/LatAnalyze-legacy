@@ -13,7 +13,7 @@ int main(void)
 {
 	mat **gvec;
 	mat *mean,*var;
-	rs_sample s_mean;
+	rs_sample *s_mean;
 	size_t i,j;
 	double sigma;
 	

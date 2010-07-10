@@ -78,6 +78,7 @@ typedef struct
 	void *model_param;
 	int stage;
 	double chi2pdof;
+	mat *buf_chi2[2];
 } fit_data;
 
 /** allocation **/

@@ -38,6 +38,19 @@ build/*
 doc/*.pdf
 doc/*.html
 doc/*.info
+doc/*.aux
+doc/*.cp
+doc/*.cps
+doc/*.fn
+doc/*.fns
+doc/*.ky
+doc/*.log
+doc/*.pg
+doc/*.toc
+doc/*.tp
+doc/*.tps
+doc/*.vr
+doc/*.vrs
 
 # autotools
 *.la

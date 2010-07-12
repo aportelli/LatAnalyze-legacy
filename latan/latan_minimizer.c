@@ -238,6 +238,7 @@ void fit_data_destroy(fit_data *d)
 }
 
 /** access **/
+/*** chi2 value ***/
 void fit_data_save_chi2pdof(fit_data *d, bool save)
 {
 	d->save_chi2pdof = save;
@@ -248,6 +249,7 @@ double fit_data_get_chi2pdof(fit_data *d)
 	return d->chi2pdof;
 }
 
+/*** fit points ***/
 void fit_data_set_x(fit_data *d, const size_t i, const size_t j,\
 					const double x_ij)
 {
@@ -262,6 +264,48 @@ double fit_data_get_x(const fit_data *d, const size_t i, const size_t j)
 mat *fit_data_pt_x(const fit_data *d)
 {
 	return d->x;
+}
+
+latan_errno fit_data_set_x_var(fit_data *d, const mat *var)
+{
+	latan_errno status;
+	size_t i;
+	double diag_i;
+	stringbuf warnmsg;
+	
+	status = LATAN_SUCCESS;
+	d->have_x_var      = true;
+	d->is_x_correlated = mat_is_square(var);
+	if (d->is_data_correlated)
+	{
+		LATAN_UPDATE_STATUS(status,mat_inv(d->x_varinv,var));
+	}
+	else
+	{
+		mat_zero(d->data_varinv);
+		for (i=0;i<nrow(var);i++)
+		{
+			if (mat_get(var,i,0) == 0)
+			{
+				sprintf(warnmsg,"singular point %lu eliminated from fit",\
+						(long unsigned)i);
+				LATAN_WARNING(warnmsg,LATAN_EDOM);
+				diag_i = 0.0;
+			}
+			else
+			{
+				diag_i = 1.0/mat_get(var,i,0);
+			}
+			mat_set(d->x_varinv,i,i,diag_i);
+		}
+	}
+	
+	return status;
+}
+
+bool fit_data_have_x_var(fit_data *d)
+{
+	return d->have_x_var;
 }
 
 void fit_data_fit_all_points(fit_data *d, bool fit)
@@ -331,6 +375,7 @@ size_t fit_data_fit_point_num(const fit_data *d)
 	return nfitpt;
 }
 
+/*** data ***/
 void fit_data_set_data(fit_data *d, const size_t i, const double data_i)
 {
 	mat_set(d->data,i,0,data_i);
@@ -339,6 +384,11 @@ void fit_data_set_data(fit_data *d, const size_t i, const double data_i)
 double fit_data_get_data(const fit_data *d, const size_t i)
 {
 	return mat_get(d->data,i,0);
+}
+
+size_t fit_data_get_ndata(const fit_data *d)
+{
+	return d->ndata;
 }
 
 mat *fit_data_pt_data(const fit_data *d)
@@ -382,43 +432,12 @@ latan_errno fit_data_set_data_var(fit_data *d, const mat *var)
 	return status;
 }
 
-latan_errno fit_data_set_x_var(fit_data *d, const mat *var)
+bool fit_data_is_correlated(const fit_data *d)
 {
-	latan_errno status;
-	size_t i;
-	double diag_i;
-	stringbuf warnmsg;
-	
-	status = LATAN_SUCCESS;
-	d->have_x_var      = true;
-	d->is_x_correlated = mat_is_square(var);
-	if (d->is_data_correlated)
-	{
-		LATAN_UPDATE_STATUS(status,mat_inv(d->x_varinv,var));
-	}
-	else
-	{
-		mat_zero(d->data_varinv);
-		for (i=0;i<nrow(var);i++)
-		{
-			if (mat_get(var,i,0) == 0)
-			{
-				sprintf(warnmsg,"singular point %lu eliminated from fit",\
-						(long unsigned)i);
-				LATAN_WARNING(warnmsg,LATAN_EDOM);
-				diag_i = 0.0;
-			}
-			else
-			{
-				diag_i = 1.0/mat_get(var,i,0);
-			}
-			mat_set(d->x_varinv,i,i,diag_i);
-		}
-	}
-	
-	return status;
+	return d->is_data_correlated;
 }
 
+/*** model ***/
 latan_errno fit_data_set_model(fit_data *d, const fit_model *model)
 {
 	if (model->ndim != d->ndim)
@@ -458,6 +477,7 @@ double fit_data_model_eval(const fit_data *d, const size_t i,\
 	return fit_model_eval(d->model,&(x_i_t_mview.matrix),p,d->model_param);
 }
 
+/*** stages ***/
 void fit_data_set_stage(fit_data *d, const int stage)
 {
 	d->stage = stage;
@@ -468,14 +488,10 @@ int fit_data_get_stage(const fit_data *d)
 	return d->stage;
 }
 
+/*** dof ***/
 int fit_data_get_dof(const fit_data *d)
 {
 	return fit_data_fit_point_num(d) - d->model->npar;
-}
-
-bool fit_data_is_correlated(const fit_data *d)
-{
-	return d->is_data_correlated;
 }
 
 /*							chi2 function									*/

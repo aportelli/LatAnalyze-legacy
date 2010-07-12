@@ -2,7 +2,7 @@
 #define LATAN_MODELS_H_
 
 #include <latan/latan_globals.h>
-#include <latan/latan_minimizer.h>
+#include <latan/latan_fit.h>
 
 /* 1D models */
 /** 1D polynomial models **/

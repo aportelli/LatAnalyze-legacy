@@ -10,6 +10,7 @@ COM_CXXFLAGS = -Wall -Wconversion -Wshadow -Wpointer-arith -Wcast-qual		\
 lib_LTLIBRARIES = liblatan.la
 liblatan_la_SOURCES =		\
 	latan_error.c			\
+	latan_fit.c				\
 	latan_globals.c			\
 	latan_hadron.c			\
 	latan_includes.h		\
@@ -30,6 +31,7 @@ liblatan_la_SOURCES =		\
 liblatan_ladir = $(includedir)/latan
 liblatan_la_HEADERS =		\
 	latan_error.h			\
+	latan_fit.h				\
 	latan_globals.h			\
 	latan_hadron.h			\
 	latan_io.h				\

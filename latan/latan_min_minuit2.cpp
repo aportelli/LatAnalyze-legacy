@@ -17,7 +17,7 @@
 #define STRATEGY 2
 #endif
 #ifndef FIT_TOL
-#define FIT_TOL 1.0e-6
+#define FIT_TOL 1.0e-2
 #endif
 
 // WARNING : std namespace already contain a stringbuf type

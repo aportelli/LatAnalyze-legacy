@@ -2,7 +2,7 @@
 #define LATAN_MASS_H_
 
 #include <latan/latan_globals.h>
-#include <latan/latan_minimizer.h>
+#include <latan/latan_fit.h>
 
 __BEGIN_DECLS
 

@@ -34,9 +34,9 @@ typedef enum
 	ch_Delta	= 8		/* Delta-like		-> Delta-like		*/
 } channel_no;
 
-channel_no channel_no_get(const stringbuf label);
-void channel_id_set(const channel_no i, const stringbuf new_id);
-void channel_id_get(stringbuf str, const channel_no i);
+channel_no channel_no_get(const strbuf label);
+void channel_id_set(const channel_no i, const strbuf new_id);
+void channel_id_get(strbuf str, const channel_no i);
 
 /* quarks */
 #define NQUARK 4
@@ -49,10 +49,10 @@ typedef enum
 } quark_no;
 
 quark_no quark_no_get(const char c);
-void quark_id_set(const quark_no i, const stringbuf new_id);
-void quark_id_get(stringbuf str, const quark_no i);
-void diquark_id_get(stringbuf str, const quark_no i1, const quark_no i2);
-void triquark_id_get(stringbuf str, const quark_no i1, const quark_no i2,\
+void quark_id_set(const quark_no i, const strbuf new_id);
+void quark_id_get(strbuf str, const quark_no i);
+void diquark_id_get(strbuf str, const quark_no i1, const quark_no i2);
+void triquark_id_get(strbuf str, const quark_no i1, const quark_no i2,\
 					 const quark_no i3);
 
 /* sources/sinks */
@@ -65,15 +65,15 @@ typedef enum
 } ss_no;
 
 ss_no ss_no_get(const char c);
-void ss_id_set(const ss_no i, const stringbuf new_id);
-void ss_id_get(stringbuf str, const ss_no i);
+void ss_id_set(const ss_no i, const strbuf new_id);
+void ss_id_get(strbuf str, const ss_no i);
 
 /* hadron structure */
 typedef struct
 {
-	stringbuf name;
-	stringbuf channel[MAXPROP];
-	stringbuf quarkst[MAXQUARKST];
+	strbuf name;
+	strbuf channel[MAXPROP];
+	strbuf quarkst[MAXQUARKST];
 	int chmix;
 	int stmix;
 	int parity;
@@ -84,14 +84,14 @@ hadron *hadron_create(void);
 void hadron_destroy(hadron *h);
 
 /** access **/
-void hadron_set_2q_nomix(hadron *h, const stringbuf name, const int parity,	\
+void hadron_set_2q_nomix(hadron *h, const strbuf name, const int parity,	\
 						 const channel_no channel, const quark_no q1,		\
 						 const quark_no q2);
-void hadron_set_2q_2stmean(hadron *h, const stringbuf name, const int parity,\
+void hadron_set_2q_2stmean(hadron *h, const strbuf name, const int parity,\
 						   const channel_no channel, const quark_no q11,	\
 						   const quark_no q12, const quark_no q21,			\
 						   const quark_no q22);
-void hadron_get_name(stringbuf str, const hadron *h);
+void hadron_get_name(strbuf str, const hadron *h);
 
 /* spectrum type */
 typedef struct
@@ -107,7 +107,7 @@ spectrum *spectrum_create_qcdqed(void);
 void spectrum_destroy(spectrum *s);
 
 /** access **/
-hadron *spectrum_get(const spectrum *s, const stringbuf part_name);
+hadron *spectrum_get(const spectrum *s, const strbuf part_name);
 
 __END_DECLS
 

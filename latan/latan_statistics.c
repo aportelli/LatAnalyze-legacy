@@ -312,7 +312,7 @@ int rs_sample_get_method(const rs_sample *s)
 	return s->resamp_method;
 }
 
-void rs_sample_get_name(stringbuf name, const rs_sample *s)
+void rs_sample_get_name(strbuf name, const rs_sample *s)
 {
 	strcpy(name,s->name);
 }
@@ -327,7 +327,7 @@ mat *rs_sample_pt_sample(const rs_sample *s, const size_t i)
 	return (s->sample)[i];
 }
 
-void rs_sample_set_name(rs_sample *s, const stringbuf name)
+void rs_sample_set_name(rs_sample *s, const strbuf name)
 {
 	strcpy(s->name,name);
 }

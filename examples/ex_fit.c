@@ -23,7 +23,7 @@ int main(void)
 	minalg_no alg;
 	double step;
 	fit_data *d;
-	stringbuf plotfmt,plotcmd;
+	strbuf plotfmt,plotcmd;
 	
 	step = DRATIO(XMAX,NDATA);
 	

@@ -29,7 +29,7 @@
 
 int main(void)
 {
-	stringbuf prop_mark, prop_idfmt;
+	strbuf prop_mark, prop_idfmt;
 	
 	io_get_prop_mark(prop_mark);
 	io_get_prop_idfmt(prop_idfmt);

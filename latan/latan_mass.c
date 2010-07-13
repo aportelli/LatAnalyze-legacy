@@ -181,7 +181,7 @@ latan_errno fit_data_mass_fit_tune(fit_data *d, mat *fit_init, const mat *prop,\
 	size_t nplat,nt,ntmax;
 	size_t p,t;
 	double shift,mem,pref,logslope;
-	stringbuf ranges,buf;
+	strbuf ranges,buf;
 	const fit_model *model;
 	
 	nt    = nrow(em) + 2;

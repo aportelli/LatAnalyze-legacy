@@ -3,8 +3,8 @@
 
 typedef struct
 {
-	stringbuf name;
-	stringbuf version;
+	strbuf name;
+	strbuf version;
 	int verb;
 } latan_env;
 
@@ -15,12 +15,12 @@ static latan_env env =
 	QUIET,				\
 };
 
-void latan_get_name(stringbuf name)
+void latan_get_name(strbuf name)
 {
 	strcpy(name,env.name);
 }
 
-void latan_get_version(stringbuf version)
+void latan_get_version(strbuf version)
 {
 	strcpy(version,env.version);
 }
@@ -42,10 +42,10 @@ latan_errno latan_set_verb(int verb)
 	return LATAN_SUCCESS;
 }
 
-void latan_printf(const int verb, const stringbuf fmt, ...)
+void latan_printf(const int verb, const strbuf fmt, ...)
 {
 	va_list args;
-	stringbuf head,tail,name,debug,version;
+	strbuf head,tail,name,debug,version;
 	
 	if ((latan_get_verb() >= verb)&&(verb >= VERB))
 	{

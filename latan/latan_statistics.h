@@ -40,7 +40,7 @@ latan_errno histogram(mat *hist, const mat *data, const double xmin,\
 /* resampled sample type */
 typedef struct
 {
-	stringbuf name;
+	strbuf name;
 	mat *cent_val;
 	mat **sample;
 	size_t nsample;
@@ -59,10 +59,10 @@ void rs_sample_destroy(rs_sample *s);
 size_t rs_sample_get_nrow(const rs_sample *s);
 size_t rs_sample_get_nsample(const rs_sample *s);
 int rs_sample_get_method(const rs_sample *s);
-void rs_sample_get_name(stringbuf name, const rs_sample *s);
+void rs_sample_get_name(strbuf name, const rs_sample *s);
 mat *rs_sample_pt_cent_val(const rs_sample *s);
 mat *rs_sample_pt_sample(const rs_sample *s, const size_t i);
-void rs_sample_set_name(rs_sample *s, const stringbuf name);
+void rs_sample_set_name(rs_sample *s, const strbuf name);
 
 /** estimators **/
 latan_errno rs_sample_cov(mat *cov, const rs_sample *s, const rs_sample *t);

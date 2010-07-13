@@ -6,7 +6,7 @@
 /*						minimizer algorithms								*/
 /****************************************************************************/
 
-static const stringbuf minalg_id[NMINALG] =
+static const strbuf minalg_id[NMINALG] =
 {
 	"GSL_GRAD_FR"   ,\
 	"GSL_GRAD_PR"   ,\
@@ -16,7 +16,7 @@ static const stringbuf minalg_id[NMINALG] =
 	"MIN_SIMPLEX"   
 };
 
-minalg_no minalg_no_get(const stringbuf m_id)
+minalg_no minalg_no_get(const strbuf m_id)
 {
 	minalg_no i;
 	
@@ -30,7 +30,7 @@ minalg_no minalg_no_get(const stringbuf m_id)
 	LATAN_ERROR("wrong minimizer name",LATAN_FAILURE);
 }
 
-latan_errno minalg_id_get(stringbuf m_id, const minalg_no n)
+latan_errno minalg_id_get(strbuf m_id, const minalg_no n)
 {
 	if (n >= NMINALG)
 	{
@@ -101,7 +101,7 @@ latan_errno minimizer_set_alg(minalg_no alg)
 	return LATAN_SUCCESS;
 }
 
-latan_errno minimizer_get_alg_name(stringbuf name)
+latan_errno minimizer_get_alg_name(strbuf name)
 {
 	switch (env.alg)
 	{
@@ -147,7 +147,7 @@ void minimizer_set_max_iteration(unsigned int max_iteration)
 latan_errno minimize(mat *x, double *f_min, min_func *f, void *param)
 {
 	latan_errno status;
-	stringbuf name;
+	strbuf name;
 	
 	minimizer_get_alg_name(name);
 	latan_printf(VERB,"minimizing using %s algorithm...\n",name);

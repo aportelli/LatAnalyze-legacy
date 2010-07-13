@@ -28,7 +28,7 @@ typedef enum
 #define STRING_LENGTH 512
 #endif
 
-typedef char stringbuf[STRING_LENGTH];
+typedef char strbuf[STRING_LENGTH];
 
 __END_DECLS
 
@@ -115,7 +115,7 @@ __END_DECLS
 	f = fopen(fname,mode);\
 	if (f == NULL)\
 	{\
-		stringbuf _errmsg;\
+		strbuf _errmsg;\
 		sprintf(_errmsg,"error opening file %s",fname);\
 		LATAN_ERROR(_errmsg,LATAN_EFAULT);\
 	}\
@@ -125,7 +125,7 @@ __END_DECLS
 	f = fopen(fname,mode);\
 	if (f == NULL)\
 	{\
-		stringbuf _errmsg;\
+		strbuf _errmsg;\
 		sprintf(_errmsg,"error opening file %s",fname);\
 		LATAN_ERROR_VAL(_errmsg,LATAN_EFAULT,value);\
 	}\
@@ -135,7 +135,7 @@ __END_DECLS
 	f = fopen(fname,mode);\
 	if (f == NULL)\
 	{\
-		stringbuf _errmsg;\
+		strbuf _errmsg;\
 		sprintf(_errmsg,"error opening file %s",fname);\
 		LATAN_ERROR_NORET(_errmsg,LATAN_EFAULT);\
 	}\
@@ -144,15 +144,15 @@ __END_DECLS
 __BEGIN_DECLS
 
 /* LatAnalyze environment access */
-void latan_get_name(stringbuf name);
-void latan_get_version(stringbuf version);
+void latan_get_name(strbuf name);
+void latan_get_version(strbuf version);
 int latan_get_verb(void);
 #ifdef LATAN_ERRNO_DEF
 latan_errno latan_set_verb(int verb);
 #endif
 
 /* LatAnalyze message function */
-void latan_printf(const int verb, const stringbuf fmt, ...);
+void latan_printf(const int verb, const strbuf fmt, ...);
 
 __END_DECLS
 

@@ -33,7 +33,7 @@ latan_error_handler_t *latan_set_error_handler_off(void);
 
 #define LATAN_ERROR(reason,no)\
 {\
-	stringbuf _freason;\
+	strbuf _freason;\
 	sprintf(_freason,"%s (function %s)",reason,__FUNCTION__);\
 	latan_error(_freason,__FILE__,__LINE__,no);\
 	return no;\
@@ -41,7 +41,7 @@ latan_error_handler_t *latan_set_error_handler_off(void);
 
 #define LATAN_ERROR_VAL(reason,no,value)\
 {\
-	stringbuf _freason;\
+	strbuf _freason;\
 	sprintf(_freason,"%s (function %s)",reason,__FUNCTION__);\
 	latan_error(_freason,__FILE__,__LINE__,no);\
 	return value;\
@@ -49,7 +49,7 @@ latan_error_handler_t *latan_set_error_handler_off(void);
 
 #define LATAN_ERROR_VOID(reason,no)\
 {\
-	stringbuf _freason;\
+	strbuf _freason;\
 	sprintf(_freason,"%s (function %s)",reason,__FUNCTION__);\
 	latan_error(_freason,__FILE__,__LINE__,no);\
 	return;\
@@ -60,14 +60,14 @@ LATAN_ERROR_VAL(reason,no,NULL)
 
 #define LATAN_ERROR_NORET(reason,no)\
 {\
-	stringbuf _freason;\
+	strbuf _freason;\
 	sprintf(_freason,"%s (function %s)",reason,__FUNCTION__);\
 	latan_error(_freason,__FILE__,__LINE__,no);\
 }\
 
 #define LATAN_WARNING(reason,no)\
 {\
-	stringbuf _freason;\
+	strbuf _freason;\
 	sprintf(_freason,"%s (function %s)",reason,__FUNCTION__);\
 	latan_warning(_freason,__FILE__,__LINE__,no);\
 }

@@ -9,12 +9,12 @@
 /*							fit model structure								*/
 /****************************************************************************/
 /** access **/
-void fit_model_get_name(stringbuf name, const fit_model *model)
+void fit_model_get_name(strbuf name, const fit_model *model)
 {
 	strcpy(name,model->name);
 }
 
-void fit_model_get_plot_fmt(stringbuf plot_fmt, const fit_model *model)
+void fit_model_get_plot_fmt(strbuf plot_fmt, const fit_model *model)
 {
 	strcpy(plot_fmt,model->plot_fmt);
 }
@@ -106,7 +106,7 @@ latan_errno fit_data_set_x_var(fit_data *d, const mat *var)
 	latan_errno status;
 	size_t i;
 	double diag_i;
-	stringbuf warnmsg;
+	strbuf warnmsg;
 	
 	status = LATAN_SUCCESS;
 	d->have_x_var      = true;
@@ -236,7 +236,7 @@ latan_errno fit_data_set_data_var(fit_data *d, const mat *var)
 	latan_errno status;
 	size_t i;
 	double diag_i;
-	stringbuf warnmsg;
+	strbuf warnmsg;
 	
 	status = LATAN_SUCCESS;
 	d->is_data_correlated = mat_is_square(var);
@@ -381,7 +381,7 @@ double chi2(const mat *p, void *d)
 latan_errno data_fit(mat *p, fit_data *d)
 {
 	latan_errno status;
-	stringbuf cor_status;
+	strbuf cor_status;
 	double chi2_min;
 	
 	fit_data_is_correlated(d) ? \

@@ -9,7 +9,7 @@ latan_error_handler_t *latan_error_handler = NULL;
 void latan_error(const char *reason, const char *file, int line,\
 				 int no)
 {
-	stringbuf name,version;
+	strbuf name,version;
 	
 	if (latan_error_handler) 
     {
@@ -28,7 +28,7 @@ void latan_error(const char *reason, const char *file, int line,\
 void latan_warning(const char *reason, const char *file, int line,\
 				   int no)
 {
-	stringbuf name,version;
+	strbuf name,version;
 
 	latan_get_name(name);
 	latan_get_version(version);

@@ -24,14 +24,14 @@ typedef enum
 	MIN_SIMPLEX    = 5
 } minalg_no;
 
-minalg_no minalg_no_get(const stringbuf m_id);
-latan_errno minalg_id_get(stringbuf m_id, const minalg_no n);
+minalg_no minalg_no_get(const strbuf m_id);
+latan_errno minalg_id_get(strbuf m_id, const minalg_no n);
 
 /* minimizer options */
 minlib_no minimizer_get_lib(void);
 minalg_no minimizer_get_alg(void);
 latan_errno minimizer_set_alg(minalg_no alg);
-latan_errno minimizer_get_alg_name(stringbuf name);
+latan_errno minimizer_get_alg_name(strbuf name);
 unsigned int minimizer_get_max_iteration(void);
 void minimizer_set_max_iteration(unsigned int max_iteration);
 

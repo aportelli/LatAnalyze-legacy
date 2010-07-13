@@ -6,8 +6,8 @@
 /****************************************************************************/
 typedef struct
 {
-	stringbuf prop_mark;
-	stringbuf prop_idfmt;
+	strbuf prop_mark;
+	strbuf prop_idfmt;
 } io_env;
 
 static io_env env = 
@@ -16,31 +16,31 @@ static io_env env =
 	"%s_%s_%s_%s"
 };
 
-void io_get_prop_mark(stringbuf prop_mark)
+void io_get_prop_mark(strbuf prop_mark)
 {
 	strcpy(prop_mark,env.prop_mark);
 }
 
-void io_set_prop_mark(const stringbuf prop_mark)
+void io_set_prop_mark(const strbuf prop_mark)
 {
 	strcpy(env.prop_mark,prop_mark);
 }
 
-void io_get_prop_idfmt(stringbuf prop_idfmt)
+void io_get_prop_idfmt(strbuf prop_idfmt)
 {
 	strcpy(prop_idfmt,env.prop_idfmt);
 }
 
-void io_set_prop_idfmt(const stringbuf prop_idfmt)
+void io_set_prop_idfmt(const strbuf prop_idfmt)
 {
 	strcpy(env.prop_idfmt,prop_idfmt);
 }
 
 /*							general I/O										*/
 /****************************************************************************/
-int get_nfile(const stringbuf manifestfname)
+int get_nfile(const strbuf manifestfname)
 {
-	stringbuf buf1, buf2;
+	strbuf buf1, buf2;
 	int nfile;
 	FILE* manifest = NULL;
 	
@@ -59,9 +59,9 @@ int get_nfile(const stringbuf manifestfname)
 	return nfile;
 }
 
-latan_errno get_firstfname(stringbuf fname, const stringbuf manifestfname)
+latan_errno get_firstfname(strbuf fname, const strbuf manifestfname)
 {
-	stringbuf buf;
+	strbuf buf;
 	FILE* manifest = NULL;
 	
 	FOPEN(manifest,manifestfname,"r");
@@ -88,10 +88,10 @@ void mat_dump(FILE* stream, const mat *m)
 	}
 }
 
-int mat_load_nrow(const stringbuf mark, const stringbuf matid,\
-				  const stringbuf inputfname)
+int mat_load_nrow(const strbuf mark, const strbuf matid,\
+				  const strbuf inputfname)
 {
-	stringbuf buf1, buf2, startfmt, end;
+	strbuf buf1, buf2, startfmt, end;
 	double dumb;
 	int dat_nrow;
 	bool in, found;
@@ -135,7 +135,7 @@ int mat_load_nrow(const stringbuf mark, const stringbuf matid,\
 				}
 				else 
 				{
-					stringbuf errmsg;
+					strbuf errmsg;
 					
 					sprintf(errmsg,"unexpected expression %s found before END_%s",\
 							buf2,mark);
@@ -147,7 +147,7 @@ int mat_load_nrow(const stringbuf mark, const stringbuf matid,\
 	fclose(inputf);
 	if (!found)
 	{
-		stringbuf errmsg;
+		strbuf errmsg;
 		
 		sprintf(errmsg,"no matrix %s %s in file %s",mark,matid,inputfname);
 		LATAN_ERROR_VAL(errmsg,LATAN_ELATSYN,LATAN_FAILURE);
@@ -156,10 +156,10 @@ int mat_load_nrow(const stringbuf mark, const stringbuf matid,\
 	return dat_nrow;
 }
 
-latan_errno mat_load(mat *m, const stringbuf mark, const stringbuf matid,\
-					 const stringbuf inputfname)
+latan_errno mat_load(mat *m, const strbuf mark, const strbuf matid,\
+					 const strbuf inputfname)
 {
-	stringbuf buf1, buf2, startfmt, datfmt, tmp, end;
+	strbuf buf1, buf2, startfmt, datfmt, tmp, end;
 	double buf;
 	size_t row, col;
 	bool in, broken, found;
@@ -211,7 +211,7 @@ latan_errno mat_load(mat *m, const stringbuf mark, const stringbuf matid,\
 					}
 					else 
 					{
-						stringbuf errmsg;
+						strbuf errmsg;
 						
 						sprintf(errmsg,"error while reading matrix %s %s (%lu,%lu) in file %s (trying to read a %lux%lu matrix)",\
 								mark,matid,(unsigned long)row,	\
@@ -232,7 +232,7 @@ latan_errno mat_load(mat *m, const stringbuf mark, const stringbuf matid,\
 	fclose(inputf);
 	if (!found)
 	{
-		stringbuf errmsg;
+		strbuf errmsg;
 		
 		sprintf(errmsg,"no matrix %s %s in file %s",mark,matid,inputfname);
 		LATAN_ERROR(errmsg,LATAN_ELATSYN);
@@ -241,10 +241,10 @@ latan_errno mat_load(mat *m, const stringbuf mark, const stringbuf matid,\
 	return LATAN_SUCCESS;
 }
 
-latan_errno mat_load_ar(mat **m, const stringbuf mark, const stringbuf matid,\
-						const stringbuf manifestfname)
+latan_errno mat_load_ar(mat **m, const strbuf mark, const strbuf matid,\
+						const strbuf manifestfname)
 {
-	stringbuf buf, fname;
+	strbuf buf, fname;
 	int nfile, status;
 	int i;
 	FILE* manifest = NULL;
@@ -266,7 +266,7 @@ latan_errno mat_load_ar(mat **m, const stringbuf mark, const stringbuf matid,\
 	return status;
 }
 
-latan_errno mat_save_plotdat(const mat *x, const mat *dat, const stringbuf fname)
+latan_errno mat_save_plotdat(const mat *x, const mat *dat, const strbuf fname)
 {
 	FILE* f = NULL;
 	size_t i;
@@ -283,7 +283,7 @@ latan_errno mat_save_plotdat(const mat *x, const mat *dat, const stringbuf fname
 }
 
 latan_errno mat_save_plotdat_yerr(const mat *x, const mat *dat, const mat *yerr,\
-								  const stringbuf fname)
+								  const strbuf fname)
 {
 	FILE* f = NULL;
 	size_t i;
@@ -300,7 +300,7 @@ latan_errno mat_save_plotdat_yerr(const mat *x, const mat *dat, const mat *yerr,
 }
 
 latan_errno mat_save_plotdat_xyerr(const mat *x, const mat *dat, const mat *xerr,\
-								   const mat *yerr, const stringbuf fname)
+								   const mat *yerr, const strbuf fname)
 {
 	FILE* f = NULL;
 	size_t i;
@@ -320,9 +320,9 @@ latan_errno mat_save_plotdat_xyerr(const mat *x, const mat *dat, const mat *xerr
 /*							propagator I/O									*/
 /****************************************************************************/
 int hadron_getnt(const hadron *h, const ss_no source, const ss_no sink,\
-				 const stringbuf manfname)
+				 const strbuf manfname)
 {
-	stringbuf ffname,fullpropid,prop_mark,prop_idfmt,source_id,sink_id;
+	strbuf ffname,fullpropid,prop_mark,prop_idfmt,source_id,sink_id;
 	int nt;
 	
 	io_get_prop_mark(prop_mark);
@@ -338,7 +338,7 @@ int hadron_getnt(const hadron *h, const ss_no source, const ss_no sink,\
 }
 
 latan_errno hadron_propbin(mat **prop, const hadron *h, const ss_no source,	\
-						   const ss_no sink, const stringbuf manfname,	\
+						   const ss_no sink, const strbuf manfname,	\
 						   const size_t binsize)
 {
 	int i,p,s;
@@ -348,7 +348,7 @@ latan_errno hadron_propbin(mat **prop, const hadron *h, const ss_no source,	\
 	double mean;
 	mat **dat[MAXPROP][MAXQUARKST];
 	mat **prop_prebin;
-	stringbuf fullpropid,prop_mark,prop_idfmt,source_id,sink_id;
+	strbuf fullpropid,prop_mark,prop_idfmt,source_id,sink_id;
 	latan_errno status;
 	
 	nt		= nrow(prop[0]);
@@ -432,10 +432,10 @@ latan_errno hadron_propbin(mat **prop, const hadron *h, const ss_no source,	\
 }
 /*						random generator state I/O							*/
 /****************************************************************************/
-latan_errno randgen_save_state(const stringbuf f_name,\
+latan_errno randgen_save_state(const strbuf f_name,\
 							   const randgen_state state)
 {
-	stringbuf full_f_name;
+	strbuf full_f_name;
 	FILE *f;
 	size_t i;
 	
@@ -451,9 +451,9 @@ latan_errno randgen_save_state(const stringbuf f_name,\
 	return LATAN_SUCCESS;
 }
 
-latan_errno randgen_load_state(randgen_state state, const stringbuf f_name)
+latan_errno randgen_load_state(randgen_state state, const strbuf f_name)
 {
-	stringbuf errmsg;
+	strbuf errmsg;
 	FILE *f;
 	size_t i;
 	
@@ -474,9 +474,9 @@ latan_errno randgen_load_state(randgen_state state, const stringbuf f_name)
 
 /*							resampled sample I/O							*/
 /****************************************************************************/
-latan_errno rs_sample_save(const rs_sample *s, const stringbuf f_name)
+latan_errno rs_sample_save(const rs_sample *s, const strbuf f_name)
 {
-	stringbuf full_f_name, s_name;
+	strbuf full_f_name, s_name;
 	FILE* f;
 	size_t i,j;
 	size_t s_nrow, s_nsample;
@@ -513,10 +513,10 @@ latan_errno rs_sample_save(const rs_sample *s, const stringbuf f_name)
 	return LATAN_SUCCESS;
 }
 
-int rs_sample_load_nrow(const stringbuf f_name)
+int rs_sample_load_nrow(const strbuf f_name)
 {
 	FILE* f;
-	stringbuf dumstr,errmsg;
+	strbuf dumstr,errmsg;
 	int s_nrow;
 	
 	FOPEN(f,f_name,"r");
@@ -534,10 +534,10 @@ int rs_sample_load_nrow(const stringbuf f_name)
 	return s_nrow;
 }
 
-int rs_sample_load_nsample(const stringbuf f_name)
+int rs_sample_load_nsample(const strbuf f_name)
 {
 	FILE* f;
-	stringbuf dumstr,errmsg;
+	strbuf dumstr,errmsg;
 	int nsample;
 	
 	FOPEN(f,f_name,"r");
@@ -559,10 +559,10 @@ int rs_sample_load_nsample(const stringbuf f_name)
 	return nsample;
 }
 
-int rs_sample_load_method(const stringbuf f_name)
+int rs_sample_load_method(const strbuf f_name)
 {
 	FILE* f;
-	stringbuf dumstr,errmsg;
+	strbuf dumstr,errmsg;
 	int method;
 	
 	FOPEN(f,f_name,"r");
@@ -588,11 +588,11 @@ int rs_sample_load_method(const stringbuf f_name)
 	return method;
 }
 
-latan_errno rs_sample_load(rs_sample *s, const stringbuf f_name)
+latan_errno rs_sample_load(rs_sample *s, const strbuf f_name)
 {
 	FILE* f;
 	size_t i,j;
-	stringbuf dumstr,errmsg;
+	strbuf dumstr,errmsg;
 	double dbuf;
 	int ibuf;
 	mat *pt;

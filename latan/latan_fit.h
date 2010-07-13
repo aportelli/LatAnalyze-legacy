@@ -11,16 +11,16 @@ typedef double model_func(const mat *x, const mat *p, void *model_param);
 
 typedef struct
 {
-	stringbuf name;
+	strbuf name;
 	model_func *func;
 	size_t npar;
 	size_t ndim;
-	stringbuf plot_fmt;
+	strbuf plot_fmt;
 } fit_model;
 
 /** access **/
-void fit_model_get_name(stringbuf name, const fit_model *model);
-void fit_model_get_plot_fmt(stringbuf plot_fmt, const fit_model *model);
+void fit_model_get_name(strbuf name, const fit_model *model);
+void fit_model_get_plot_fmt(strbuf plot_fmt, const fit_model *model);
 double fit_model_eval(const fit_model *model, const mat *x,const mat *p,\
 					  void *model_param);
 

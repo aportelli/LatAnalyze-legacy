@@ -3,7 +3,7 @@
 
 static char *gnuplot_get_program_path(const char *pname);
 static void gnuplot_cmd(FILE *ctrl, const char *cmd, ...);
-static void plot_add_tmpf(plot *p, const stringbuf tmpfname);
+static void plot_add_tmpf(plot *p, const strbuf tmpfname);
 
 /*								internal code								*/
 /****************************************************************************/
@@ -99,10 +99,10 @@ void gnuplot_cmd(FILE* ctrl, const char *cmd, ...)
 }
 
 /** temporary file management **/
-void plot_add_tmpf(plot *p, const stringbuf tmpfname)
+void plot_add_tmpf(plot *p, const strbuf tmpfname)
 {
 	(p->ntmpf)++;
-	REALLOC_NOERRET(p->tmpfname,p->tmpfname,stringbuf*,p->ntmpf);
+	REALLOC_NOERRET(p->tmpfname,p->tmpfname,strbuf*,p->ntmpf);
 	strcpy(p->tmpfname[p->ntmpf-1],tmpfname);
 }
 
@@ -197,45 +197,45 @@ void plot_set_scale_xylog(plot *p)
 	p->log = XYLOG;
 }
 
-void plot_set_title(plot *p, const stringbuf title)
+void plot_set_title(plot *p, const strbuf title)
 {
 	strcpy(p->title,title);
 }
 
-void plot_set_xlabel(plot *p, const stringbuf xlabel)
+void plot_set_xlabel(plot *p, const strbuf xlabel)
 {
 	strcpy(p->xlabel,xlabel);
 }
 
-void plot_set_ylabel(plot *p, const stringbuf ylabel)
+void plot_set_ylabel(plot *p, const strbuf ylabel)
 {
 	strcpy(p->ylabel,ylabel);
 }
 
-void plot_set_term(plot *p, const stringbuf term)
+void plot_set_term(plot *p, const strbuf term)
 {
 	strcpy(p->term,term);
 }
 
-void plot_set_output(plot *p, const stringbuf output)
+void plot_set_output(plot *p, const strbuf output)
 {
 	strcpy(p->output,output);
 }
 
 /*								plot functions								*/
 /****************************************************************************/
-void plot_add_plot(plot *p, const stringbuf cmd)
+void plot_add_plot(plot *p, const strbuf cmd)
 {
 	(p->nplot)++;
-	REALLOC_NOERRET(p->plotbuf,p->plotbuf,stringbuf*,p->nplot);
+	REALLOC_NOERRET(p->plotbuf,p->plotbuf,strbuf*,p->nplot);
 	strcpy(p->plotbuf[p->nplot-1],cmd);
 }
 
-void plot_add_dat(plot *p, const mat *x, const mat *dat, const stringbuf title,\
-				  const stringbuf color)
+void plot_add_dat(plot *p, const mat *x, const mat *dat, const strbuf title,\
+				  const strbuf color)
 {
 	FILE* tmpf;
-	stringbuf tmpfname, plotcmd, colorcmd;
+	strbuf tmpfname, plotcmd, colorcmd;
 	size_t i;
 	
 	strcpy(tmpfname,"latan_plot_tmp_XXXXXX");
@@ -260,10 +260,10 @@ void plot_add_dat(plot *p, const mat *x, const mat *dat, const stringbuf title,\
 }
 
 void plot_add_dat_yerr(plot *p, const mat *x, const mat *dat, const mat *yerr,\
-					 const stringbuf title, const stringbuf color)
+					 const strbuf title, const strbuf color)
 {
 	FILE* tmpf;
-	stringbuf tmpfname, plotcmd, colorcmd;
+	strbuf tmpfname, plotcmd, colorcmd;
 	size_t i;
 	
 	strcpy(tmpfname,"latan_plot_tmp_XXXXXX");
@@ -290,11 +290,11 @@ void plot_add_dat_yerr(plot *p, const mat *x, const mat *dat, const mat *yerr,\
 }
 
 void plot_add_dat_xyerr(plot *p, const mat *x, const mat *dat, const mat *xerr,\
-						const mat *yerr, const stringbuf title,             \
-						const stringbuf color)
+						const mat *yerr, const strbuf title,             \
+						const strbuf color)
 {
 	FILE* tmpf;
-	stringbuf tmpfname, plotcmd, colorcmd;
+	strbuf tmpfname, plotcmd, colorcmd;
 	size_t i;
 	
 	strcpy(tmpfname,"latan_plot_tmp_XXXXXX");
@@ -320,20 +320,20 @@ void plot_add_dat_xyerr(plot *p, const mat *x, const mat *dat, const mat *xerr,\
 	plot_add_plot(p,plotcmd);
 }
 
-void plot_add_hline(plot *p, const double y, const stringbuf style,\
-					const stringbuf color)
+void plot_add_hline(plot *p, const double y, const strbuf style,\
+					const strbuf color)
 {
-	stringbuf plotcmd;
+	strbuf plotcmd;
 
 	sprintf(plotcmd,"%.10e lt %s lc %s notitle",y,style,color);
 	plot_add_plot(p,plotcmd);
 }
 
 void plot_add_hlineerr(plot *p, const double y, const double err,		\
-					   const stringbuf style, const stringbuf color1,	\
-					   const stringbuf color2)
+					   const strbuf style, const strbuf color1,	\
+					   const strbuf color2)
 {
-	stringbuf plotcmd;
+	strbuf plotcmd;
 	
 	sprintf(plotcmd,"%.10e lc %s with filledcurve y1=%.10e notitle",\
 			y+err,color2,y-err);
@@ -345,7 +345,7 @@ void plot_add_hlineerr(plot *p, const double y, const double err,		\
 /****************************************************************************/
 latan_errno plot_parse(FILE* outstr, const plot *p)
 {
-	stringbuf begin, end;
+	strbuf begin, end;
 	size_t i;
 	
 	gnuplot_cmd(outstr,"set term %s",p->term);

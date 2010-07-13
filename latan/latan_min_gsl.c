@@ -109,7 +109,7 @@ latan_errno minimize_gsl(mat *x, double *f_min, min_func *f, void *param)
 	gsl_multimin_fdfminimizer *minimizer_fdf;
 	const gsl_multimin_fminimizer_type *minimizer_f_t;
 	gsl_multimin_fminimizer *minimizer_f;
-	stringbuf buf, x_dump, war_msg;
+	strbuf buf, x_dump, war_msg;
 	
 	n                       = nrow(x);
 	iter                    = 0u;

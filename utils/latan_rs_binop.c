@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
 	size_t i;
 	mat *sig;
 	bool do_save_res;
-	stringbuf res_name;
+	strbuf res_name;
 	
 	/* argument parsing */
 	switch (argc)

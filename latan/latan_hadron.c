@@ -2,7 +2,7 @@
 #include <latan/latan_includes.h>
 
 /* channels */
-static stringbuf channel_id[] = 
+static strbuf channel_id[] = 
 {
 	"SS"	,\
 	"ViVi"	,\
@@ -15,7 +15,7 @@ static stringbuf channel_id[] =
 	"DELTA"
 };
 
-channel_no channel_no_get(const stringbuf label)
+channel_no channel_no_get(const strbuf label)
 {
 	channel_no res;
 	
@@ -63,18 +63,18 @@ channel_no channel_no_get(const stringbuf label)
 	return res;
 }
 
-void channel_id_set(const channel_no i, const stringbuf new_id)
+void channel_id_set(const channel_no i, const strbuf new_id)
 {
 	strcpy(channel_id[i],new_id);
 }
 
-void channel_id_get(stringbuf str, const channel_no i)
+void channel_id_get(strbuf str, const channel_no i)
 {
 	strcpy(str,channel_id[i]);
 }
 
 /* quarks */
-static stringbuf quark_id[] =
+static strbuf quark_id[] =
 {
 	"0"	,\
 	"0"	,\
@@ -108,29 +108,29 @@ quark_no quark_no_get(const char c)
 	return res;
 }
 
-void quark_id_set(const quark_no i, const stringbuf new_id)
+void quark_id_set(const quark_no i, const strbuf new_id)
 {
 	strcpy(quark_id[i],new_id);
 }
 
-void quark_id_get(stringbuf str, const quark_no i)
+void quark_id_get(strbuf str, const quark_no i)
 {
 	strcpy(str,quark_id[i]);
 }
 
-void diquark_id_get(stringbuf str, const quark_no i1, const quark_no i2)
+void diquark_id_get(strbuf str, const quark_no i1, const quark_no i2)
 {
 	sprintf(str,"%s%s",quark_id[i1],quark_id[i2]);
 }
 
-void triquark_id_get(stringbuf str, const quark_no i1, const quark_no i2,\
+void triquark_id_get(strbuf str, const quark_no i1, const quark_no i2,\
 					 const quark_no i3)
 {
 	sprintf(str,"%s%s%s",quark_id[i1],quark_id[i2],quark_id[i3]);
 }
 
 /* sources/sinks */
-static stringbuf ss_id[] =
+static strbuf ss_id[] =
 {
 	"0",
 	"1",
@@ -160,12 +160,12 @@ ss_no ss_no_get(const char c)
 	return res;
 }
 
-void ss_id_set(const ss_no i, const stringbuf new_id)
+void ss_id_set(const ss_no i, const strbuf new_id)
 {
 	strcpy(ss_id[i],new_id);
 }
 
-void ss_id_get(stringbuf str, const ss_no i)
+void ss_id_get(strbuf str, const ss_no i)
 {
 	strcpy(str,ss_id[i]);
 }
@@ -187,7 +187,7 @@ void hadron_destroy(hadron *h)
 }
 
 /** access **/
-void hadron_set_2q_nomix(hadron *h, const stringbuf name, const int parity,	\
+void hadron_set_2q_nomix(hadron *h, const strbuf name, const int parity,	\
 						 const channel_no channel, const quark_no q1,		\
 						 const quark_no q2)
 {
@@ -199,7 +199,7 @@ void hadron_set_2q_nomix(hadron *h, const stringbuf name, const int parity,	\
 	diquark_id_get(h->quarkst[0],q1,q2);
 }
 
-void hadron_set_2q_2stmean(hadron *h, const stringbuf name, const int parity,\
+void hadron_set_2q_2stmean(hadron *h, const strbuf name, const int parity,\
 						   const channel_no channel, const quark_no q11,	\
 						   const quark_no q12, const quark_no q21,			\
 						   const quark_no q22)
@@ -213,7 +213,7 @@ void hadron_set_2q_2stmean(hadron *h, const stringbuf name, const int parity,\
 	diquark_id_get(h->quarkst[1],q21,q22);
 }
 
-void hadron_get_name(stringbuf str, const hadron *h)
+void hadron_get_name(strbuf str, const hadron *h)
 {
 	strcpy(str,h->name);
 }
@@ -385,12 +385,12 @@ spectrum *spectrum_create_qcdqed(void)
 }
 
 /** access **/
-hadron *spectrum_get(const spectrum *s, const stringbuf part_name)
+hadron *spectrum_get(const spectrum *s, const strbuf part_name)
 {
 	size_t i;
 	hadron *h;
 	bool found;
-	stringbuf errmsg;
+	strbuf errmsg;
 	
 	found = false;
 	

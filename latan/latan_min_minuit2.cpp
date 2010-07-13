@@ -2,7 +2,6 @@
 #include <latan/latan_includes.h>
 
 #ifdef HAVE_MINUIT2
-
 #include <iostream>
 #include <vector>
 #include <Minuit2/FCNBase.h>
@@ -20,7 +19,7 @@
 #define FIT_TOL 1.0e-2
 #endif
 
-// WARNING : std namespace already contain a stringbuf type
+using namespace std;
 using namespace ROOT;
 using namespace Minuit2;
 

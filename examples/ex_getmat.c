@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
 	mat_destroy(b);
 	
 	mat **c;
-	stringbuf ffname;
+	strbuf ffname;
 	int nfile, i;
 	
 	nfile = get_nfile("ex_getmat_man");

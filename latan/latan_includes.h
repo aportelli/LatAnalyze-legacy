@@ -24,5 +24,8 @@
 #include <limits.h>
 #include <float.h>
 #include <gsl/gsl_math.h>
+#ifdef _OPENMP
+#include <omp.h>
+#endif
 
 #endif

@@ -304,16 +304,23 @@ latan_errno mat_cp(mat *m, const mat *n)
 latan_errno mat_eqadd(mat *m, const mat *n)
 {
 	latan_errno status;
+	size_t i;
 	
 	status = LATAN_SUCCESS;
 	
-	if (!(mat_is_samedim(m,n)))
+	if (!mat_is_samedim(m,n))
 	{
 		LATAN_ERROR("operation between matrices with dimension mismatch",\
 					LATAN_EBADLEN);
 	}
-	
-	LATAN_UPDATE_STATUS(status,gsl_matrix_add(m,n));
+	for (i=0;i<ncol(m);i++)
+	{
+		gsl_vector_view m_i_vview = gsl_matrix_column(m,i);
+		gsl_vector_const_view  n_i_vview = gsl_matrix_const_column(n,i);
+		LATAN_UPDATE_STATUS(status,                                 \
+							gsl_blas_daxpy(1.0,&(n_i_vview.vector), \
+										   &(m_i_vview.vector)));
+	}
 	
 	return status;
 }
@@ -334,16 +341,23 @@ latan_errno mat_add(mat *m, const mat *n, const mat *o)
 latan_errno mat_eqsub(mat *m, const mat *n)
 {
 	latan_errno status;
+	size_t i;
 	
 	status = LATAN_SUCCESS;
 	
-	if (!(mat_is_samedim(m,n)))
+	if (!mat_is_samedim(m,n))
 	{
 		LATAN_ERROR("operation between matrices with dimension mismatch",\
 					LATAN_EBADLEN);
 	}
-	
-	LATAN_UPDATE_STATUS(status,gsl_matrix_sub(m,n));
+	for (i=0;i<ncol(m);i++)
+	{
+		gsl_vector_view m_i_vview = gsl_matrix_column(m,i);
+		gsl_vector_const_view  n_i_vview = gsl_matrix_const_column(n,i);
+		LATAN_UPDATE_STATUS(status,                                 \
+							gsl_blas_daxpy(-1.0,&(n_i_vview.vector), \
+										   &(m_i_vview.vector)));
+	}
 	
 	return status;
 }

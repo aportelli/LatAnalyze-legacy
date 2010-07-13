@@ -347,8 +347,10 @@ double chi2(const mat *p, void *d)
 	
 	dt         = (fit_data *)d;
 	ndata      = fit_data_get_ndata(dt);
-	
+
+#ifdef _OPENMP
 	#pragma omp critical
+#endif
 	{
 		X          = dt->buf_chi2[0];
 		X_vview    = gsl_matrix_column(X,0);

@@ -14,7 +14,7 @@
 #define NU_M_PI_P			139.57018				/* MeV */
 #define NU_M_PI_P_ERR		3.5e-4					/* MeV */
 #define NU_M_PI_0			134.9766				/* MeV */
-#define NU_M_PI_0_ERR		6e-4					/* MeV */
+#define NU_M_PI_0_ERR		6.0e-4					/* MeV */
 #define NU_M_PI_M			139.57018				/* MeV */
 #define NU_M_PI_M_ERR		3.5e-4					/* MeV */
 

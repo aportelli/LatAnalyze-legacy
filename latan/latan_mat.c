@@ -337,7 +337,6 @@ latan_errno mat_add(mat *m, const mat *n, const mat *o)
 	return status;
 }
 
-
 latan_errno mat_eqsub(mat *m, const mat *n)
 {
 	latan_errno status;
@@ -353,7 +352,7 @@ latan_errno mat_eqsub(mat *m, const mat *n)
 	for (i=0;i<ncol(m);i++)
 	{
 		gsl_vector_view m_i_vview = gsl_matrix_column(m,i);
-		gsl_vector_const_view  n_i_vview = gsl_matrix_const_column(n,i);
+		gsl_vector_const_view n_i_vview = gsl_matrix_const_column(n,i);
 		LATAN_UPDATE_STATUS(status,                                 \
 							gsl_blas_daxpy(-1.0,&(n_i_vview.vector), \
 										   &(m_i_vview.vector)));

@@ -205,6 +205,7 @@ latan_errno minimize_gsl(mat *x, double *f_min, min_func *f, void *param)
 						 minimizer_f->size);
 			gsl_vector_memcpy(gsl_x,minimizer_f->x);
 		}
+		gsl_vector_mul(gsl_x,gf_param.scale);
 		strcpy(x_dump,"");
 		for (i=0;i<n;i++)
 		{
@@ -212,14 +213,12 @@ latan_errno minimize_gsl(mat *x, double *f_min, min_func *f, void *param)
 					gsl_vector_get(gsl_x,i));
 			strcat(x_dump,buf);
 		}
-		gsl_vector_mul(gsl_x,gf_param.scale);
 		latan_printf(DEBUG,"%s\n",x_dump);
 	} while ((status == (latan_errno)GSL_CONTINUE) && (iter <= max_iteration));
 	if (status)
 	{
 		sprintf(war_msg,"GSL warning : %s",\
 				gsl_strerror(status));
-		LATAN_WARNING(war_msg,LATAN_FAILURE);
 	}
 	*f_min = need_df ? minimizer_fdf->f : minimizer_f->fval;
 	gsl_matrix_set_col(x,0,gsl_x);
@@ -229,6 +228,7 @@ latan_errno minimize_gsl(mat *x, double *f_min, min_func *f, void *param)
 	gsl_vector_free(gf_param.buf_gsl_f);
 	gsl_vector_free(gsl_x);
 	gsl_vector_free(step_size);
+	gsl_vector_free(one);
 	if (need_df)
 	{
 		gsl_multimin_fdfminimizer_free(minimizer_fdf);

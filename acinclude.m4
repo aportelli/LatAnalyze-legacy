@@ -90,3 +90,36 @@ AC_CACHE_CHECK([for _AC_LANG compiler vendor], ax_cv_[]_AC_LANG_ABBREV[]_compile
   done
  ])
 ])
+
+# AC_CHECK_FRAMEWORK(FRAMEWORK, FUNCTION,
+#		     [ACTION-IF-FOUND], [ACTION-IF-NOT-FOUND],
+#                    [OTHER-LIBRARIES])
+# ------------------------------------------------------------
+#
+# FIXME: shouldn't I check if linker supports frameworks?
+AC_DEFUN([AC_CHECK_FRAMEWORK],
+[m4_ifval([$3], , [AH_CHECK_FRAMEWORK([$1])])dnl
+AS_LITERAL_IF([$1],
+              [AS_VAR_PUSHDEF([ac_Framework], [ac_cv_framework_$1_$2])],
+              [AS_VAR_PUSHDEF([ac_Framework], [ac_cv_framework_$1''_$2])])dnl
+AC_CACHE_CHECK([for $2 in -framework $1], ac_Framework,
+[ac_check_lib_save_LIBS=$LIBS
+LIBS="-framework $1 $5 $LIBS"
+AC_LINK_IFELSE([AC_LANG_CALL([], [$2])],
+               [AS_VAR_SET(ac_Framework, yes)],
+               [AS_VAR_SET(ac_Framework, no)])
+LIBS=$ac_check_lib_save_LIBS])
+AS_IF([test AS_VAR_GET(ac_Framework) = yes],
+      [m4_default([$3], [AC_DEFINE_UNQUOTED(AS_TR_CPP(HAVE_FRAMEWORK_$1))
+  LIBS="-framework $1 $LIBS"
+])],
+      [$4])dnl
+AS_VAR_POPDEF([ac_Framework])dnl
+])# AC_CHECK_FRAMEWORK
+
+# AH_CHECK_FRAMEWORK(FWNAME)
+# --------------------------
+m4_define([AH_CHECK_FRAMEWORK],
+[AH_TEMPLATE(AS_TR_CPP(HAVE_FRAMEWORK_$1),
+             [Define to 1 if you have the `]$1[' framework (-framework ]$1[).])])
+

@@ -90,9 +90,15 @@ CXXFLAGS="$AM_CXXFLAGS $CXXFLAGS"
 
 # Checks for libraries.
 AC_CHECK_LIB([m],[cos],[],[AC_MSG_ERROR([libm library not found])])
-AC_CHECK_LIB([cblas],[cblas_dgemm],[],
-	[AC_CHECK_LIB([gslcblas],[cblas_dgemm],[],
-		[AC_MSG_ERROR([CBLAS library not found])])])
+AC_CHECK_FRAMEWORK([Accelerate],[cblas_dgemm],[],
+	[AC_CHECK_LIB([cblas],[cblas_dgemm],[],
+		[AC_CHECK_LIB([gslcblas],[cblas_dgemm],[],
+				[AC_MSG_ERROR([CBLAS library not found])])])])
+
+#AC_CHECK_LIB([cblas],[cblas_dgemm],[],
+#	[AC_CHECK_LIB([gslcblas],[cblas_dgemm],[],
+#		[AC_MSG_ERROR([CBLAS library not found])])])
+		
 AC_CHECK_LIB([gsl],[gsl_blas_dgemm],[],[AC_MSG_ERROR([GSL library not found])])
 AC_LANG([C++])
 SAVED_LDFLAGS=$LDFLAGS

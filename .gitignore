@@ -14,6 +14,7 @@ examples/ex_plot
 examples/ex_stat
 utils/latan_create_rg_state
 utils/latan_info
+utils/latan_mat_bench
 utils/latan_rs_add
 utils/latan_rs_mul
 utils/latan_rs_sub

@@ -1,6 +1,6 @@
 This chapter explains how to manipulate the matrix type defined
 in LatAnalyze that is the main numerical data type of the
-library. All non trivial operations (matrix product,
+library. All operations (matrix product,
 inversion...) are performed at low level by the @acronym{CBLAS}
 library. The performance of the functions described here
 will greatly depend of the optimization level of the 
@@ -25,64 +25,60 @@ Matrices in LatAnalyze got the type @code{mat} defined in
 all other LatAnalyze headers.
 
 @deftp{Data type} mat
-This type is a pointer type on a @acronym{GSL} matrix of
-@code{double} (@code{typedef mat gsl_matrix*})
+This type is just an alias of the @acronym{GSL} matrix type
+(@code{typedef mat gsl_matrix})
 @end deftp
-
-As @code{mat} is a pointer type, the use of affectation
-operator @code{=} with @code{mat} variables make them
-point on the same physical data in memory. To do copies
-of matrices, @code{mat_cp} function must be used.
 
 @node Allocation, Access, Definition, Matrices
 @section Allocation
 @cindex matrix allocation
 Here are described the different functions to allocate and
-desallocate memory for matrices.
+desallocate memory for matrices. All these functions return a
+pointer on the allocated variable.
 
-@deftypefun mat mat_create (const size_t init_nrow, const size_t init_ncol)
-This function allocate memory for a matrix with @var{init_nrow}
+@deftypefun {mat *} mat_create (const size_t init_nrow, const size_t init_ncol)
+This function allocates memory for a matrix with @var{init_nrow}
 rows and @var{init_ncol} columns.
 @end deftypefun
 
-@deftypefun mat mat_create_from_dim (const mat m)
-This function allocate memory for a matrix with the same dimensions
+@deftypefun {mat *} mat_create_from_dim (const mat * m)
+This function allocates memory for a matrix with the same dimensions
 than @var{m}.
 @end deftypefun
 
-@deftypefun mat mat_create_from_trdim (const mat m)
-This function allocate memory for a matrix with the same dimensions
+@deftypefun {mat *} mat_create_from_trdim (const mat * m)
+This function allocates memory for a matrix with the same dimensions
 than @var{m} transposed matrix.
 @end deftypefun
 
-@deftypefun mat mat_create_from_mat (const mat m)
-This function allocate memory for a matrix with the same dimensions
+@deftypefun {mat *} mat_create_from_mat (const mat * m)
+This function allocates memory for a matrix with the same dimensions
 than @var{m} and copy the content of @var{m} into it.
 @end deftypefun
 
-@deftypefun mat mat_create_from_ar (const double* ar, const size_t init_nrow, const size_t init_ncol)
-This function allocate memory for a matrix with @var{init_nrow}
+@deftypefun {mat *} mat_create_from_ar (const double * ar, const size_t init_nrow, const size_t init_ncol)
+This function allocates memory for a matrix with @var{init_nrow}
 rows and @var{init_ncol} columns and copy the content of array
-@var{ar} into it usin row-major order indexing.
+@var{ar} into it using row-major order indexing.
 @end deftypefun
 
-@deftypefun mat* mat_ar_create (const size_t nmat, const size_t init_nrow, const size_t init_ncol)
-This function allocate an array of @var{nmat} matrices with @var{init_nrow}
+@deftypefun {mat **} mat_ar_create (const size_t nmat, const size_t init_nrow, const size_t init_ncol)
+This function allocates an array of @var{nmat} matrices with @var{init_nrow}
 rows and @var{init_ncol} columns.
 @end deftypefun
 @cindex matrix array
 
-@deftypefun mat* mat_ar_create_from_dim (const size_t nmat, const mat m)
-This function allocate memory for an array of @var{nmat} matrices with
+@deftypefun {mat **} mat_ar_create_from_dim (const size_t nmat, const mat * m)
+This function allocates memory for an array of @var{nmat} matrices with
 the same dimensions than @var{m}.
 @end deftypefun
 
-@deftypefun void mat_destroy (mat m)
-This function desallocate the memory used by matrix @var{m}.
+@deftypefun void mat_destroy (mat * m)
+This function desallocates the memory used by matrix @var{m}.
 @end deftypefun
  
-@deftypefun void mat_ar_destroy (mat* m, const size_t nmat)
-This function desallocate the memory used by the matrix array @var{m}
+@deftypefun void mat_ar_destroy (mat ** m, const size_t nmat)
+This function desallocates the memory used by the matrix array @var{m}
 with @var{nmat} elements.
 @end deftypefun
 
@@ -90,38 +86,79 @@ with @var{nmat} elements.
 @section Access
 @cindex matrix access
 Here are described the different functions to access and modify
-matrix elements.
+matrix elements and properties.
 
-@deftypefun size_t nrow (const mat m)
+@deftypefun size_t nrow (const mat * m)
 This function returns the number of rows of @var{m}.
 @end deftypefun
 
-@deftypefun size_t ncol (const mat m)
+@deftypefun size_t ncol (const mat * m)
 This function returns the number of columns of @var{m}.
 @end deftypefun
 
-@deftypefun double mat_get (const mat m, const size_t i, const size_t j)
-This function return the element  @math{m_ij} of matrix @var{m}  
+@deftypefun double mat_get (const mat * m, const size_t i, const size_t j)
+This function returns the element  @math{m_{ij}} of matrix @var{m}  
 at row @var{i} and column @var{j}.
 @end deftypefun
 
-@deftypefun void mat_set (mat m, const size_t i, const size_t j, const double val)
-This function set to @var{val} the element  @math{m_ij} of
+@deftypefun void mat_set (mat * m, const size_t i, const size_t j, const double val)
+This function sets to @var{val} the element  @math{m_{i,j}} of
 matrix @var{m}  at row @var{i} and column @var{j}.
 @end deftypefun
 
 @cindex sub-matrix
-@deftypefun latan_errno mat_get_subm (mat m, const mat n, const size_t k1, const size_t l1, const size_t k2, const size_t l2)
-This function copy into @var{m} the submatrix of @var{n} of
-all elements @math{n_ij} with @var{k1} @leq{} @math{i} @leq{} @var{k2}
+@deftypefun latan_errno mat_get_subm (mat * m, const mat n, const size_t k1, const size_t l1, const size_t k2, const size_t l2)
+This function copies into @var{m} the submatrix of @var{n} of
+all elements @math{n_{i,j}} with @var{k1} @leq{} @math{i} @leq{} @var{k2}
 and @var{l1} @leq{} @math{j} @leq{} @var{l2}.
 @end deftypefun
  
-@deftypefun latan_errno mat_set_subm (mat m, const mat n, const size_t k1, const size_t l1, const size_t k2, const size_t l2)
-This function copy the matrix @var{n} into the submatrix of @var{m} of
-all elements @math{m_ij} with @*@var{k1} @leq{} @math{i} @leq{} @var{k2}
+@deftypefun latan_errno mat_set_subm (mat * m, const mat * n, const size_t k1, const size_t l1, const size_t k2, const size_t l2)
+This function copies the matrix @var{n} into the submatrix of @var{m} of
+all elements @math{m_{i,j}} with @*@var{k1} @leq{} @math{i} @leq{} @var{k2}
 and @var{l1} @leq{} @math{j} @leq{} @var{l2}.
 @end deftypefun
+
+@defmac MAT_PT_SUBM (mat * m, mat * n, size_t k1, size_t l1, size_t k2, size_t l2)
+This macro points @var{m} on the submatrix of @var{n} of
+all elements @math{n_{i,j}} with @var{k1} @leq{} @math{i} @leq{} @var{k2}
+and @var{l1} @leq{} @math{j} @leq{} @var{l2}.
+@end defmac
+
+@deftypefun latan_errno mat_get_diag (mat * diag, const mat * m)
+This function copies in @var{diag} (as a column vector) the diagonal of @var{m} :
+@tex
+$$diag_{i,0}\leftarrow m_{i,i}$$
+@end tex
+@end deftypefun
+
+@deftypefun latan_errno mat_set_diag (mat * m, const mat * diag)
+This function copies @var{diag} (as a column vector) in the diagonal of @var{m} :
+@tex
+$$m_{i,i}\leftarrow diag_{i,0}$$
+@end tex
+@end deftypefun
+
+@deftypefun latan_errno mat_set_step (mat * m, const double x0, const double step)
+This function sets the elements of @var{m} (as a column vector) to an
+arithmetic sequence with origin @var{x0} and increment @var{step} :
+@tex
+$$m_{i,0}\leftarrow x0+i.steps$$
+@end tex
+@end deftypefun
+
+@deftypefun latan_errno mat_set_from_ar (mat * m, const double * ar)
+This function copies the array @var{ar} into @var{m}, using row major indexing.
+@end deftypefun
+
+@deftypefun double mat_get_min (const mat * m)
+This function returns the minimum element of @var{m}.
+@end deftypefun
+
+@deftypefun double mat_get_max (const mat * m)
+This function returns the maximum element of @var{m}.
+@end deftypefun
+
 
 @node Tests, Operations, Access, Matrices
 @section Tests

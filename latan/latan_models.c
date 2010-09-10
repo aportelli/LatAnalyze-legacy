@@ -377,7 +377,7 @@ double fm_polyn_2d_22_func(const mat *X, const mat *p, void *nothing)
 
 const fit_model fm_polyn_2d_22 =
 {
-	"z(x,y) = p0 + p1*x + p2*y + p3*x*y + p4*x^2 + p5*y_2",
+	"z(x,y) = p0 + p1*x + p2*y + p3*x*y + p4*x^2 + p5*y^2",
 	&fm_polyn_2d_22_func,
 	6,
 	2,

@@ -34,7 +34,7 @@ fit_data *fit_data_create(const size_t ndata, const size_t ndim)
 	size_t i;
 	
 	MALLOC_ERRVAL(d,fit_data *,1,NULL);
-	d->x           = mat_create(ndata,ndim);
+	d->x           = mat_create(ndata*ndim,1);
 	d->x_varinv    = mat_create(ndata*ndim,ndata*ndim);
 	mat_id(d->x_varinv);
 	d->data        = mat_create(ndata,1);
@@ -88,12 +88,12 @@ double fit_data_get_chi2pdof(fit_data *d)
 void fit_data_set_x(fit_data *d, const size_t i, const size_t j,\
 					const double x_ij)
 {
-	mat_set(d->x,i,j,x_ij);
+	mat_set(d->x,i*d->ndim+j,0,x_ij);
 }
 
 double fit_data_get_x(const fit_data *d, const size_t i, const size_t j)
 {
-	return mat_get(d->x,i,j);
+	return mat_get(d->x,i*d->ndim+j,0);
 }
 
 mat *fit_data_pt_x(const fit_data *d)
@@ -305,9 +305,9 @@ double fit_data_model_eval(const fit_data *d, const size_t i,\
 	gsl_vector_view x_i_vview;
 	gsl_matrix_view x_i_t_mview;
 	
-	x_i_vview   = gsl_matrix_row(d->x,i);
+	x_i_vview   = gsl_matrix_subcolumn(d->x,0,i*d->ndim,d->ndim);
 	x_i_t_mview = gsl_matrix_view_vector(&(x_i_vview.vector),   \
-										 x_i_vview.vector.size,1);
+										 1,x_i_vview.vector.size);
 	
 	return fit_model_eval(d->model,&(x_i_t_mview.matrix),p,d->model_param);
 }

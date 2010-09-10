@@ -20,28 +20,43 @@ AC_PROG_LIBTOOL
 
 LT_INIT
 
-# Configure parameters non-standard install prefix of libs
+AC_ARG_ENABLE([Accelerate],
+	[AS_HELP_STRING([--enable-Accelerate],
+		[link with CBLAS implentation in Accelerate.framework on Apple platforms])],
+	[],
+	[]
+)
+
+# Configure parameters non-standard install prefix and name of libs
 AC_ARG_WITH([gsl],
     [AS_HELP_STRING([--with-gsl=prefix],
-	[try this for a non-standard install prefix of the GSL library])],
+		[try this for a non-standard install prefix of the GSL library])],
     [AM_CFLAGS="$AM_CFLAGS -I$with_gsl/include"]
 	[AM_LDFLAGS="$AM_LDFLAGS -L$with_gsl/lib"],
 	[]
 )
 AC_ARG_WITH([cblas],
     [AS_HELP_STRING([--with-cblas=prefix],
-	[try this for a non-standard install prefix of the CBLAS library])],
+		[try this for a non-standard install prefix of the CBLAS library])],
     [AM_CFLAGS="$AM_CFLAGS -I$with_cblas/include"]
 	[AM_LDFLAGS="$AM_LDFLAGS -L$with_cblas/lib"],
 	[]
 )
+AC_ARG_WITH([cblas-name],
+    [AS_HELP_STRING([--with-cblas-name=name],
+		[use this to specify the filename (without 'lib') of CBLAS library (default : 'cblas')])],
+    [echo $with_cblas_name],
+	[echo $with_cblas_name]
+)
 AC_ARG_WITH([Minuit2],
     [AS_HELP_STRING([--with-Minuit2=prefix],
-	[try this for a non-standard install prefix of the Minuit2 library])],
+		[try this for a non-standard install prefix of the Minuit2 library])],
     [AM_CFLAGS="$AM_CFLAGS -I$with_gsl/include"]
 	[AM_LDFLAGS="$AM_LDFLAGS -L$with_gsl/lib"],
 	[]
 )
+
+
 
 CFLAGS="$AM_CFLAGS $CFLAGS"
 LDFLAGS="$AM_LDFLAGS $LDFLAGS"
@@ -90,14 +105,12 @@ CXXFLAGS="$AM_CXXFLAGS $CXXFLAGS"
 
 # Checks for libraries.
 AC_CHECK_LIB([m],[cos],[],[AC_MSG_ERROR([libm library not found])])
-AC_CHECK_FRAMEWORK([Accelerate],[cblas_dgemm],[],
-	[AC_CHECK_LIB([cblas],[cblas_dgemm],[],
+AS_IF([test "x$enable_Accelerate" = "xyes"],
+	[AC_CHECK_FRAMEWORK([Accelerate],[cblas_dgemm],
+		[],[AC_MSG_ERROR([Accelerate framework not found])])],
+	[AC_CHECK_LIB([$with_cblas_name],[cblas_dgemm],[],
 		[AC_CHECK_LIB([gslcblas],[cblas_dgemm],[],
 				[AC_MSG_ERROR([CBLAS library not found])])])])
-
-#AC_CHECK_LIB([cblas],[cblas_dgemm],[],
-#	[AC_CHECK_LIB([gslcblas],[cblas_dgemm],[],
-#		[AC_MSG_ERROR([CBLAS library not found])])])
 		
 AC_CHECK_LIB([gsl],[gsl_blas_dgemm],[],[AC_MSG_ERROR([GSL library not found])])
 AC_LANG([C++])

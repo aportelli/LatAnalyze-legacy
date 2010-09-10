@@ -45,8 +45,8 @@ AC_ARG_WITH([cblas],
 AC_ARG_WITH([cblas-name],
     [AS_HELP_STRING([--with-cblas-name=name],
 		[use this to specify the filename (without 'lib') of CBLAS library (default : 'cblas')])],
-    [echo $with_cblas_name],
-	[echo $with_cblas_name]
+    [],
+	[]
 )
 AC_ARG_WITH([Minuit2],
     [AS_HELP_STRING([--with-Minuit2=prefix],
@@ -107,8 +107,12 @@ CXXFLAGS="$AM_CXXFLAGS $CXXFLAGS"
 AC_CHECK_LIB([m],[cos],[],[AC_MSG_ERROR([libm library not found])])
 AS_IF([test "x$enable_Accelerate" = "xyes"],
 	[AC_CHECK_FRAMEWORK([Accelerate],[cblas_dgemm],
-		[],[AC_MSG_ERROR([Accelerate framework not found])])],
-	[AC_CHECK_LIB([$with_cblas_name],[cblas_dgemm],[],
+		[AC_DEFINE_UNQUOTED([CBLAS_NAME],["Accelerate framework"],[name of CBLAS library])]
+		[LIBS="-framework Accelerate $LIBS"],
+		[AC_MSG_ERROR([Accelerate framework not found])])],
+	[AC_CHECK_LIB([$with_cblas_name],[cblas_dgemm],
+		[AC_DEFINE_UNQUOTED([CBLAS_NAME],["lib$with_cblas_name"],[name of CBLAS library])]
+		[LIBS="-l$with_cblas_name $LIBS"],
 		[AC_CHECK_LIB([gslcblas],[cblas_dgemm],[],
 				[AC_MSG_ERROR([CBLAS library not found])])])])
 		

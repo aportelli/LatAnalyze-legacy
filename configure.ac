@@ -32,6 +32,7 @@ AC_ARG_WITH([gsl],
     [AS_HELP_STRING([--with-gsl=prefix],
 		[try this for a non-standard install prefix of the GSL library])],
     [AM_CFLAGS="$AM_CFLAGS -I$with_gsl/include"]
+	[AM_CXXFLAGS="$AM_CXXFLAGS -I$with_gsl/include"]
 	[AM_LDFLAGS="$AM_LDFLAGS -L$with_gsl/lib"],
 	[]
 )
@@ -56,9 +57,8 @@ AC_ARG_WITH([Minuit2],
 	[]
 )
 
-
-
 CFLAGS="$AM_CFLAGS $CFLAGS"
+CXXFLAGS="$AM_CXXFLAGS $CXXFLAGS"
 LDFLAGS="$AM_LDFLAGS $LDFLAGS"
 
 # Get compilers informations

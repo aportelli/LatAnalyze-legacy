@@ -5,9 +5,9 @@
 /*								1D models   								*/
 /****************************************************************************/
 /** 1D polynomial models **/
-double fm_polyn_1d_0_func(const mat *X, const mat *p, void *nothing)
+double fm_polyn_1d_0_func(mat *X, mat *p, void *nothing)
 {
-	const mat *dummy;
+	mat *dummy;
 	
 	nothing = NULL;
 	dummy   = X;
@@ -24,7 +24,7 @@ const fit_model fm_polyn_1d_0 =
 	"%e"
 };
 
-double fm_polyn_1d_1_func(const mat *X, const mat *p, void *nothing)
+double fm_polyn_1d_1_func(mat *X, mat *p, void *nothing)
 {
 	double x,res;
 	
@@ -45,7 +45,7 @@ const fit_model fm_polyn_1d_1 =
 	"%e+%e*x"
 };
 
-double fm_polyn_1d_2_func(const mat *X, const mat *p, void *nothing)
+double fm_polyn_1d_2_func(mat *X, mat *p, void *nothing)
 {
 	double x,res;
 	
@@ -68,7 +68,7 @@ const fit_model fm_polyn_1d_2 =
 	"%e+%e*x+%e*x**2"
 };
 
-double fm_polyn_1d_3_func(const mat *X, const mat *p, void *nothing)
+double fm_polyn_1d_3_func(mat *X, mat *p, void *nothing)
 {
 	double x,res;
 	
@@ -91,7 +91,7 @@ const fit_model fm_polyn_1d_3 =
 	"%e+%e*x+%e*x**2+%e*x**3"
 };
 
-double fm_polyn_1d_4_func(const mat *X, const mat *p, void *nothing)
+double fm_polyn_1d_4_func(mat *X, mat *p, void *nothing)
 {
 	double x,res;
 	
@@ -125,7 +125,7 @@ const fit_model *fm_polyn_1d[FM_POLYN_1D_MAXDEG+1] =
 };
 
 /** exponential decay **/
-double fm_expdec_func(const mat *x, const mat *p, void *nothing)
+double fm_expdec_func(mat *x, mat *p, void *nothing)
 {
 	double res;
 	
@@ -145,7 +145,7 @@ const fit_model fm_expdec =
 };
 
 /** hyperbolic cosine **/
-double fm_cosh_func(const mat *x, const mat *p, void *nothing)
+double fm_cosh_func(mat *x, mat *p, void *nothing)
 {
 	double res;
 	
@@ -167,9 +167,9 @@ const fit_model fm_cosh =
 /*								2D models   								*/
 /****************************************************************************/
 /** 2D polynomial models **/
-double fm_polyn_2d_00_func(const mat *X, const mat *p, void *nothing)
+double fm_polyn_2d_00_func(mat *X, mat *p, void *nothing)
 {
-	const mat *dummy;
+	mat *dummy;
 	
 	nothing = NULL;
 	dummy   = X;
@@ -186,7 +186,7 @@ const fit_model fm_polyn_2d_00 =
 	"%e"
 };
 
-double fm_polyn_2d_01_func(const mat *X, const mat *p, void *nothing)
+double fm_polyn_2d_01_func(mat *X, mat *p, void *nothing)
 {
 	double res,x,y;
 	
@@ -209,7 +209,7 @@ const fit_model fm_polyn_2d_01 =
 	"%e+%e*y"
 };
 
-double fm_polyn_2d_02_func(const mat *X, const mat *p, void *nothing)
+double fm_polyn_2d_02_func(mat *X, mat *p, void *nothing)
 {
 	double res,x,y;
 	
@@ -233,7 +233,7 @@ const fit_model fm_polyn_2d_02 =
 	"%e+%e*y+%e*y**2"
 };
 
-double fm_polyn_2d_10_func(const mat *X, const mat *p, void *nothing)
+double fm_polyn_2d_10_func(mat *X, mat *p, void *nothing)
 {
 	double res,x,y;
 	
@@ -256,7 +256,7 @@ const fit_model fm_polyn_2d_10 =
 	"%e+%e*x"
 };
 
-double fm_polyn_2d_11_func(const mat *X, const mat *p, void *nothing)
+double fm_polyn_2d_11_func(mat *X, mat *p, void *nothing)
 {
 	double res,x,y;
 	
@@ -281,7 +281,7 @@ const fit_model fm_polyn_2d_11 =
 	"%e+%e*x+%e*y+%e*x*y"
 };
 
-double fm_polyn_2d_12_func(const mat *X, const mat *p, void *nothing)
+double fm_polyn_2d_12_func(mat *X, mat *p, void *nothing)
 {
 	double res,x,y;
 	
@@ -307,7 +307,7 @@ const fit_model fm_polyn_2d_12 =
 	"%e+%e*x+%e*y+%e*x*y+%e*y**2"
 };
 
-double fm_polyn_2d_20_func(const mat *X, const mat *p, void *nothing)
+double fm_polyn_2d_20_func(mat *X, mat *p, void *nothing)
 {
 	double res,x,y;
 	
@@ -331,7 +331,7 @@ const fit_model fm_polyn_2d_20 =
 	"%e+%e*x+%e*x**2"
 };
 
-double fm_polyn_2d_21_func(const mat *X, const mat *p, void *nothing)
+double fm_polyn_2d_21_func(mat *X, mat *p, void *nothing)
 {
 	double res,x,y;
 	
@@ -357,7 +357,7 @@ const fit_model fm_polyn_2d_21 =
 	"%e+%e*x+%e*y+%e*x*y+%e*x**2"
 };
 
-double fm_polyn_2d_22_func(const mat *X, const mat *p, void *nothing)
+double fm_polyn_2d_22_func(mat *X, mat *p, void *nothing)
 {
 	double res,x,y;
 	

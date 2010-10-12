@@ -20,12 +20,12 @@ double mat_elmean(mat *m);
 latan_errno mat_mean(mat *mean, mat **m, const size_t size);
 latan_errno mat_cov(mat *cov, mat **m, mat **n, const size_t size);
 latan_errno mat_cov_m(mat *cov, mat **m, mat **n, const size_t size,\
-					  const mat *m_mean, const mat *n_mean);
+					  mat *m_mean, mat *n_mean);
 #define mat_var(var,m,size) mat_cov(var,m,m,size)
 #define mat_var_m(var,m,size,mean) mat_cov(var,m,m,size,mean,mean)
 latan_errno mat_covp(mat *cov, mat **m, mat **n, const size_t size);
 latan_errno mat_covp_m(mat *cov, mat **m, mat **n, const size_t size,\
-					   const mat *m_mean, const mat *n_mean);
+					   mat *m_mean, mat *n_mean);
 #define mat_varp(var,m,size) mat_covp(var,m,m,size)
 #define mat_varp_m(var,m,size,mean) mat_covp_m(var,m,m,size,mean,mean)
 
@@ -34,7 +34,7 @@ latan_errno mat_ar_bin(mat **bindat, mat **dat, const size_t ndat,\
 					   const size_t binsize);
 
 /* histogram */
-latan_errno histogram(mat *hist, const mat *data, const double xmin,\
+latan_errno histogram(mat *hist, mat *data, const double xmin,\
 					  const double xmax, const size_t nint);
 
 /* resampled sample type */

@@ -35,7 +35,7 @@ int get_nfile(const strbuf manifestfname);
 latan_errno get_firstfname(strbuf fname, const strbuf manifestfname);
 
 /* mat *I/O */
-void mat_dump(FILE* stream, const mat *m);
+void mat_dump(FILE* stream, mat *m);
 #define mat_print(m) mat_dump(stdout,m)
 int mat_load_nrow(const strbuf mark, const strbuf matid,\
 				  const strbuf inputfname);
@@ -43,11 +43,11 @@ latan_errno mat_load(mat *m, const strbuf mark, const strbuf matid,\
 					 const strbuf inputfname);
 latan_errno mat_load_ar(mat **m, const strbuf mark,\
 						const strbuf matid, const strbuf manifestfname);
-latan_errno mat_save_plotdat(const mat *x, const mat *m, const strbuf fname);
-latan_errno mat_save_plotdat_yerr(const mat *x, const mat *dat, const mat *yerr,\
+latan_errno mat_save_plotdat(mat *x, mat *m, const strbuf fname);
+latan_errno mat_save_plotdat_yerr(mat *x, mat *dat, mat *yerr,\
 								  const strbuf fname);
-latan_errno mat_save_plotdat_xyerr(const mat *x, const mat *dat, const mat *xerr,\
-								   const mat *yerr, const strbuf fname);
+latan_errno mat_save_plotdat_xyerr(mat *x, mat *dat, mat *xerr,\
+								   mat *yerr, const strbuf fname);
 
 /* propagator I/O */
 int hadron_getnt(const hadron *h, const ss_no source, const ss_no sink,\

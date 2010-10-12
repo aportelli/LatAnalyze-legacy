@@ -19,8 +19,8 @@ void fit_model_get_plot_fmt(strbuf plot_fmt, const fit_model *model)
 	strcpy(plot_fmt,model->plot_fmt);
 }
 
-double fit_model_eval(const fit_model *model, const mat *x,
-					  const mat *p, void *param)
+double fit_model_eval(const fit_model *model, mat *x,
+					  mat *p, void *param)
 {
 	return model->func(x,p,param);
 }
@@ -101,7 +101,7 @@ mat *fit_data_pt_x(const fit_data *d)
 	return d->x;
 }
 
-latan_errno fit_data_set_x_var(fit_data *d, const mat *var)
+latan_errno fit_data_set_x_var(fit_data *d, mat *var)
 {
 	latan_errno status;
 	size_t i;
@@ -231,7 +231,7 @@ mat *fit_data_pt_data(const fit_data *d)
 	return d->data;
 }
 
-latan_errno fit_data_set_data_var(fit_data *d, const mat *var)
+latan_errno fit_data_set_data_var(fit_data *d, mat *var)
 {
 	latan_errno status;
 	size_t i;
@@ -300,7 +300,7 @@ void fit_data_set_model_param(fit_data *d, void *model_param)
  * optimization is done using vector/matrix views from GSL
  */
 double fit_data_model_eval(const fit_data *d, const size_t i,\
-						   const mat *p)
+						   mat *p)
 {
 	gsl_vector_view x_i_vview;
 	gsl_matrix_view x_i_t_mview;
@@ -336,7 +336,7 @@ int fit_data_get_dof(const fit_data *d)
  * optimization is done using vector/matrix views from GSL, matrix buffers
  * in fit_data structure, and ddot BLAS operation
  */
-double chi2(const mat *p, void *d)
+double chi2(mat *p, void *d)
 {
 	fit_data *dt;
 	size_t ndata;

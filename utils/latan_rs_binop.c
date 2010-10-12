@@ -12,7 +12,7 @@
 #error BINOP macro must be defined to compile this program (use -DBINOP=<op> option)
 #endif
 
-typedef latan_errno mat_binop_f(mat *, const mat *, const mat *);
+typedef latan_errno mat_binop_f(mat *, mat *, mat *);
 
 mat_binop_f *mat_binop = &BINOP;
 

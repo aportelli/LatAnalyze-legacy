@@ -65,12 +65,12 @@ void plot_set_output(plot *p, const strbuf output);
 
 /* plot functions */
 void plot_add_plot(plot *p, const strbuf cmd);
-void plot_add_dat(plot *p, const mat *x, const mat *dat, const strbuf title,\
+void plot_add_dat(plot *p, mat *x, mat *dat, const strbuf title,\
 				  const strbuf color);
-void plot_add_dat_yerr(plot *p, const mat *x, const mat *dat, const mat *yerr,\
+void plot_add_dat_yerr(plot *p, mat *x, mat *dat, mat *yerr,\
 					 const strbuf title, const strbuf color);
-void plot_add_dat_xyerr(plot *p, const mat *x, const mat *dat, const mat *xerr,\
-						const mat *yerr, const strbuf title,             \
+void plot_add_dat_xyerr(plot *p, mat *x, mat *dat, mat *xerr,\
+						mat *yerr, const strbuf title,             \
 						const strbuf color);
 void plot_add_hline(plot *p, const double y, const strbuf style,		\
 					const strbuf color);

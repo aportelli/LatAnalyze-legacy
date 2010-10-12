@@ -84,7 +84,7 @@ latan_errno mat_cov(mat *cov, mat **m, mat **n, const size_t size)
 }
 
 latan_errno mat_cov_m(mat *cov, mat **m, mat **n, const size_t size,\
-					  const mat *m_mean, const mat *n_mean)
+					  mat *m_mean, mat *n_mean)
 {
 	latan_errno status;
 	size_t i;
@@ -139,7 +139,7 @@ latan_errno mat_covp(mat *cov, mat **m, mat **n, const size_t size)
 }
 
 latan_errno mat_covp_m(mat *cov, mat **m, mat **n, const size_t size,\
-					   const mat *m_mean, const mat *n_mean)
+					   mat *m_mean, mat *n_mean)
 {
 	latan_errno status;
 	size_t i;
@@ -192,7 +192,7 @@ latan_errno mat_ar_bin(mat **bindat, mat **dat, const size_t ndat,\
 
 /*								histogram									*/
 /****************************************************************************/
-latan_errno histogram(mat *hist, const mat *data, const double xmin,\
+latan_errno histogram(mat *hist, mat *data, const double xmin,\
 					  const double xmax, const size_t nint)
 {
 	size_t i;

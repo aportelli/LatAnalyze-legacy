@@ -44,7 +44,7 @@ latan_errno latan_set_verb(int verb)
 	return LATAN_SUCCESS;
 }
 
-int latab_get_mat_op(void)
+int latan_get_mat_op(void)
 {
 	return env.mat_op;
 }

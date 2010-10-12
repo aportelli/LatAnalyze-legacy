@@ -7,7 +7,21 @@
 __BEGIN_DECLS
 
 /* definition of the matrix type */
-typedef gsl_matrix mat;
+enum
+{
+	CPU_ALLOCATED = 0x01,\
+	GPU_ALLOCATED = 0x02,\
+	CPU_LAST      = 0x04,\
+	GPU_LAST      = 0x08,\
+	SYNCED        = 0x10
+};
+
+typedef struct 
+{
+	gsl_matrix *data_cpu;
+	double *data_gpu;
+	int mem_flag;
+} mat;
 
 /* loop */
 #define FOR_VAL(m,i,j)\
@@ -27,6 +41,23 @@ mat **mat_ar_create(const size_t nmat, const size_t init_nrow,\
 #define mat_ar_create_from_dim(nmat,n) mat_ar_create(nmat,nrow(n),ncol(n))
 void mat_destroy(mat *m);
 void mat_ar_destroy(mat **m, const size_t nmat);
+
+/** flag management **/
+#define MAT_CPU_LAST(m)\
+{\
+	(m)->mem_flag -= (m)->mem_flag&(GPU_LAST|SYNCED);\
+	(m)->mem_flag |= CPU_LAST;\
+}
+#define MAT_GPU_LAST(m)\
+{\
+	(m)->mem_flag -= (m)->mem_flag&(CPU_LAST|SYNCED);\
+	(m)->mem_flag |= GPU_LAST;\
+}
+#define MAT_SYNCED(m)\
+{\
+	(m)->mem_flag -= (m)->mem_flag&(CPU_LAST|GPU_LAST);\
+	(m)->mem_flag |= SYNCED;\
+}
 
 /** access **/
 size_t nrow(const mat *m);

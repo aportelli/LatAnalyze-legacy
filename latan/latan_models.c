@@ -192,7 +192,7 @@ double fm_polyn_2d_01_func(mat *X, mat *p, void *nothing)
 	
 	nothing = NULL;
 	x = mat_get(X,0,0);
-	y = mat_get(X,0,1);
+	y = mat_get(X,1,0);
 	
 	res = mat_get(p,0,0)             \
 	      + mat_get(p,1,0)*y;
@@ -215,7 +215,7 @@ double fm_polyn_2d_02_func(mat *X, mat *p, void *nothing)
 	
 	nothing = NULL;
 	x = mat_get(X,0,0);
-	y = mat_get(X,0,1);
+	y = mat_get(X,1,0);
 	
 	res = mat_get(p,0,0)             \
 	      + mat_get(p,1,0)*y         \
@@ -239,7 +239,7 @@ double fm_polyn_2d_10_func(mat *X, mat *p, void *nothing)
 	
 	nothing = NULL;
 	x = mat_get(X,0,0);
-	y = mat_get(X,0,1);
+	y = mat_get(X,1,0);
 	
 	res = mat_get(p,0,0)             \
 	      + mat_get(p,1,0)*x;
@@ -262,7 +262,7 @@ double fm_polyn_2d_11_func(mat *X, mat *p, void *nothing)
 	
 	nothing = NULL;
 	x = mat_get(X,0,0);
-	y = mat_get(X,0,1);
+	y = mat_get(X,1,0);
 	
 	res = mat_get(p,0,0)             \
 	      + mat_get(p,1,0)*x         \
@@ -287,7 +287,7 @@ double fm_polyn_2d_12_func(mat *X, mat *p, void *nothing)
 	
 	nothing = NULL;
 	x = mat_get(X,0,0);
-	y = mat_get(X,0,1);
+	y = mat_get(X,1,0);
 	
 	res = mat_get(p,0,0)             \
 	      + mat_get(p,1,0)*x         \
@@ -313,7 +313,7 @@ double fm_polyn_2d_20_func(mat *X, mat *p, void *nothing)
 	
 	nothing = NULL;
 	x = mat_get(X,0,0);
-	y = mat_get(X,0,1);
+	y = mat_get(X,1,0);
 	
 	res = mat_get(p,0,0)             \
 	      + mat_get(p,1,0)*x         \
@@ -337,7 +337,7 @@ double fm_polyn_2d_21_func(mat *X, mat *p, void *nothing)
 	
 	nothing = NULL;	
 	x = mat_get(X,0,0);
-	y = mat_get(X,0,1);
+	y = mat_get(X,1,0);
 	
 	res = mat_get(p,0,0)             \
 	      + mat_get(p,1,0)*x         \
@@ -363,7 +363,7 @@ double fm_polyn_2d_22_func(mat *X, mat *p, void *nothing)
 	
 	nothing = NULL;
 	x = mat_get(X,0,0);
-	y = mat_get(X,0,1);
+	y = mat_get(X,1,0);
 	
 	res = mat_get(p,0,0)             \
 	      + mat_get(p,1,0)*x         \

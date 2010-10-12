@@ -17,6 +17,8 @@ liblatan_la_SOURCES =		\
 	latan_io.c				\
 	latan_mass.c			\
 	latan_mat.c				\
+	latan_mat_cublas.h		\
+	latan_mat_cublas.c		\
 	latan_math.c			\
 	latan_minimizer.c		\
 	latan_min_gsl.h			\

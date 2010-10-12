@@ -6,6 +6,7 @@ typedef struct
 	strbuf name;
 	strbuf version;
 	int verb;
+	int mat_op;
 } latan_env;
 
 static latan_env env = 
@@ -13,6 +14,7 @@ static latan_env env =
 	PACKAGE_NAME,		\
 	PACKAGE_VERSION,	\
 	QUIET,				\
+	CPU_MAT_OP,			\
 };
 
 void latan_get_name(strbuf name)
@@ -38,6 +40,28 @@ latan_errno latan_set_verb(int verb)
 	}
 	
 	env.verb = verb;
+	
+	return LATAN_SUCCESS;
+}
+
+int latab_get_mat_op(void)
+{
+	return env.mat_op;
+}
+
+latan_errno latan_set_mat_op(int mat_op)
+{
+	if ((mat_op < 0)||(mat_op > 1))
+	{
+		LATAN_ERROR("matrix operator flag invalid",LATAN_EINVAL);
+	}
+#ifndef HAVE_LIBCUBLAS
+	if (mat_op == GPU_MAT_OP)
+	{
+		LATAN_ERROR("GPU operation support was not compiled",LATAN_EINVAL);
+	}
+#endif
+	env.mat_op = mat_op;
 	
 	return LATAN_SUCCESS;
 }

@@ -26,12 +26,6 @@ AC_ARG_ENABLE([Accelerate],
 	[],
 	[]
 )
-AC_ARG_ENABLE([cublas],
-	[AS_HELP_STRING([--enable-cublas],
-		[enable GPU CUDA matrix operation])],
-	[],
-	[]
-)
 
 # Configure parameters non-standard install prefix and name of libs
 AC_ARG_WITH([gsl],
@@ -59,14 +53,15 @@ AC_ARG_WITH([cublas],
     [AS_HELP_STRING([--with-cublas=prefix],
 		[try this for a non-standard install prefix of the CUBLAS library])],
     [AM_CFLAGS="$AM_CFLAGS -I$with_cublas/include"]
-	[AM_LDFLAGS="$AM_LDFLAGS -L$with_cublas/lib"],
+	[AM_LDFLAGS="$AM_LDFLAGS -L$with_cublas/lib"]
+	[enable_cublas="yes"],
 	[]
 )
 AC_ARG_WITH([Minuit2],
     [AS_HELP_STRING([--with-Minuit2=prefix],
 		[try this for a non-standard install prefix of the Minuit2 library])],
-    [AM_CFLAGS="$AM_CFLAGS -I$with_gsl/include"]
-	[AM_LDFLAGS="$AM_LDFLAGS -L$with_gsl/lib"],
+    [AM_CFLAGS="$AM_CFLAGS -I$with_Minuit2/include"]
+	[AM_LDFLAGS="$AM_LDFLAGS -L$with_Minuit2/lib"],
 	[]
 )
 
@@ -120,16 +115,20 @@ CXXFLAGS="$AM_CXXFLAGS $CXXFLAGS"
 AC_CHECK_LIB([m],[cos],[],[AC_MSG_ERROR([libm library not found])])
 AS_IF([test "x$enable_Accelerate" = "xyes"],
 	[AC_CHECK_FRAMEWORK([Accelerate],[cblas_dgemm],
-		[AC_DEFINE_UNQUOTED([CBLAS_NAME],["Accelerate framework"],[name of CBLAS library])]
+		[AC_DEFINE_UNQUOTED([CBLAS_NAME],["Accelerate framework"],[name of CBLAS library.])]
+		[AC_DEFINE_UNQUOTED([HAVE_LIBCBLAS],[1],[Define to 1 if you have a CBLAS library outside the GSL.])]
 		[LIBS="-framework Accelerate $LIBS"],
 		[AC_MSG_ERROR([Accelerate framework not found])])],
 	[AC_CHECK_LIB([$with_cblas_name],[cblas_dgemm],
-		[AC_DEFINE_UNQUOTED([CBLAS_NAME],["lib$with_cblas_name"],[name of CBLAS library])]
+		[AC_DEFINE_UNQUOTED([CBLAS_NAME],["lib$with_cblas_name"],[name of CBLAS library.])]
+		[AC_DEFINE_UNQUOTED([HAVE_LIBCBLAS],[1],[Define to 1 if you have a CBLAS library outside the GSL.])]
 		[LIBS="-l$with_cblas_name $LIBS"],
 		[AC_CHECK_LIB([gslcblas],[cblas_dgemm],[],
 				[AC_MSG_ERROR([CBLAS library not found])])])])
 AS_IF([test "x$enable_cublas" = "xyes"],
-	[AC_CHECK_LIB([cublas],[cublasInit],[],
+	[AC_CHECK_LIB([cublas],[cublasInit],
+	[AC_DEFINE_UNQUOTED([HAVE_LIBCUBLAS],[1],[Define to 1 if you have the `cublas' library (-lcublas).])]
+	[LIBS="-lcublas -Xlinker -rpath -Xlinker $with_cublas/lib $LIBS"],
 		[AC_MSG_ERROR([CUBLAS library not found])])],[])
 		
 AC_CHECK_LIB([gsl],[gsl_blas_dgemm],[],[AC_MSG_ERROR([GSL library not found])])

@@ -26,6 +26,12 @@ AC_ARG_ENABLE([Accelerate],
 	[],
 	[]
 )
+AC_ARG_ENABLE([cublas],
+	[AS_HELP_STRING([--enable-cublas],
+		[enable GPU CUDA matrix operation])],
+	[],
+	[]
+)
 
 # Configure parameters non-standard install prefix and name of libs
 AC_ARG_WITH([gsl],
@@ -47,6 +53,13 @@ AC_ARG_WITH([cblas-name],
     [AS_HELP_STRING([--with-cblas-name=name],
 		[use this to specify the filename (without 'lib') of CBLAS library (default : 'cblas')])],
     [],
+	[]
+)
+AC_ARG_WITH([cublas],
+    [AS_HELP_STRING([--with-cublas=prefix],
+		[try this for a non-standard install prefix of the CUBLAS library])],
+    [AM_CFLAGS="$AM_CFLAGS -I$with_cublas/include"]
+	[AM_LDFLAGS="$AM_LDFLAGS -L$with_cublas/lib"],
 	[]
 )
 AC_ARG_WITH([Minuit2],
@@ -115,6 +128,9 @@ AS_IF([test "x$enable_Accelerate" = "xyes"],
 		[LIBS="-l$with_cblas_name $LIBS"],
 		[AC_CHECK_LIB([gslcblas],[cblas_dgemm],[],
 				[AC_MSG_ERROR([CBLAS library not found])])])])
+AS_IF([test "x$enable_cublas" = "xyes"],
+	[AC_CHECK_LIB([cublas],[cublasInit],[],
+		[AC_MSG_ERROR([CUBLAS library not found])])],[])
 		
 AC_CHECK_LIB([gsl],[gsl_blas_dgemm],[],[AC_MSG_ERROR([GSL library not found])])
 AC_LANG([C++])

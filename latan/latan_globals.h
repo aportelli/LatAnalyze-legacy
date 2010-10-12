@@ -151,7 +151,7 @@ __BEGIN_DECLS
 void latan_get_name(strbuf name);
 void latan_get_version(strbuf version);
 int latan_get_verb(void);
-int latab_get_mat_op(void);
+int latan_get_mat_op(void);
 #ifdef LATAN_ERRNO_DEF
 latan_errno latan_set_verb(int verb);
 latan_errno latan_set_mat_op(int mat_op);

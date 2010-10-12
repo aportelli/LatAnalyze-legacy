@@ -3,6 +3,46 @@
 
 #define INT(X) ((int)(X))
 
+static latan_errno mat_cublas_error(cublasStatus stat);
+
+/*								internal									*/
+/****************************************************************************/
+static latan_errno mat_cublas_error(cublasStatus stat)
+{
+	switch (stat)
+	{
+		case CUBLAS_STATUS_SUCCESS:
+			break;
+		case CUBLAS_STATUS_NOT_INITIALIZED:
+			LATAN_ERROR("CUBLAS is not initialized",LATAN_ESYSTEM);
+			break;
+		case CUBLAS_STATUS_ALLOC_FAILED:
+			LATAN_ERROR("(CUBLAS) allocation failed",LATAN_ENOMEM);
+			break;
+		case CUBLAS_STATUS_INVALID_VALUE:
+			LATAN_ERROR("(CUBLAS) invalid value",LATAN_EINVAL);
+			break;
+		case CUBLAS_STATUS_ARCH_MISMATCH:
+			LATAN_ERROR("(CUBLAS) operation not supported by architecture",\
+						LATAN_ESYSTEM);
+			break;
+		case CUBLAS_STATUS_MAPPING_ERROR:
+			LATAN_ERROR("(CUBLAS) mapping error",LATAN_ESYSTEM);
+			break;
+		case CUBLAS_STATUS_EXECUTION_FAILED:
+			LATAN_ERROR("(CUBLAS) execution failed",LATAN_ESYSTEM);
+			break;
+		case CUBLAS_STATUS_INTERNAL_ERROR:
+			LATAN_ERROR("CUBLAS internal error",LATAN_FAILURE);
+			break;
+		default:
+			LATAN_ERROR("invalid CUBLAS error code",LATAN_EINVAL);
+			break;
+	}
+	
+	return LATAN_SUCCESS;
+}
+
 /*								allocation									*/
 /****************************************************************************/
 latan_errno mat_cublas_gpu_alloc(mat *m)
@@ -40,11 +80,12 @@ latan_errno mat_cublas_cp_cpu_to_gpu(mat *m)
 {
 	cublasStatus status;
 	size_t row;
-	
+
 	for (row=0;row<nrow(m);row++)
 	{
-		status = cublasSetVector(INT(ncol(m)),sizeof(double),m->data_cpu,\
-								 1,m->data_gpu,INT(ncol(m)));
+		status = cublasSetVector(INT(ncol(m)),sizeof(double),         \
+								 m->data_cpu->data+INT(row*ncol(m)),1,\
+								 m->data_gpu+INT(row),INT(nrow(m)));
 		if (status != CUBLAS_STATUS_SUCCESS)
 		{
 			LATAN_ERROR("CPU->GPU memory copy failed",LATAN_ESYSTEM);
@@ -58,11 +99,12 @@ latan_errno mat_cublas_cp_gpu_to_cpu(mat *m)
 {
 	cublasStatus status;
 	size_t row;
-	
+
 	for (row=0;row<nrow(m);row++)
 	{
-		status = cublasGetVector(INT(ncol(m)),sizeof(double),m->data_gpu,\
-								 INT(ncol(m)),m->data_cpu,1);
+		status = cublasGetVector(INT(ncol(m)),sizeof(double),        \
+								 m->data_gpu+INT(row),INT(nrow(m)),  \
+								 m->data_cpu->data+INT(row*ncol(m)),1);
 		if (status != CUBLAS_STATUS_SUCCESS)
 		{
 			LATAN_ERROR("GPU->CPU memory copy failed",LATAN_ESYSTEM);
@@ -75,6 +117,8 @@ latan_errno mat_cublas_cp_gpu_to_cpu(mat *m)
 latan_errno mat_cublas_on_cpu(mat *m)
 {
 	latan_errno status;
+	
+	status = LATAN_SUCCESS;
 	if (m->mem_flag & GPU_LAST)
 	{
 		status = mat_cublas_cp_gpu_to_cpu(m);
@@ -106,6 +150,7 @@ latan_errno mat_cublas_sync(mat *m)
 {
 	latan_errno status;
 	
+	status = LATAN_SUCCESS;
 	if (m->mem_flag & CPU_LAST)
 	{
 		status = mat_cublas_on_gpu(m);
@@ -119,81 +164,41 @@ latan_errno mat_cublas_sync(mat *m)
 }
 
 latan_errno mat_cublas_gpu_mul_nn(mat *m, mat *n, mat *o)
-{
-	mat_cublas_on_gpu(m);
-	mat_cublas_on_gpu(n);
-	mat_cublas_on_gpu(o);
-	
-	if ((nrow(m) != nrow(n))||(ncol(m) != ncol(o))||(ncol(n) != nrow(o)))
-	{
-		LATAN_ERROR("operation between matrices with dimension mismatch",\
-					LATAN_EBADLEN);
-	}
-	
-	cublasDgemm('n','n',INT(nrow(n)),INT(ncol(o)),INT(ncol(n)),1.0,n->data_gpu,\
+{		
+	cublasDgemm('n','n',INT(nrow(m)),INT(ncol(m)),INT(ncol(n)),1.0,n->data_gpu,\
 				INT(nrow(n)),o->data_gpu,INT(nrow(o)),0.0,m->data_gpu,         \
 				INT(nrow(m)));
-	MAT_GPU_LAST(m);
+	mat_cublas_error(cublasGetError());
 	
 	return EXIT_SUCCESS;
 }
 
 latan_errno mat_cublas_gpu_mul_nt(mat *m, mat *n, mat *o)
 {
-	mat_cublas_on_gpu(m);
-	mat_cublas_on_gpu(n);
-	mat_cublas_on_gpu(o);
-	
-	if ((nrow(m) != nrow(n))||(ncol(m) != nrow(o))||(ncol(n) != ncol(o)))
-	{
-		LATAN_ERROR("operation between matrices with dimension mismatch",\
-					LATAN_EBADLEN);
-	}
-	
-	cublasDgemm('n','t',INT(nrow(n)),INT(ncol(o)),INT(ncol(n)),1.0,n->data_gpu,\
+	cublasDgemm('n','t',INT(nrow(m)),INT(ncol(m)),INT(ncol(n)),1.0,n->data_gpu,\
 				INT(nrow(n)),o->data_gpu,INT(nrow(o)),0.0,m->data_gpu,         \
 				INT(nrow(m)));
-	MAT_GPU_LAST(m);
+	mat_cublas_error(cublasGetError());
 	
 	return EXIT_SUCCESS;
 }
 
 latan_errno mat_cublas_gpu_mul_tn(mat *m, mat *n, mat *o)
 {
-	mat_cublas_on_gpu(m);
-	mat_cublas_on_gpu(n);
-	mat_cublas_on_gpu(o);
-	
-	if ((nrow(m) != ncol(n))||(ncol(m) != ncol(o))||(nrow(n) != nrow(o)))
-	{
-		LATAN_ERROR("operation between matrices with dimension mismatch",\
-					LATAN_EBADLEN);
-	}
-	
-	cublasDgemm('t','n',INT(nrow(n)),INT(ncol(o)),INT(ncol(n)),1.0,n->data_gpu,\
+	cublasDgemm('t','n',INT(nrow(m)),INT(ncol(m)),INT(nrow(n)),1.0,n->data_gpu,\
 				INT(nrow(n)),o->data_gpu,INT(nrow(o)),0.0,m->data_gpu,         \
 				INT(nrow(m)));
-	MAT_GPU_LAST(m);
-	
+	mat_cublas_error(cublasGetError());
+
 	return EXIT_SUCCESS;
 }
 
 latan_errno mat_cublas_gpu_mul_tt(mat *m, mat *n, mat *o)
 {
-	mat_cublas_on_gpu(m);
-	mat_cublas_on_gpu(n);
-	mat_cublas_on_gpu(o);
-	
-	if ((nrow(m) != ncol(n))||(ncol(m) != nrow(o))||(nrow(n) != ncol(o)))
-	{
-		LATAN_ERROR("operation between matrices with dimension mismatch",\
-					LATAN_EBADLEN);
-	}
-	
-	cublasDgemm('t','t',INT(nrow(n)),INT(ncol(o)),INT(ncol(n)),1.0,n->data_gpu,\
+	cublasDgemm('t','t',INT(nrow(m)),INT(ncol(m)),INT(nrow(n)),1.0,n->data_gpu,\
 				INT(nrow(n)),o->data_gpu,INT(nrow(o)),0.0,m->data_gpu,         \
 				INT(nrow(m)));
-	MAT_GPU_LAST(m);
+	mat_cublas_error(cublasGetError());
 	
 	return EXIT_SUCCESS;
 }

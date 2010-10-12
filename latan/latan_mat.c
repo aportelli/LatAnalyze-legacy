@@ -473,6 +473,7 @@ latan_errno mat_mul_nn(mat *m, mat *n, mat *o)
 	
 	status             = LATAN_SUCCESS;
 	have_duplicate_arg = ((m == n)||(m == o));
+	buf                = NULL;
 	
 	if ((nrow(m) != nrow(n))||(ncol(m) != ncol(o))||(ncol(n) != nrow(o)))
 	{
@@ -490,20 +491,34 @@ latan_errno mat_mul_nn(mat *m, mat *n, mat *o)
 		pt = m;
 	}
 	
-	mat_on_cpu(pt);
-	mat_on_cpu(n);
-	mat_on_cpu(o);
-	
-	LATAN_UPDATE_STATUS(status,gsl_blas_dgemm(CblasNoTrans,CblasNoTrans,  \
-											  1.0,n->data_cpu,o->data_cpu,\
-											  0.0,pt->data_cpu));
+	switch (latan_get_mat_op()) 
+	{
+		case CPU_MAT_OP:
+			mat_on_cpu(pt);
+			mat_on_cpu(n);
+			mat_on_cpu(o);
+			LATAN_UPDATE_STATUS(status,gsl_blas_dgemm(CblasNoTrans,CblasNoTrans,  \
+													  1.0,n->data_cpu,o->data_cpu,\
+													  0.0,pt->data_cpu));
+			MAT_CPU_LAST(pt);
+			break;
+		case GPU_MAT_OP:
+			mat_on_gpu(pt);
+			mat_on_gpu(n);
+			mat_on_gpu(o);
+			LATAN_UPDATE_STATUS(status,mat_gpu_mul_nn(pt,n,o));
+			MAT_GPU_LAST(pt);
+			break;
+		default:
+			LATAN_ERROR("matrix operator flag invalid",LATAN_EINVAL);
+			break;
+	}
+
 	if (have_duplicate_arg)
 	{
 		LATAN_UPDATE_STATUS(status,mat_cp(m,buf));
 		mat_destroy(buf);
 	}
-	
-	MAT_CPU_LAST(m);
 	
 	return status;
 }
@@ -516,6 +531,7 @@ latan_errno mat_mul_nt(mat *m, mat *n, mat *o)
 	
 	status             = LATAN_SUCCESS;
 	have_duplicate_arg = ((m == n)||(m == o));
+	buf                = NULL;
 	
 	if ((nrow(m) != nrow(n))||(ncol(m) != nrow(o))||(ncol(n) != ncol(o)))
 	{
@@ -533,20 +549,34 @@ latan_errno mat_mul_nt(mat *m, mat *n, mat *o)
 		pt = m;
 	}
 	
-	mat_on_cpu(pt);
-	mat_on_cpu(n);
-	mat_on_cpu(o);
+	switch (latan_get_mat_op()) 
+	{
+		case CPU_MAT_OP:
+			mat_on_cpu(pt);
+			mat_on_cpu(n);
+			mat_on_cpu(o);
+			LATAN_UPDATE_STATUS(status,gsl_blas_dgemm(CblasNoTrans,CblasTrans,    \
+													  1.0,n->data_cpu,o->data_cpu,\
+													  0.0,pt->data_cpu));
+			MAT_CPU_LAST(pt);
+			break;
+		case GPU_MAT_OP:
+			mat_on_gpu(pt);
+			mat_on_gpu(n);
+			mat_on_gpu(o);
+			LATAN_UPDATE_STATUS(status,mat_gpu_mul_nt(pt,n,o));
+			MAT_GPU_LAST(pt);
+			break;
+		default:
+			LATAN_ERROR("matrix operator flag invalid",LATAN_EINVAL);
+			break;
+	}
 	
-	LATAN_UPDATE_STATUS(status,gsl_blas_dgemm(CblasNoTrans,CblasTrans,    \
-											  1.0,n->data_cpu,o->data_cpu,\
-											  0.0,pt->data_cpu));
 	if (have_duplicate_arg)
 	{
 		LATAN_UPDATE_STATUS(status,mat_cp(m,buf));
 		mat_destroy(buf);
 	}
-	
-	MAT_CPU_LAST(m);
 	
 	return status;
 }
@@ -559,6 +589,7 @@ latan_errno mat_mul_tn(mat *m, mat *n, mat *o)
 	
 	status             = LATAN_SUCCESS;
 	have_duplicate_arg = ((m == n)||(m == o));
+	buf                = NULL;
 	
 	if ((nrow(m) != ncol(n))||(ncol(m) != ncol(o))||(nrow(n) != nrow(o)))
 	{
@@ -576,20 +607,34 @@ latan_errno mat_mul_tn(mat *m, mat *n, mat *o)
 		pt = m;
 	}
 	
-	mat_on_cpu(pt);
-	mat_on_cpu(n);
-	mat_on_cpu(o);
+	switch (latan_get_mat_op()) 
+	{
+		case CPU_MAT_OP:
+			mat_on_cpu(pt);
+			mat_on_cpu(n);
+			mat_on_cpu(o);
+			LATAN_UPDATE_STATUS(status,gsl_blas_dgemm(CblasTrans,CblasNoTrans,    \
+													  1.0,n->data_cpu,o->data_cpu,\
+													  0.0,pt->data_cpu));
+			MAT_CPU_LAST(pt);
+			break;
+		case GPU_MAT_OP:
+			mat_on_gpu(pt);
+			mat_on_gpu(n);
+			mat_on_gpu(o);
+			LATAN_UPDATE_STATUS(status,mat_gpu_mul_tn(pt,n,o));
+			MAT_GPU_LAST(pt);
+			break;
+		default:
+			LATAN_ERROR("matrix operator flag invalid",LATAN_EINVAL);
+			break;
+	}
 	
-	LATAN_UPDATE_STATUS(status,gsl_blas_dgemm(CblasTrans,CblasNoTrans,    \
-											  1.0,n->data_cpu,o->data_cpu,\
-											  0.0,pt->data_cpu));
 	if (have_duplicate_arg)
 	{
 		LATAN_UPDATE_STATUS(status,mat_cp(m,buf));
 		mat_destroy(buf);
 	}
-	
-	MAT_CPU_LAST(m);
 	
 	return status;
 }
@@ -602,6 +647,7 @@ latan_errno mat_mul_tt(mat *m, mat *n, mat *o)
 	
 	status             = LATAN_SUCCESS;
 	have_duplicate_arg = ((m == n)||(m == o));
+	buf                = NULL;
 	
 	if ((nrow(m) != ncol(n))||(ncol(m) != nrow(o))||(nrow(n) != ncol(o)))
 	{
@@ -619,21 +665,29 @@ latan_errno mat_mul_tt(mat *m, mat *n, mat *o)
 		pt = m;
 	}
 	
-	mat_on_cpu(pt);
-	mat_on_cpu(n);
-	mat_on_cpu(o);
-	
-	LATAN_UPDATE_STATUS(status,gsl_blas_dgemm(CblasTrans,CblasTrans,      \
-											  1.0,n->data_cpu,o->data_cpu,\
-											  0.0,pt->data_cpu));
-	if (have_duplicate_arg)
+	switch (latan_get_mat_op()) 
 	{
-		LATAN_UPDATE_STATUS(status,mat_cp(m,buf));
-		mat_destroy(buf);
+		case CPU_MAT_OP:
+			mat_on_cpu(pt);
+			mat_on_cpu(n);
+			mat_on_cpu(o);
+			LATAN_UPDATE_STATUS(status,gsl_blas_dgemm(CblasTrans,CblasTrans,      \
+													  1.0,n->data_cpu,o->data_cpu,\
+													  0.0,pt->data_cpu));
+			MAT_CPU_LAST(pt);
+			break;
+		case GPU_MAT_OP:
+			mat_on_gpu(pt);
+			mat_on_gpu(n);
+			mat_on_gpu(o);
+			LATAN_UPDATE_STATUS(status,mat_gpu_mul_tt(pt,n,o));
+			MAT_GPU_LAST(pt);
+			break;
+		default:
+			LATAN_ERROR("matrix operator flag invalid",LATAN_EINVAL);
+			break;
 	}
-	
-	MAT_CPU_LAST(m);
-	
+
 	return status;
 }
 

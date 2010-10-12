@@ -16,6 +16,10 @@ liblatancublas_la_SOURCES = \
 	latan_globals.h			\
 	latan_mat.h				\
 	latan_error.h
+liblatancublas_la_CFLAGS = -Wall -Wmissing-prototypes -Wstrict-prototypes	\
+	-Wshadow -Wpointer-arith -Wcast-qual -Wcast-align						\
+	-Wwrite-strings -Wnested-externs -W -fPIC -fshort-enums -fno-common -O2	\
+	-g
 	
 liblatan_la_SOURCES =		\
 	latan_error.c			\

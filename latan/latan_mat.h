@@ -71,8 +71,19 @@ latan_errno mat_set_subm(mat *m, mat *n, const size_t k1, const size_t l1, \
 #define MAT_PT_SUBM(m,n,k1,l1,k2,l2)\
 {\
 	gsl_matrix_view _nview;\
-	_nview = gsl_matrix_submatrix(n,k1,l1,k2-k1+1,l2-l1+1);\
-	m = &(_nview.matrix);\
+	\
+	mat_on_cpu(n);\
+	\
+	if ((m)->mem_flag & CPU_ALLOCATED)\
+	{\
+		LATAN_WARNING("memory leak : modifying a pointer on an allocated memory zone",\
+					  LATAN_EFAULT);\
+		(m)->mem_flag -= CPU_ALLOCATED;\
+	}\
+	_nview      = gsl_matrix_submatrix((n)->data_cpu,k1,l1,k2-k1+1,l2-l1+1);\
+	(m)->data_cpu = &(_nview.matrix);\
+	\
+	MAT_CPU_LAST(m);\
 }
 latan_errno mat_get_diag(mat *diag, mat *m);
 latan_errno mat_set_diag(mat *m, mat *diag);
@@ -109,6 +120,7 @@ latan_errno mat_mul_nt(mat *m, mat *n, mat *o);
 latan_errno mat_mul_tn(mat *m, mat *n, mat *o);
 latan_errno mat_mul_tt(mat *m, mat *n, mat *o);
 #define mat_mul(m,n,o) mat_mul_nn(m,n,o);
+latan_errno mat_dvmul(double *res, mat *m, mat *n);
 latan_errno mat_eqtranspose(mat *m);
 latan_errno mat_transpose(mat *m, mat *n);
 latan_errno mat_eqmulp(mat *m, mat *n);

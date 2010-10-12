@@ -297,19 +297,18 @@ void fit_data_set_model_param(fit_data *d, void *model_param)
 
 /* CRITICALLY CALLED FUNCTION
  * fit_data_model_eval is heavily called during one call of minimize function,
- * optimization is done using vector/matrix views from GSL
+ * optimization is done using MAT_PT_SUBM macro
  */
 double fit_data_model_eval(const fit_data *d, const size_t i,\
 						   mat *p)
 {
-	gsl_vector_view x_i_vview;
-	gsl_matrix_view x_i_t_mview;
+	mat x_i;
 	
-	x_i_vview   = gsl_matrix_subcolumn(d->x,0,i*d->ndim,d->ndim);
-	x_i_t_mview = gsl_matrix_view_vector(&(x_i_vview.vector),   \
-										 1,x_i_vview.vector.size);
+	x_i.mem_flag = CPU_LAST;
 	
-	return fit_model_eval(d->model,&(x_i_t_mview.matrix),p,d->model_param);
+	MAT_PT_SUBM(&x_i,d->x,i*d->ndim,0,i*d->ndim+d->ndim-1,0);
+	
+	return fit_model_eval(d->model,&x_i,p,d->model_param);
 }
 
 /*** stages ***/
@@ -342,8 +341,7 @@ double chi2(mat *p, void *d)
 	size_t ndata;
 	size_t i;
 	mat *X,*sigX;
-	gsl_vector_view X_vview,sigX_vview;
-	double res,res_x;
+	double res;
 	
 	dt         = (fit_data *)d;
 	ndata      = fit_data_get_ndata(dt);
@@ -353,9 +351,7 @@ double chi2(mat *p, void *d)
 #endif
 	{
 		X          = dt->buf_chi2[0];
-		X_vview    = gsl_matrix_column(X,0);
 		sigX       = dt->buf_chi2[1];
-		sigX_vview = gsl_matrix_column(sigX,0);
 		
 		mat_zero(X);
 		mat_zero(sigX);
@@ -372,7 +368,7 @@ double chi2(mat *p, void *d)
 			}
 		}
 		mat_mul_nn(sigX,dt->data_varinv,X);
-		gsl_blas_ddot(&(sigX_vview.vector),&(X_vview.vector),&res);
+		mat_dvmul(&res,sigX,X);
 	}
 	
 	return res;

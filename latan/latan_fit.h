@@ -7,7 +7,7 @@
 __BEGIN_DECLS
 
 /* fit model structure */
-typedef double model_func(const mat *x, const mat *p, void *model_param);
+typedef double model_func(mat *x, mat *p, void *model_param);
 
 typedef struct
 {
@@ -21,7 +21,7 @@ typedef struct
 /** access **/
 void fit_model_get_name(strbuf name, const fit_model *model);
 void fit_model_get_plot_fmt(strbuf plot_fmt, const fit_model *model);
-double fit_model_eval(const fit_model *model, const mat *x,const mat *p,\
+double fit_model_eval(const fit_model *model, mat *x,mat *p,\
 					  void *model_param);
 
 /* fit data structure */
@@ -59,7 +59,7 @@ void fit_data_set_x(fit_data *d, const size_t i, const size_t j,\
 					const double x_i);
 double fit_data_get_x(const fit_data *d, const size_t i, const size_t j);
 mat *fit_data_pt_x(const fit_data *d);
-latan_errno fit_data_set_x_var(fit_data *d, const mat *var);
+latan_errno fit_data_set_x_var(fit_data *d, mat *var);
 bool fit_data_have_x_var(fit_data *d);
 void fit_data_fit_all_points(fit_data *d, bool fit);
 void fit_data_fit_point(fit_data *d, size_t i, bool fit);
@@ -72,14 +72,14 @@ void fit_data_set_data(fit_data *d, const size_t i, const double data_i);
 double fit_data_get_data(const fit_data *d, const size_t i);
 size_t fit_data_get_ndata(const fit_data *d);
 mat *fit_data_pt_data(const fit_data *d);
-latan_errno fit_data_set_data_var(fit_data *d, const mat *var);
+latan_errno fit_data_set_data_var(fit_data *d, mat *var);
 bool fit_data_is_correlated(const fit_data *d);
 
 /*** fit model ***/
 latan_errno fit_data_set_model(fit_data *d, const fit_model *model);
 const fit_model *fit_data_pt_model(fit_data *d);
 void fit_data_set_model_param(fit_data *d, void *model_param);
-double fit_data_model_eval(const fit_data *d, const size_t i,const mat *p);
+double fit_data_model_eval(const fit_data *d, const size_t i,mat *p);
 
 /*** stages ***/
 void fit_data_set_stage(fit_data *d, const int stage);
@@ -89,7 +89,7 @@ int fit_data_get_stage(const fit_data *d);
 int fit_data_get_dof(const fit_data *d);
 
 /* chi2 functions, have min_func type */
-double chi2(const mat *var, void *d);
+double chi2(mat *var, void *d);
 
 /* fit functions */
 latan_errno data_fit(mat *p, fit_data *d);

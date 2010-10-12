@@ -36,7 +36,7 @@ unsigned int minimizer_get_max_iteration(void);
 void minimizer_set_max_iteration(unsigned int max_iteration);
 
 /* prototype of function to minimize */
-typedef double min_func(const mat *x, void *param);
+typedef double min_func(mat *x, void *param);
 
 /* the minimizer */
 latan_errno minimize(mat *x, double *f_min, min_func *f, void *param);

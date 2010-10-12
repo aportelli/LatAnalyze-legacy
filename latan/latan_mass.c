@@ -10,7 +10,7 @@
 #define NSIGMA 1.0
 #endif
 
-latan_errno effmass(mat *res, const mat *mprop, const int parity)
+latan_errno effmass(mat *res, mat *mprop, const int parity)
 {
 	size_t i;
 	double em;
@@ -48,7 +48,7 @@ latan_errno effmass(mat *res, const mat *mprop, const int parity)
 	return LATAN_SUCCESS;
 }
 
-latan_errno effmass_PCAC(mat *res, const mat *mprop_AP, const mat *mprop_PP)
+latan_errno effmass_PCAC(mat *res, mat *mprop_AP, mat *mprop_PP)
 {
 	latan_errno status;
 	size_t t;
@@ -69,7 +69,7 @@ latan_errno effmass_PCAC(mat *res, const mat *mprop_AP, const mat *mprop_PP)
 	return status;
 }
 
-plat *search_plat(size_t *nplat, const mat *data, const mat *sigdata,\
+plat *search_plat(size_t *nplat, mat *data, mat *sigdata,\
 				  const size_t ntmax, const double nsig, const double tol)
 {
 	bool in,toend;
@@ -173,8 +173,8 @@ plat *search_plat(size_t *nplat, const mat *data, const mat *sigdata,\
 	return plat_ar;
 }
 
-latan_errno fit_data_mass_fit_tune(fit_data *d, mat *fit_init, const mat *prop,\
-								   const mat *em, const mat *sigem,			\
+latan_errno fit_data_mass_fit_tune(fit_data *d, mat *fit_init, mat *prop,\
+								   mat *em, mat *sigem,			\
 								   const int parity)
 {
 	plat *em_plat;

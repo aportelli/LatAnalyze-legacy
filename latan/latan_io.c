@@ -74,7 +74,7 @@ latan_errno get_firstfname(strbuf fname, const strbuf manifestfname)
 
 /*								mat *I/O										*/
 /****************************************************************************/
-void mat_dump(FILE* stream, const mat *m)
+void mat_dump(FILE* stream, mat *m)
 {
 	size_t i,j;
 	
@@ -266,7 +266,7 @@ latan_errno mat_load_ar(mat **m, const strbuf mark, const strbuf matid,\
 	return status;
 }
 
-latan_errno mat_save_plotdat(const mat *x, const mat *dat, const strbuf fname)
+latan_errno mat_save_plotdat(mat *x, mat *dat, const strbuf fname)
 {
 	FILE* f = NULL;
 	size_t i;
@@ -282,7 +282,7 @@ latan_errno mat_save_plotdat(const mat *x, const mat *dat, const strbuf fname)
 	return LATAN_SUCCESS;
 }
 
-latan_errno mat_save_plotdat_yerr(const mat *x, const mat *dat, const mat *yerr,\
+latan_errno mat_save_plotdat_yerr(mat *x, mat *dat, mat *yerr,\
 								  const strbuf fname)
 {
 	FILE* f = NULL;
@@ -299,8 +299,8 @@ latan_errno mat_save_plotdat_yerr(const mat *x, const mat *dat, const mat *yerr,
 	return LATAN_SUCCESS;
 }
 
-latan_errno mat_save_plotdat_xyerr(const mat *x, const mat *dat, const mat *xerr,\
-								   const mat *yerr, const strbuf fname)
+latan_errno mat_save_plotdat_xyerr(mat *x, mat *dat, mat *xerr,\
+								   mat *yerr, const strbuf fname)
 {
 	FILE* f = NULL;
 	size_t i;

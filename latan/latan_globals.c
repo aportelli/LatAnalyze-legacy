@@ -1,6 +1,14 @@
 #include <latan/latan_globals.h>
 #include <latan/latan_includes.h>
 
+/* Prototypes for CUBLAS on/off, we don't want to include cublas.h here
+ * cause it is not ANSI compliant 
+ */
+#ifdef HAVE_LIBCUBLAS
+int cublasInit(void);
+int cublasShutdown(void);
+#endif
+
 typedef struct
 {
 	strbuf name;
@@ -16,6 +24,8 @@ static latan_env env =
 	QUIET,				\
 	CPU_MAT_OP,			\
 };
+
+static bool latan_is_cublas_run = 0;
 
 void latan_get_name(strbuf name)
 {
@@ -59,6 +69,25 @@ latan_errno latan_set_mat_op(int mat_op)
 	if (mat_op == GPU_MAT_OP)
 	{
 		LATAN_ERROR("GPU operation support was not compiled",LATAN_EINVAL);
+	}
+	latan_is_cublas_run = false;
+#else
+	switch (mat_op)
+	{
+		case CPU_MAT_OP:
+			if (latan_is_cublas_run)
+			{
+				cublasShutdown();
+				latan_is_cublas_run = false;
+			}
+			break;
+		case GPU_MAT_OP:
+			if (!latan_is_cublas_run)
+			{
+				cublasInit();
+				latan_is_cublas_run = true;
+			}
+			break;
 	}
 #endif
 	env.mat_op = mat_op;

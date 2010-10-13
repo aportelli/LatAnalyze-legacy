@@ -19,10 +19,18 @@ void fit_model_get_plot_fmt(strbuf plot_fmt, const fit_model *model)
 	strcpy(plot_fmt,model->plot_fmt);
 }
 
-double fit_model_eval(const fit_model *model, mat *x,
-					  mat *p, void *param)
+double fit_model_eval(const fit_model *model, mat *x, mat *p,\
+					  const size_t stage, void *model_param)
 {
-	return model->func(x,p,param);
+	size_t i;
+	double res;
+	
+	res = 0.0;
+	for (i=0;i<=stage;i++)
+	{
+		res += model->func[i](x,p,model_param);
+	}
+	return res;
 }
 
 /*							fit data structure								*/
@@ -308,7 +316,7 @@ double fit_data_model_eval(const fit_data *d, const size_t i,\
 	
 	MAT_PT_SUBM(&x_i,d->x,i*d->ndim,0,i*d->ndim+d->ndim-1,0);
 	
-	return fit_model_eval(d->model,&x_i,p,d->model_param);
+	return fit_model_eval(d->model,&x_i,p,d->stage,d->model_param);
 }
 
 /*** stages ***/

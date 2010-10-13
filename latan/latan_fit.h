@@ -4,15 +4,17 @@
 #include <latan/latan_globals.h>
 #include <latan/latan_statistics.h>
 
+#define MAX_STAGE 16
+
 __BEGIN_DECLS
 
 /* fit model structure */
-typedef double model_func(mat *x, mat *p, void *model_param);
+typedef double (*model_func)(mat *x, mat *p, void *model_param);
 
 typedef struct
 {
 	strbuf name;
-	model_func *func;
+	model_func func[MAX_STAGE];
 	size_t npar;
 	size_t ndim;
 	strbuf plot_fmt;
@@ -21,8 +23,8 @@ typedef struct
 /** access **/
 void fit_model_get_name(strbuf name, const fit_model *model);
 void fit_model_get_plot_fmt(strbuf plot_fmt, const fit_model *model);
-double fit_model_eval(const fit_model *model, mat *x,mat *p,\
-					  void *model_param);
+double fit_model_eval(const fit_model *model, mat *x, mat *p,\
+					  const size_t stage, void *model_param);
 
 /* fit data structure */
 typedef struct

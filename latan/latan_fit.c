@@ -8,6 +8,26 @@
 
 /*							fit model structure								*/
 /****************************************************************************/
+/** some useful constant npar_func **/
+#define DEFINE_CST_NPAR_FUNC(n)\
+size_t npar_##n(int stage, void *nothing)\
+{\
+	stage   = 0;\
+	nothing = NULL;\
+	return n;\
+}
+
+DEFINE_CST_NPAR_FUNC(1)
+DEFINE_CST_NPAR_FUNC(2)
+DEFINE_CST_NPAR_FUNC(3)
+DEFINE_CST_NPAR_FUNC(4)
+DEFINE_CST_NPAR_FUNC(5)
+DEFINE_CST_NPAR_FUNC(6)
+DEFINE_CST_NPAR_FUNC(7)
+DEFINE_CST_NPAR_FUNC(8)
+DEFINE_CST_NPAR_FUNC(9)
+DEFINE_CST_NPAR_FUNC(10)
+
 /** access **/
 void fit_model_get_name(strbuf name, const fit_model *model)
 {
@@ -333,7 +353,7 @@ int fit_data_get_stage(const fit_data *d)
 /*** dof ***/
 int fit_data_get_dof(const fit_data *d)
 {
-	return fit_data_fit_point_num(d) - d->model->npar;
+	return fit_data_fit_point_num(d) - d->model->npar(d->stage,d->model_param);
 }
 
 /*							chi2 function									*/

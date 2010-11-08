@@ -10,15 +10,28 @@ __BEGIN_DECLS
 
 /* fit model structure */
 typedef double (*model_func)(mat *x, mat *p, void *model_param);
+typedef size_t npar_func(int stage, void *model_param);
 
 typedef struct
 {
 	strbuf name;
 	model_func func[MAX_STAGE];
-	size_t npar;
+	npar_func *npar;
 	size_t ndim;
 	strbuf plot_fmt;
 } fit_model;
+
+/** some useful constant npar_func **/
+npar_func npar_1;
+npar_func npar_2;
+npar_func npar_3;
+npar_func npar_4;
+npar_func npar_5;
+npar_func npar_6;
+npar_func npar_7;
+npar_func npar_8;
+npar_func npar_9;
+npar_func npar_10;
 
 /** access **/
 void fit_model_get_name(strbuf name, const fit_model *model);

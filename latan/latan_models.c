@@ -19,7 +19,7 @@ const fit_model fm_polyn_1d_0 =
 {
 	"y(x) = p0",
 	{fm_polyn_1d_0_func},
-	1,
+	&npar_1,
 	1,
 	"%e"
 };
@@ -40,7 +40,7 @@ const fit_model fm_polyn_1d_1 =
 {
 	"y(x) = p0 + p1*x",
 	{fm_polyn_1d_1_func},
-	2,
+	&npar_2,
 	1,
 	"%e+%e*x"
 };
@@ -63,7 +63,7 @@ const fit_model fm_polyn_1d_2 =
 {
 	"y(x) = p0 + p1*x + p2*x^2",
 	{fm_polyn_1d_2_func},
-	3,
+	&npar_3,
 	1,
 	"%e+%e*x+%e*x**2"
 };
@@ -86,7 +86,7 @@ const fit_model fm_polyn_1d_3 =
 {
 	"y(x) = p0 + p1*x + p2*x^2 + p3*x^3",
 	{fm_polyn_1d_3_func},
-	4,
+	&npar_4,
 	1,
 	"%e+%e*x+%e*x**2+%e*x**3"
 };
@@ -110,7 +110,7 @@ const fit_model fm_polyn_1d_4 =
 {
 	"y(x) = p0 + p1*x + p2*x^2 + p3*x^3 + p4*x^4",
 	{fm_polyn_1d_4_func},
-	5,
+	&npar_5,
 	1,
 	"%e+%e*x+%e*x**2+%e*x**3+%e*x**4"
 };
@@ -139,7 +139,7 @@ const fit_model fm_expdec =
 {
 	"y(x) = p1*exp(-p0*x)",
 	{fm_expdec_func},
-	2,
+	&npar_2,
 	1,
 	"exp(-%e*x)*%e"
 };
@@ -159,7 +159,7 @@ const fit_model fm_cosh =
 {
 	"y(x) = p1*cosh(p0*x)",
 	{fm_cosh_func},
-	2,
+	&npar_2,
 	1,
 	"cosh(%e*x)*%e"
 };
@@ -181,7 +181,7 @@ const fit_model fm_polyn_2d_00 =
 {
 	"z(x,y) = p0",
 	{fm_polyn_2d_00_func},
-	1,
+	&npar_1,
 	2,
 	"%e"
 };
@@ -204,7 +204,7 @@ const fit_model fm_polyn_2d_01 =
 {
 	"z(x,y) = p0+p1*y",
 	{fm_polyn_2d_01_func},
-	2,
+	&npar_2,
 	2,
 	"%e+%e*y"
 };
@@ -228,7 +228,7 @@ const fit_model fm_polyn_2d_02 =
 {
 	"z(x,y) = p0 + p1*y + p2*y^2",
 	{fm_polyn_2d_02_func},
-	3,
+	&npar_3,
 	2,
 	"%e+%e*y+%e*y**2"
 };
@@ -251,7 +251,7 @@ const fit_model fm_polyn_2d_10 =
 {
 	"z(x,y) = p0 + p1*x",
 	{fm_polyn_2d_10_func},
-	2,
+	&npar_2,
 	2,
 	"%e+%e*x"
 };
@@ -276,7 +276,7 @@ const fit_model fm_polyn_2d_11 =
 {
 	"z(x,y) = p0 + p1*x + p2*y + p3*x*y",
 	{fm_polyn_2d_11_func},
-	4,
+	&npar_4,
 	2,
 	"%e+%e*x+%e*y+%e*x*y"
 };
@@ -302,7 +302,7 @@ const fit_model fm_polyn_2d_12 =
 {
 	"z(x,y) = p0 + p1*x + p2*y + p3*x*y + p4*y^2",
 	{fm_polyn_2d_12_func},
-	5,
+	&npar_5,
 	2,
 	"%e+%e*x+%e*y+%e*x*y+%e*y**2"
 };
@@ -326,7 +326,7 @@ const fit_model fm_polyn_2d_20 =
 {
 	"z(x,y) = p0 + p1*x + p2*x^2",
 	{fm_polyn_2d_20_func},
-	3,
+	&npar_3,
 	2,
 	"%e+%e*x+%e*x**2"
 };
@@ -352,7 +352,7 @@ const fit_model fm_polyn_2d_21 =
 {
 	"z(x,y) = p0 + p1*x + p2*y + p3*x*y + p4*x^2",
 	{fm_polyn_2d_21_func},
-	5,
+	&npar_5,
 	2,
 	"%e+%e*x+%e*y+%e*x*y+%e*x**2"
 };
@@ -379,7 +379,7 @@ const fit_model fm_polyn_2d_22 =
 {
 	"z(x,y) = p0 + p1*x + p2*y + p3*x*y + p4*x^2 + p5*y^2",
 	{fm_polyn_2d_22_func},
-	6,
+	&npar_6,
 	2,
 	"%e+%e*x+%e*y+%e*x*y+%e*x**2+%e*y**2"
 };

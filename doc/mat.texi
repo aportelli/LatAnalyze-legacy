@@ -4,8 +4,8 @@ library. All operations (matrix product,
 inversion...) are performed at low level by the @acronym{CBLAS}
 library. The performance of the functions described here
 will greatly depend of the optimization level of the 
- @acronym{CBLAS} binary linked to LatAnalyze at installation
- time.
+@acronym{CBLAS} binary linked to LatAnalyze at installation
+time.
 
 @menu
 * Definition::
@@ -25,8 +25,7 @@ Matrices in LatAnalyze got the type @code{mat} defined in
 all other LatAnalyze headers.
 
 @deftp{Data type} mat
-This type is just an alias of the @acronym{GSL} matrix type
-(@code{typedef mat gsl_matrix})
+This is the matrix type of LatAnalyze
 @end deftp
 
 @node Allocation, Access, Definition, Matrices
@@ -41,17 +40,17 @@ This function allocates memory for a matrix with @var{init_nrow}
 rows and @var{init_ncol} columns.
 @end deftypefun
 
-@deftypefun {mat *} mat_create_from_dim (const mat * m)
+@deftypefun {mat *} mat_create_from_dim (mat * m)
 This function allocates memory for a matrix with the same dimensions
 than @var{m}.
 @end deftypefun
 
-@deftypefun {mat *} mat_create_from_trdim (const mat * m)
+@deftypefun {mat *} mat_create_from_trdim (mat * m)
 This function allocates memory for a matrix with the same dimensions
 than @var{m} transposed matrix.
 @end deftypefun
 
-@deftypefun {mat *} mat_create_from_mat (const mat * m)
+@deftypefun {mat *} mat_create_from_mat (mat * m)
 This function allocates memory for a matrix with the same dimensions
 than @var{m} and copy the content of @var{m} into it.
 @end deftypefun
@@ -68,7 +67,7 @@ rows and @var{init_ncol} columns.
 @end deftypefun
 @cindex matrix array
 
-@deftypefun {mat **} mat_ar_create_from_dim (const size_t nmat, const mat * m)
+@deftypefun {mat **} mat_ar_create_from_dim (const size_t nmat, mat * m)
 This function allocates memory for an array of @var{nmat} matrices with
 the same dimensions than @var{m}.
 @end deftypefun
@@ -88,15 +87,15 @@ with @var{nmat} elements.
 Here are described the different functions to access and modify
 matrix elements and properties.
 
-@deftypefun size_t nrow (const mat * m)
+@deftypefun size_t nrow (mat * m)
 This function returns the number of rows of @var{m}.
 @end deftypefun
 
-@deftypefun size_t ncol (const mat * m)
+@deftypefun size_t ncol (mat * m)
 This function returns the number of columns of @var{m}.
 @end deftypefun
 
-@deftypefun double mat_get (const mat * m, const size_t i, const size_t j)
+@deftypefun double mat_get (mat * m, const size_t i, const size_t j)
 This function returns the element  @math{m_{ij}} of matrix @var{m}  
 at row @var{i} and column @var{j}.
 @end deftypefun
@@ -107,13 +106,13 @@ matrix @var{m}  at row @var{i} and column @var{j}.
 @end deftypefun
 
 @cindex sub-matrix
-@deftypefun latan_errno mat_get_subm (mat * m, const mat n, const size_t k1, const size_t l1, const size_t k2, const size_t l2)
+@deftypefun latan_errno mat_get_subm (mat * m, mat n, const size_t k1, const size_t l1, const size_t k2, const size_t l2)
 This function copies into @var{m} the submatrix of @var{n} of
 all elements @math{n_{i,j}} with @var{k1} @leq{} @math{i} @leq{} @var{k2}
 and @var{l1} @leq{} @math{j} @leq{} @var{l2}.
 @end deftypefun
  
-@deftypefun latan_errno mat_set_subm (mat * m, const mat * n, const size_t k1, const size_t l1, const size_t k2, const size_t l2)
+@deftypefun latan_errno mat_set_subm (mat * m, mat * n, const size_t k1, const size_t l1, const size_t k2, const size_t l2)
 This function copies the matrix @var{n} into the submatrix of @var{m} of
 all elements @math{m_{i,j}} with @*@var{k1} @leq{} @math{i} @leq{} @var{k2}
 and @var{l1} @leq{} @math{j} @leq{} @var{l2}.
@@ -125,14 +124,15 @@ all elements @math{n_{i,j}} with @var{k1} @leq{} @math{i} @leq{} @var{k2}
 and @var{l1} @leq{} @math{j} @leq{} @var{l2}.
 @end defmac
 
-@deftypefun latan_errno mat_get_diag (mat * diag, const mat * m)
-This function copies in @var{diag} (as a column vector) the diagonal of @var{m} :
+@deftypefun latan_errno mat_get_diag (mat * diag, mat * m)
+This function copies in @var{diag} (as a column vector) the diagonal of @var{m} 
+:
 @tex
 $$diag_{i,0}\leftarrow m_{i,i}$$
 @end tex
 @end deftypefun
 
-@deftypefun latan_errno mat_set_diag (mat * m, const mat * diag)
+@deftypefun latan_errno mat_set_diag (mat * m, mat * diag)
 This function copies @var{diag} (as a column vector) in the diagonal of @var{m} :
 @tex
 $$m_{i,i}\leftarrow diag_{i,0}$$
@@ -151,22 +151,109 @@ $$m_{i,0}\leftarrow x0+i.steps$$
 This function copies the array @var{ar} into @var{m}, using row major indexing.
 @end deftypefun
 
-@deftypefun double mat_get_min (const mat * m)
-This function returns the minimum element of @var{m}.
+@deftypefun double mat_get_min (mat * m)
+This function returns the minimal element of @var{m}.
 @end deftypefun
 
-@deftypefun double mat_get_max (const mat * m)
-This function returns the maximum element of @var{m}.
+@deftypefun double mat_get_max (mat * m)
+This function returns the maximal element of @var{m}.
 @end deftypefun
 
 
 @node Tests, Operations, Access, Matrices
 @section Tests
 @cindex matrix tests
+@deftypefun bool mat_is_samedim (mat * m, mat * n)
+This function return @code{true} if matrices @var{m} and @var{n} have the same
+dimensions or @code{false} else.
+@end deftypefun
+
+@deftypefun bool mat_is_square (mat * m)
+This function return @code{true} if matrix @var{m} is squared or @code{false}
+else.
+@end deftypefun
+
+@deftypefun bool mat_is_row_vector (mat * m)
+This function return @code{true} if matrix @var{m} is a row vector or 
+@code{false} else.
+@end deftypefun
+
+@deftypefun bool mat_is_col_vector (mat * m)
+This function return @code{true} if matrix @var{m} is a column vector or 
+@code{false} else.
+@end deftypefun
 
 @node Operations, Linear algebra, Tests, Matrices
 @section Operations
 @cindex matrix operations
+Here are described some simple test functions on matrices. All these functions
+control the size of the matrix arguments and throw errors through LatAnalyze
+error handler in case of mismatch.
+
+@subsection Matrix initialization
+@deftypefun void mat_zero (mat * m)
+This function set to @math{0} all the elements of matrix @var{m}.
+@tex
+$$m_{i,i}\leftarrow 0$$
+@end tex
+@end deftypefun
+
+@deftypefun void mat_rand_u (mat * m, const double a, const double b)
+This function fill matrix with random number uniformly drawn between @var{a} and
+@var{b}.
+@tex
+$$m_{i,j}\leftarrow{\tt rand\_u}(a,b)$$
+@end tex
+@end deftypefun
+
+@deftypefun void mat_id (mat * m)
+This function set @var{m} to the identity matrix.
+@tex
+$$m_{i,i}\leftarrow \delta_{i,j}$$
+@end tex
+@end deftypefun
+
+@subsection Unary operations
+@findex mat_eq*
+All unary operations function have the form 
+@code{mat_op} (@var{mat * m, mat * n}) where @code{op} is the considered
+operation. The operation is done taking @var{n} as an argument, and the result
+is stored in @var{m}. Systematically a macro @code{mat_eqop} with one argument
+is defined such that @code{mat_eqop(m)} is equivalent to @code{mat_op(m,m)}.
+
+@deftypefun latan_errno mat_cp (mat * m, mat * n)
+This function copy matrix @var{n} into matrix @var{m}.
+@tex
+$$m_{i,j}\leftarrow n_{i,j}$$
+@end tex
+@end deftypefun
+
+@findex mat_eqabs
+@deftypefun latan_errno mat_abs (mat * m, mat * n)
+This function set matrix @var{m} elements to the absolute value of @var{n}
+elements.
+@tex
+$$m_{i,j}\leftarrow |n_{i,j}|$$
+@end tex
+@end deftypefun
+
+@findex mat_eqsqrt
+@deftypefun latan_errno mat_sqrt (mat * m, mat * n)
+This function set matrix @var{m} elements to the square root of the absolute
+value of @var{n} elements.
+@tex
+$$m_{i,j}\leftarrow\sqrt{|n_{i,j}|}$$
+@end tex
+@end deftypefun
+
+@subsection Binary operations
+@findex mat_eq*
+All binary operations function have the form 
+@code{mat_op} (@var{mat * m, mat * n, mat * o}) where @code{op} is 
+the considered operation. The operation is done taking (@var{n},@var{o}) as an
+argument, and the result is stored in @var{m}. Systematically a macro 
+@code{mat_eqop} with two arguments is defined such that @code{mat_eqop(m,n)} is 
+equivalent to @code{mat_op(m,m,n)}.
 
 @node Linear algebra, , Operations, Matrices
 @section Linear Algebra

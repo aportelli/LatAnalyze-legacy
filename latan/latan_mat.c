@@ -938,7 +938,7 @@ latan_errno mat_sqrt(mat *m, mat *n)
 	
 	FOR_VAL(m,i,j)
 	{
-		mat_set(m,i,j,sqrt(mat_get(n,i,j)));
+		mat_set(m,i,j,sqrt(fabs(mat_get(n,i,j))));
 	}
 	
 	MAT_CPU_LAST(m);

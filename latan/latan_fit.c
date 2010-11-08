@@ -412,7 +412,7 @@ latan_errno data_fit(mat *p, fit_data *d)
 	
 	fit_data_is_correlated(d) ? \
 	(strcpy(cor_status,"correlated")) : (strcpy(cor_status,"uncorrelated"));
-	latan_printf(VERB,"fitting (%s) %u data points with model %s...\n",
+	latan_printf(VERB,"fitting (%s) %u data points with %s model...\n",
 				 cor_status,(unsigned int)fit_data_fit_point_num(d),\
 				 d->model->name);
 	status = minimize(p,&chi2_min,&chi2,d);

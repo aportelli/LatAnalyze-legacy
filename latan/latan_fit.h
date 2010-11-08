@@ -4,7 +4,7 @@
 #include <latan/latan_globals.h>
 #include <latan/latan_statistics.h>
 
-#define MAX_STAGE 16
+#define MAX_STAGE 100
 
 __BEGIN_DECLS
 

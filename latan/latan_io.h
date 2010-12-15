@@ -9,26 +9,19 @@
 /* loop on lines of a file */
 #define BEGIN_FOR_LINE(str,f_name)\
 {\
-	FILE* _f;\
-	strbuf _buf;\
-	FOPEN(_f,f_name,"r");\
-	while (!feof(_f))\
-	{\
-		if ((fgets(_buf,STRING_LENGTH,_f))&&(sscanf(_buf,"%s\n",str)>0))\
-		{
+    FILE* _f;\
+    strbuf _buf;\
+    FOPEN(_f,f_name,"r");\
+    while (!feof(_f))\
+    {\
+        if ((fgets(_buf,STRING_LENGTH,_f))&&(sscanf(_buf,"%s\n",str)>0))
+
 #define END_FOR_LINE\
-		}\
-	}\
-	fclose(_f);\
+    }\
+    fclose(_f);\
 }
 
 __BEGIN_DECLS
-
-/* I/O options */
-void io_get_prop_mark(strbuf prop_mark);
-void io_set_prop_mark(const strbuf prop_mark);
-void io_get_prop_idfmt(strbuf prop_idfmt);
-void io_set_prop_idfmt(const strbuf prop_idfmt);
 
 /* general I/O */
 int get_nfile(const strbuf manifestfname);
@@ -37,28 +30,31 @@ latan_errno get_firstfname(strbuf fname, const strbuf manifestfname);
 /* mat *I/O */
 void mat_dump(FILE* stream, mat *m);
 #define mat_print(m) mat_dump(stdout,m)
-int mat_load_nrow(const strbuf mark, const strbuf matid,\
-				  const strbuf inputfname);
-latan_errno mat_load(mat *m, const strbuf mark, const strbuf matid,\
-					 const strbuf inputfname);
-latan_errno mat_load_ar(mat **m, const strbuf mark,\
-						const strbuf matid, const strbuf manifestfname);
 latan_errno mat_save_plotdat(mat *x, mat *m, const strbuf fname);
 latan_errno mat_save_plotdat_yerr(mat *x, mat *dat, mat *yerr,\
-								  const strbuf fname);
+                                  const strbuf fname);
 latan_errno mat_save_plotdat_xyerr(mat *x, mat *dat, mat *xerr,\
-								   mat *yerr, const strbuf fname);
+                                   mat *yerr, const strbuf fname);
 
 /* propagator I/O */
-int hadron_getnt(const hadron *h, const ss_no source, const ss_no sink,\
-				 const strbuf manfname);
-latan_errno hadron_propbin(mat **prop, const hadron *h, const ss_no source,	\
-						   const ss_no sink, const strbuf manfname,	\
-						   const size_t binsize);
+latan_errno prop_load(mat *prop, const channel_no channel, \
+                      const quark_no q1, const quark_no q2,\
+                      const ss_no source, const ss_no sink,\
+                      strbuf fname);
+latan_errno prop_load_nt(size_t *nt, const channel_no channel,\
+                         const quark_no q1, const quark_no q2,\
+                         const ss_no source, const ss_no sink,\
+                         strbuf fname);
+latan_errno hadron_prop_load_bin(mat **prop, const hadron *h,              \
+                                 const ss_no source, const ss_no sink,     \
+                                 const strbuf manfname,const size_t binsize);
+latan_errno hadron_prop_load_nt(size_t *nt, const hadron *h,               \
+                                const ss_no source, const ss_no sink,      \
+                                const strbuf manfname);
 
 /* random generator state I/O */
 latan_errno randgen_save_state(const strbuf prefname,\
-							   const randgen_state state);
+                               const randgen_state state);
 latan_errno randgen_load_state(randgen_state state, const strbuf prefname);
 
 /* reampled sample I/O */

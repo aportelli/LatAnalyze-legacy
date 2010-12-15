@@ -64,6 +64,14 @@ AC_ARG_WITH([Minuit2],
 	[AM_LDFLAGS="$AM_LDFLAGS -L$with_Minuit2/lib"],
 	[]
 )
+AC_ARG_WITH([xml2],
+    [AS_HELP_STRING([--with-xml2=prefix],
+		[try this for a non-standard install prefix of the xml2 library])],
+    [AM_CFLAGS="$AM_CFLAGS -I$with_xml2/include"]
+	[AM_CXXFLAGS="$AM_CXXFLAGS -I$with_xml2/include"]
+	[AM_LDFLAGS="$AM_LDFLAGS -L$with_xml2/lib"],
+	[]
+)
 
 CFLAGS="$AM_CFLAGS $CFLAGS"
 CXXFLAGS="$AM_CXXFLAGS $CXXFLAGS"
@@ -94,8 +102,8 @@ AC_RUN_IFELSE(
 		int func = 0x1;
 		
 		__asm__ __volatile__("cpuid":\
-							 "=a" (ax), "=b" (bx), "=c" (cx), "=d" (dx) :\
-							 "a" (func));
+		"=a" (ax), "=b" (bx), "=c" (cx), "=d" (dx) :\
+                "a" (func));
 
 		return 1-(dx >> 25)&0x1;])],
 	[AC_DEFINE([HAVE_SSE],
@@ -132,6 +140,7 @@ AS_IF([test "x$enable_cublas" = "xyes"],
 		[AC_MSG_ERROR([CUBLAS library not found])])],[])
 		
 AC_CHECK_LIB([gsl],[gsl_blas_dgemm],[],[AC_MSG_ERROR([GSL library not found])])
+AC_CHECK_LIB([xml2],[xmlFree],[],[AC_MSG_ERROR([xml2 library not found])])
 AC_LANG([C++])
 SAVED_LDFLAGS=$LDFLAGS
 LDFLAGS="$LDFLAGS -lMinuit2"

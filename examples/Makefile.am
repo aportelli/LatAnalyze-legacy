@@ -1,5 +1,6 @@
 noinst_PROGRAMS = \
 	ex_fit		\
+	ex_io		\
 	ex_mat		\
 	ex_min		\
 	ex_getmat	\
@@ -7,9 +8,13 @@ noinst_PROGRAMS = \
 	ex_rand		\
 	ex_stat
 	
+ex_io_SOURCES		= ex_io.c
+ex_io_CFLAGS		= -g -O2
+ex_io_LDFLAGS		= -L../latan/.libs -llatan -fopenmp
+
 ex_fit_SOURCES		= ex_fit.c
 ex_fit_CFLAGS		= -g -O2
-ex_fit_LDFLAGS		= -L../latan/.libs -llatan -fopenmp
+ex_fit_LDFLAGS		= -L../latan/.libs -llatan
 
 ex_mat_SOURCES		= ex_mat.c
 ex_mat_CFLAGS		= -g -O2

@@ -6,6 +6,7 @@
 *.dylib
 examples/ex_fit
 examples/ex_getmat
+examples/ex_io
 examples/ex_mat
 examples/ex_min
 examples/ex_rand
@@ -26,14 +27,15 @@ utils/latan_rs_sqrt
 build/*
 .DS_Store
 
+# NetBeans
+latanalyze-Makefile.mk
+nbproject/*
+
 # VIM
 *.swp
 
 # debug
 *.dSYM
-
-# archives
-*.tar.*
 
 # doc
 doc/*.pdf

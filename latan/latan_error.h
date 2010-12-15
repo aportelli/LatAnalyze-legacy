@@ -7,16 +7,16 @@ __BEGIN_DECLS
 
 typedef enum
 {
-	LATAN_FAILURE	= -1,	/* generic failure statement			*/
-	LATAN_SUCCESS	= 0,	/* all is going well !					*/
-	LATAN_EDOM		= 1,	/* input domain error, e.g sqrt(-1)		*/
-	LATAN_EFAULT	= 3,	/* invalid pointer						*/
-	LATAN_EINVAL	= 4,    /* invalid argument supplied by user	*/
-	LATAN_ENOMEM	= 8,	/* malloc error							*/
-	LATAN_EBADLEN	= 19,	/* dimension error						*/
-	LATAN_ENOTSQR	= 20,	/* matrix is not square error			*/
-	LATAN_ELATSYN	= 33,	/* syntax error reading input file		*/
-	LATAN_ESYSTEM	= 34	/* system error							*/
+    LATAN_FAILURE   = -1,   /* generic failure statement            */
+    LATAN_SUCCESS   = 0,    /* all is going well !                  */
+    LATAN_EDOM      = 1,    /* input domain error, e.g sqrt(-1)     */
+    LATAN_EFAULT    = 3,    /* invalid pointer                      */
+    LATAN_EINVAL    = 4,    /* invalid argument supplied by user    */
+    LATAN_ENOMEM    = 8,    /* malloc error                         */
+    LATAN_EBADLEN   = 19,   /* dimension error                      */
+    LATAN_ENOTSQR   = 20,   /* matrix is not square error           */
+    LATAN_ELATSYN   = 33,   /* syntax error                         */
+    LATAN_ESYSTEM   = 34    /* system error                         */
 } latan_errno;
 
 #ifndef LATAN_ERRNO_DEF
@@ -33,26 +33,26 @@ latan_error_handler_t *latan_set_error_handler_off(void);
 
 #define LATAN_ERROR(reason,no)\
 {\
-	strbuf _freason;\
-	sprintf(_freason,"%s (function %s)",reason,__FUNCTION__);\
-	latan_error(_freason,__FILE__,__LINE__,no);\
-	return no;\
+    strbuf _freason;\
+    sprintf(_freason,"%s (function %s)",reason,__FUNCTION__);\
+    latan_error(_freason,__FILE__,__LINE__,no);\
+    return no;\
 }
 
 #define LATAN_ERROR_VAL(reason,no,value)\
 {\
-	strbuf _freason;\
-	sprintf(_freason,"%s (function %s)",reason,__FUNCTION__);\
-	latan_error(_freason,__FILE__,__LINE__,no);\
-	return value;\
+    strbuf _freason;\
+    sprintf(_freason,"%s (function %s)",reason,__FUNCTION__);\
+    latan_error(_freason,__FILE__,__LINE__,no);\
+    return value;\
 }
 
 #define LATAN_ERROR_VOID(reason,no)\
 {\
-	strbuf _freason;\
-	sprintf(_freason,"%s (function %s)",reason,__FUNCTION__);\
-	latan_error(_freason,__FILE__,__LINE__,no);\
-	return;\
+    strbuf _freason;\
+    sprintf(_freason,"%s (function %s)",reason,__FUNCTION__);\
+    latan_error(_freason,__FILE__,__LINE__,no);\
+    return;\
 }
 
 #define LATAN_ERROR_NULL(reason,no)\
@@ -60,16 +60,16 @@ LATAN_ERROR_VAL(reason,no,NULL)
 
 #define LATAN_ERROR_NORET(reason,no)\
 {\
-	strbuf _freason;\
-	sprintf(_freason,"%s (function %s)",reason,__FUNCTION__);\
-	latan_error(_freason,__FILE__,__LINE__,no);\
+    strbuf _freason;\
+    sprintf(_freason,"%s (function %s)",reason,__FUNCTION__);\
+    latan_error(_freason,__FILE__,__LINE__,no);\
 }\
 
 #define LATAN_WARNING(reason,no)\
 {\
-	strbuf _freason;\
-	sprintf(_freason,"%s (function %s)",reason,__FUNCTION__);\
-	latan_warning(_freason,__FILE__,__LINE__,no);\
+    strbuf _freason;\
+    sprintf(_freason,"%s (function %s)",reason,__FUNCTION__);\
+    latan_warning(_freason,__FILE__,__LINE__,no);\
 }
 
 #define LATAN_ERROR_SELECT_2(a,b)       \
@@ -82,9 +82,9 @@ LATAN_ERROR_VAL(reason,no,NULL)
 ((a) != LATAN_SUCCESS ? (a) : LATAN_ERROR_SELECT_4(b,c,d,e))
 #define LATAN_UPDATE_STATUS(status,instruction)\
 {\
-	int _cstat;\
-	_cstat = instruction;\
-	status = LATAN_ERROR_SELECT_2(status,_cstat);\
+    int _cstat;\
+    _cstat = instruction;\
+    status = LATAN_ERROR_SELECT_2(status,_cstat);\
 }
 
 __END_DECLS

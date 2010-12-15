@@ -16,11 +16,9 @@ __BEGIN_DECLS
 
 /* boolean type */
 #ifndef __cplusplus
-typedef enum
-{
-	false = 0,
-	true = 1
-} bool;
+#define false (1==0)
+#define true  (1==1)
+typedef int bool;
 #endif
 
 /* string buffers */
@@ -59,90 +57,90 @@ __END_DECLS
 /* memory allocation */
 #define MALLOC(pt,typ,size)\
 {\
-	pt = (typ)(malloc((size_t)(size)*sizeof(*pt)));\
-	if (pt == NULL)\
-	{\
-		LATAN_ERROR("memory allocation failed",LATAN_ENOMEM);\
-	}\
+    pt = (typ)(malloc((size_t)(size)*sizeof(*pt)));\
+    if (pt == NULL)\
+    {\
+        LATAN_ERROR("memory allocation failed",LATAN_ENOMEM);\
+    }\
 }
 #define MALLOC_ERRVAL(pt,typ,size,value)\
 {\
-	pt = (typ)(malloc((size_t)(size)*sizeof(*pt)));\
-	if (pt == NULL)\
-	{\
-		LATAN_ERROR_VAL("memory allocation failed",LATAN_ENOMEM,value);\
-	}\
+    pt = (typ)(malloc((size_t)(size)*sizeof(*pt)));\
+    if (pt == NULL)\
+    {\
+        LATAN_ERROR_VAL("memory allocation failed",LATAN_ENOMEM,value);\
+    }\
 }
 #define MALLOC_NOERRET(pt,typ,size)\
 {\
-	pt = (typ)(malloc((size_t)(size)*sizeof(*pt)));\
-	if (pt == NULL)\
-	{\
-		LATAN_ERROR_NORET("memory allocation failed",LATAN_ENOMEM);\
-	}\
+    pt = (typ)(malloc((size_t)(size)*sizeof(*pt)));\
+    if (pt == NULL)\
+    {\
+        LATAN_ERROR_NORET("memory allocation failed",LATAN_ENOMEM);\
+    }\
 }
 #define REALLOC(pt,pt_old,typ,size)\
 {\
-	pt = (typ)(realloc(pt_old,(size_t)(size)*sizeof(*pt)));\
-	if (pt == NULL)\
-	{\
-		LATAN_ERROR("memory allocation failed",LATAN_ENOMEM);\
-	}\
+    pt = (typ)(realloc(pt_old,(size_t)(size)*sizeof(*pt)));\
+    if (pt == NULL)\
+    {\
+        LATAN_ERROR("memory allocation failed",LATAN_ENOMEM);\
+    }\
 }
 #define REALLOC_ERRVAL(pt,pt_old,typ,size,value)\
 {\
-	pt = (typ)(realloc(pt_old,(size_t)(size)*sizeof(*pt)));\
-	if (pt == NULL)\
-	{\
-		LATAN_ERROR_VAL("memory allocation failed",LATAN_ENOMEM,value);\
-	}\
+    pt = (typ)(realloc(pt_old,(size_t)(size)*sizeof(*pt)));\
+    if (pt == NULL)\
+    {\
+        LATAN_ERROR_VAL("memory allocation failed",LATAN_ENOMEM,value);\
+    }\
 }
 #define REALLOC_NOERRET(pt,pt_old,typ,size)\
 {\
-	pt = (typ)(realloc(pt_old,(size_t)(size)*sizeof(*pt)));\
-	if (pt == NULL)\
-	{\
-		LATAN_ERROR_NORET("memory allocation failed",LATAN_ENOMEM);\
-	}\
+    pt = (typ)(realloc(pt_old,(size_t)(size)*sizeof(*pt)));\
+    if (pt == NULL)\
+    {\
+        LATAN_ERROR_NORET("memory allocation failed",LATAN_ENOMEM);\
+    }\
 }
 #define FREE(pt)\
 {\
-	if (pt != NULL)\
-	{\
-		free(pt);\
-		pt = NULL;\
-	}\
+    if (pt != NULL)\
+    {\
+        free(pt);\
+        pt = NULL;\
+    }\
 }
 /* file opening */
 #define FOPEN(f,fname,mode)\
 {\
-	f = fopen(fname,mode);\
-	if (f == NULL)\
-	{\
-		strbuf _errmsg;\
-		sprintf(_errmsg,"error opening file %s",fname);\
-		LATAN_ERROR(_errmsg,LATAN_EFAULT);\
-	}\
+    f = fopen(fname,mode);\
+    if (f == NULL)\
+    {\
+        strbuf _errmsg;\
+        sprintf(_errmsg,"error opening file %s",fname);\
+        LATAN_ERROR(_errmsg,LATAN_EFAULT);\
+    }\
 }
 #define FOPEN_ERRVAL(f,fname,mode,value)\
 {\
-	f = fopen(fname,mode);\
-	if (f == NULL)\
-	{\
-		strbuf _errmsg;\
-		sprintf(_errmsg,"error opening file %s",fname);\
-		LATAN_ERROR_VAL(_errmsg,LATAN_EFAULT,value);\
-	}\
+    f = fopen(fname,mode);\
+    if (f == NULL)\
+    {\
+        strbuf _errmsg;\
+        sprintf(_errmsg,"error opening file %s",fname);\
+        LATAN_ERROR_VAL(_errmsg,LATAN_EFAULT,value);\
+    }\
 }
 #define FOPEN_NOERRET(f,fname,mode)\
 {\
-	f = fopen(fname,mode);\
-	if (f == NULL)\
-	{\
-		strbuf _errmsg;\
-		sprintf(_errmsg,"error opening file %s",fname);\
-		LATAN_ERROR_NORET(_errmsg,LATAN_EFAULT);\
-	}\
+    f = fopen(fname,mode);\
+    if (f == NULL)\
+    {\
+        strbuf _errmsg;\
+        sprintf(_errmsg,"error opening file %s",fname);\
+        LATAN_ERROR_NORET(_errmsg,LATAN_EFAULT);\
+    }\
 }
 
 __BEGIN_DECLS

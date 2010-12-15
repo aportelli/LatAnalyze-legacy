@@ -15,11 +15,11 @@ typedef size_t npar_func(const unsigned int stage_flag, void *model_param);
 
 typedef struct
 {
-	strbuf name;
-	model_func func[MAX_STAGE];
-	npar_func *npar;
-	size_t ndim;
-	strbuf plot_fmt;
+    strbuf name;
+    model_func func[MAX_STAGE];
+    npar_func *npar;
+    size_t ndim;
+    strbuf plot_fmt;
 } fit_model;
 
 /** some useful constant npar_func **/
@@ -72,7 +72,7 @@ double fit_data_get_chi2pdof(fit_data *d);
 
 /*** fit points ***/
 void fit_data_set_x(fit_data *d, const size_t i, const size_t j,\
-					const double x_i);
+                    const double x_i);
 double fit_data_get_x(const fit_data *d, const size_t i, const size_t j);
 mat *fit_data_pt_x(const fit_data *d);
 latan_errno fit_data_set_x_var(fit_data *d, mat *var);
@@ -115,7 +115,7 @@ double chi2(mat *var, void *d);
 latan_errno data_fit(mat *p, fit_data *d);
 latan_errno rs_data_fit(rs_sample *p, rs_sample *data, fit_data *d);
 latan_errno rs_x_data_fit(rs_sample *p, rs_sample *x, rs_sample *data,\
-						  fit_data *d);
+                          fit_data *d);
 
 __END_DECLS
 

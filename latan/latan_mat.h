@@ -9,18 +9,18 @@ __BEGIN_DECLS
 /* definition of the matrix type */
 enum
 {
-	CPU_ALLOCATED = 0x01,\
-	GPU_ALLOCATED = 0x02,\
-	CPU_LAST      = 0x04,\
-	GPU_LAST      = 0x08,\
-	SYNCED        = 0x10
+    CPU_ALLOCATED = 0x01,\
+    GPU_ALLOCATED = 0x02,\
+    CPU_LAST      = 0x04,\
+    GPU_LAST      = 0x08,\
+    SYNCED        = 0x10
 };
 
 typedef struct 
 {
-	gsl_matrix *data_cpu;
-	double *data_gpu;
-	int mem_flag;
+    gsl_matrix *data_cpu;
+    double *data_gpu;
+    int mem_flag;
 } mat;
 
 /* loop */
@@ -35,9 +35,9 @@ mat *mat_create(const size_t init_nrow, const size_t init_ncol);
 #define mat_create_from_trdim(n) mat_create(ncol(n),nrow(n))
 mat *mat_create_from_mat(mat *n);
 mat *mat_create_from_ar(const double *ar, const size_t init_nrow,\
-					   const size_t init_ncol);
+                       const size_t init_ncol);
 mat **mat_ar_create(const size_t nmat, const size_t init_nrow,\
-				   const size_t init_ncol);
+                   const size_t init_ncol);
 #define mat_ar_create_from_dim(nmat,n) mat_ar_create(nmat,nrow(n),ncol(n))
 void mat_destroy(mat *m);
 void mat_ar_destroy(mat **m, const size_t nmat);
@@ -45,18 +45,18 @@ void mat_ar_destroy(mat **m, const size_t nmat);
 /** flag management **/
 #define MAT_CPU_LAST(m)\
 {\
-	(m)->mem_flag -= (m)->mem_flag&(GPU_LAST|SYNCED);\
-	(m)->mem_flag |= CPU_LAST;\
+    (m)->mem_flag -= (m)->mem_flag&(GPU_LAST|SYNCED);\
+    (m)->mem_flag |= CPU_LAST;\
 }
 #define MAT_GPU_LAST(m)\
 {\
-	(m)->mem_flag -= (m)->mem_flag&(CPU_LAST|SYNCED);\
-	(m)->mem_flag |= GPU_LAST;\
+    (m)->mem_flag -= (m)->mem_flag&(CPU_LAST|SYNCED);\
+    (m)->mem_flag |= GPU_LAST;\
 }
 #define MAT_SYNCED(m)\
 {\
-	(m)->mem_flag -= (m)->mem_flag&(CPU_LAST|GPU_LAST);\
-	(m)->mem_flag |= SYNCED;\
+    (m)->mem_flag -= (m)->mem_flag&(CPU_LAST|GPU_LAST);\
+    (m)->mem_flag |= SYNCED;\
 }
 
 /** access **/
@@ -65,25 +65,23 @@ size_t ncol(mat *m);
 double mat_get(mat *m, const size_t i, const size_t j);
 void mat_set(mat *m, const size_t i, const size_t j, const double val);
 latan_errno mat_get_subm(mat *m, mat *n, const size_t k1, const size_t l1, \
-						 const size_t k2, const size_t l2);
+                         const size_t k2, const size_t l2);
 latan_errno mat_set_subm(mat *m, mat *n, const size_t k1, const size_t l1, \
-						 const size_t k2, const size_t l2);
+                         const size_t k2, const size_t l2);
 #define MAT_PT_SUBM(m,n,k1,l1,k2,l2)\
 {\
-	gsl_matrix_view _nview;\
-	\
-	mat_on_cpu(n);\
-	\
-	if ((m)->mem_flag & CPU_ALLOCATED)\
-	{\
-		LATAN_WARNING("memory leak : modifying a pointer on an allocated memory zone",\
-					  LATAN_EFAULT);\
-		(m)->mem_flag -= CPU_ALLOCATED;\
-	}\
-	_nview      = gsl_matrix_submatrix((n)->data_cpu,k1,l1,k2-k1+1,l2-l1+1);\
-	(m)->data_cpu = &(_nview.matrix);\
-	\
-	MAT_CPU_LAST(m);\
+    gsl_matrix_view _nview;\
+    mat_on_cpu(n);\
+    if ((m)->mem_flag & CPU_ALLOCATED)\
+    {\
+        LATAN_WARNING("memory leak : modifying a pointer on an allocated memory zone",\
+                      LATAN_EFAULT);\
+        (m)->mem_flag -= CPU_ALLOCATED;\
+    }\
+    _nview        = gsl_matrix_submatrix((n)->data_cpu,k1,l1,k2-k1+1,l2-l1+1);\
+    (m)->data_cpu = &(_nview.matrix);\
+    \
+    MAT_CPU_LAST(m);\
 }
 latan_errno mat_get_diag(mat *diag, mat *m);
 latan_errno mat_set_diag(mat *m, mat *diag);
@@ -139,5 +137,27 @@ latan_errno mat_sqrt(mat *m, mat *n);
 latan_errno mat_inv(mat *m, mat *n);
 
 __END_DECLS
+
+/* setting names of GPU related functions */
+#ifdef HAVE_LIBCUBLAS
+#define mat_gpu_free   mat_cublas_gpu_free
+#define mat_on_cpu     mat_cublas_on_cpu
+#define mat_on_gpu     mat_cublas_on_gpu
+#define mat_sync       mat_cublas_sync
+#define mat_gpu_mul_nn mat_cublas_gpu_mul_nn
+#define mat_gpu_mul_nt mat_cublas_gpu_mul_nt
+#define mat_gpu_mul_tn mat_cublas_gpu_mul_tn
+#define mat_gpu_mul_tt mat_cublas_gpu_mul_tt
+#include <latan/latan_mat_cublas.h>
+#else
+#define mat_gpu_free(m)
+#define mat_on_cpu(m)
+#define mat_on_gpu(m)
+#define mat_sync(m)
+#define mat_gpu_mul_nn(m,n,o) LATAN_FAILURE
+#define mat_gpu_mul_nt(m,n,o) LATAN_FAILURE
+#define mat_gpu_mul_tn(m,n,o) LATAN_FAILURE
+#define mat_gpu_mul_tt(m,n,o) LATAN_FAILURE
+#endif
 
 #endif

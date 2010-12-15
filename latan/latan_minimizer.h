@@ -8,20 +8,20 @@ __BEGIN_DECLS
 /* minimize lib flags */
 typedef enum
 {
-	GSL    = 0,\
-	MINUIT = 1
+    GSL    = 0,\
+    MINUIT = 1
 } minlib_no;
 
 /* minization algorithms */
 #define NMINALG 6
 typedef enum
 {
-	GSL_GRAD_FR    = 0,\
-	GSL_GRAD_PR    = 1,\
-	GSL_VEC_BFGS   = 2,\
-	GSL_SIMPLEX_NM = 3,\
-	MIN_MIGRAD     = 4,\
-	MIN_SIMPLEX    = 5
+    GSL_GRAD_FR    = 0,\
+    GSL_GRAD_PR    = 1,\
+    GSL_VEC_BFGS   = 2,\
+    GSL_SIMPLEX_NM = 3,\
+    MIN_MIGRAD     = 4,\
+    MIN_SIMPLEX    = 5
 } minalg_no;
 
 minalg_no minalg_no_get(const strbuf m_id);

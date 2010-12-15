@@ -4,13 +4,14 @@
 #include <latan/latan_globals.h>
 #include <latan/latan_statistics.h>
 
-#define MAX_STAGE 100
+#define MAX_STAGE (sizeof(unsigned int)*8)
+#define STAGE(s) (1 << (s))
 
 __BEGIN_DECLS
 
 /* fit model structure */
 typedef double (*model_func)(mat *x, mat *p, void *model_param);
-typedef size_t npar_func(int stage, void *model_param);
+typedef size_t npar_func(const unsigned int stage_flag, void *model_param);
 
 typedef struct
 {
@@ -36,28 +37,28 @@ npar_func npar_10;
 /** access **/
 void fit_model_get_name(strbuf name, const fit_model *model);
 void fit_model_get_plot_fmt(strbuf plot_fmt, const fit_model *model);
-double fit_model_eval(const fit_model *model, mat *x, mat *p,\
-					  const size_t stage, void *model_param);
+double fit_model_eval(const fit_model *model, mat *x, mat *p,         \
+                      const unsigned int stage_flag, void *model_param);
 
 /* fit data structure */
 typedef struct
 {
-	size_t ndata;
-	size_t ndim;
-	mat *x;
-	mat *x_varinv;
-	mat *data;
-	mat *data_varinv;
-	bool is_data_correlated;
-	bool is_x_correlated;
-	bool have_x_var;
-	bool save_chi2pdof;
-	bool *to_fit;
-	const fit_model *model;
-	void *model_param;
-	int stage;
-	double chi2pdof;
-	mat *buf_chi2[4];
+    size_t ndata;
+    size_t ndim;
+    mat *x;
+    mat *x_varinv;
+    mat *data;
+    mat *data_varinv;
+    bool is_data_correlated;
+    bool is_x_correlated;
+    bool have_x_var;
+    bool save_chi2pdof;
+    bool *to_fit;
+    const fit_model *model;
+    void *model_param;
+    unsigned int stage_flag;
+    double chi2pdof;
+    mat *buf_chi2[4];
 } fit_data;
 
 /** allocation **/
@@ -97,8 +98,12 @@ void fit_data_set_model_param(fit_data *d, void *model_param);
 double fit_data_model_eval(const fit_data *d, const size_t i,mat *p);
 
 /*** stages ***/
-void fit_data_set_stage(fit_data *d, const int stage);
-int fit_data_get_stage(const fit_data *d);
+typedef bool stage_ar[MAX_STAGE];
+
+void fit_data_set_stage_flag(fit_data *d, const unsigned int stage_flag);
+unsigned int fit_data_get_stage_flag(const fit_data *d);
+void fit_data_set_stages(fit_data *d, const stage_ar s);
+void fit_data_get_stages(stage_ar s, const fit_data *d);
 
 /*** dof ***/
 int fit_data_get_dof(const fit_data *d);

@@ -10,11 +10,13 @@
 /****************************************************************************/
 /** some useful constant npar_func **/
 #define DEFINE_CST_NPAR_FUNC(n)\
-size_t npar_##n(int stage, void *nothing)\
+size_t npar_##n(const unsigned int stage_flag, void *nothing)\
 {\
-	stage   = 0;\
-	nothing = NULL;\
-	return n;\
+    unsigned int dumb;\
+    \
+    dumb    = stage_flag;\
+    nothing = NULL;\
+    return n;\
 }
 
 DEFINE_CST_NPAR_FUNC(1)
@@ -36,24 +38,35 @@ void fit_model_get_name(strbuf name, const fit_model *model)
 
 void fit_model_get_plot_fmt(strbuf plot_fmt, const fit_model *model)
 {
-	strcpy(plot_fmt,model->plot_fmt);
+    strcpy(plot_fmt,model->plot_fmt);
 }
 
-double fit_model_eval(const fit_model *model, mat *x, mat *p,\
-					  const size_t stage, void *model_param)
+double fit_model_eval(const fit_model *model, mat *x, mat *p,    \
+                      const unsigned int stage_flag, void *model_param)
 {
-	size_t i;
-	double res;
-	
-	res = 0.0;
-	for (i=0;i<=stage;i++)
-	{
-		res += model->func[i](x,p,model_param);
-	}
-	return res;
+    unsigned int i;
+    double res;
+    mat subp;
+    size_t ind_i,ind_f;
+    
+    res           = 0.0;
+    ind_i         = 0;
+    ind_f         = 0;
+    subp.mem_flag = CPU_LAST;
+    
+    for (i=0;i<MAX_STAGE;i++)
+    {
+        ind_f = ind_i + model->npar(STAGE(i),model_param) - 1;
+        if (stage_flag & STAGE(i))
+        {
+            MAT_PT_SUBM(&subp,p,ind_i,0,ind_f,0);
+            res += model->func[i](x,&subp,model_param);   
+        }
+        ind_i = ind_f + 1;
+    }
+    
+    return res;
 }
-
-/*							fit data structure								*/
 /****************************************************************************/
 /** allocation **/
 fit_data *fit_data_create(const size_t ndata, const size_t ndim)
@@ -77,7 +90,6 @@ fit_data *fit_data_create(const size_t ndata, const size_t ndim)
 	}
 	d->model              = NULL;
 	d->model_param        = NULL;
-	d->stage              = 0;
 	d->ndata              = ndata;
 	d->ndim               = ndim;
 	d->is_data_correlated = false;
@@ -86,6 +98,7 @@ fit_data *fit_data_create(const size_t ndata, const size_t ndim)
 	d->save_chi2pdof      = true;
 	
 	return d;
+    d->stage_flag         = 1;
 }
 
 void fit_data_destroy(fit_data *d)
@@ -340,20 +353,45 @@ double fit_data_model_eval(const fit_data *d, const size_t i,\
 }
 
 /*** stages ***/
-void fit_data_set_stage(fit_data *d, const int stage)
+void fit_data_set_stage_flag(fit_data *d, const unsigned int stage_flag)
 {
-	d->stage = stage;
+    d->stage_flag = stage_flag;
 }
 
-int fit_data_get_stage(const fit_data *d)
+unsigned int fit_data_get_stage_flag(const fit_data *d)
 {
-	return d->stage;
+    return d->stage_flag;
+}
+
+void fit_data_set_stages(fit_data *d, const stage_ar s)
+{
+    unsigned int i;
+    
+    d->stage_flag = 0;
+    for (i=0;i<MAX_STAGE;i++)
+    {
+        if (s[i])
+        {
+            d->stage_flag |= STAGE(i);
+        }
+    }
+}
+
+void fit_data_get_stages(stage_ar s, const fit_data *d)
+{
+    unsigned int i;
+    
+    for (i=0;i<MAX_STAGE;i++)
+    {
+        s[i] = ((d->stage_flag & STAGE(i)) != 0);
+    }
 }
 
 /*** dof ***/
 int fit_data_get_dof(const fit_data *d)
 {
-	return fit_data_fit_point_num(d) - d->model->npar(d->stage,d->model_param);
+    return fit_data_fit_point_num(d) - d->model->npar(d->stage_flag,\
+                                                      d->model_param);
 }
 
 /*							chi2 function									*/

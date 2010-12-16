@@ -13,7 +13,7 @@
 /*                      XML format specifications                           */
 /****************************************************************************/
 #ifndef LATAN_XMLNS
-#define LATAN_XMLNS "http://www.latanalyze.org/xmlfmt/1.0"
+#define LATAN_XMLNS "latanalyze/xmlfmt/1.0"
 #endif
 #ifndef LATAN_XMLNS_PREF
 #define LATAN_XMLNS_PREF "latan"

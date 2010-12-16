@@ -26,20 +26,20 @@ __BEGIN_DECLS
 /* the plot structure */
 typedef struct 
 {
-    size_t nplot;           /* number of plot commands the buffer*/
-    strbuf *plotbuf;        /* buffer of plot commands */
-    size_t ntmpf;           /* number of temporary files opened for this plot */
+    size_t nplot;       /* number of plot commands the buffer*/
+    strbuf *plotbuf;    /* buffer of plot commands */
+    size_t ntmpf;       /* number of temporary files opened for this plot */
     strbuf *tmpfname;   /* names of the temporary files opened for this plot */
     strbuf title;       /* title of the plot */
-    strbuf term;            /* output terminal of the plot */
+    strbuf term;        /* output terminal of the plot */
     strbuf output;      /* output file of the plot */
-    int scale;              /* scale mode of the plot */
-    int log;                /* logarithmic mode of the axis */
-    double xmin;            /* lower bound of x axis */
-    double xmax;            /* upper bound of x axis */
+    int scale;          /* scale mode of the plot */
+    int log;            /* logarithmic mode of the axis */
+    double xmin;        /* lower bound of x axis */
+    double xmax;        /* upper bound of x axis */
     strbuf xlabel;      /* label of the x axis */
-    double ymin;            /* lower bound of y axis */
-    double ymax;            /* upper bound of y axis */
+    double ymin;        /* lower bound of y axis */
+    double ymax;        /* upper bound of y axis */
     strbuf ylabel;      /* label of the y axis */
 } plot;
 

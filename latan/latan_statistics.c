@@ -11,6 +11,7 @@ static latan_errno resample_bootstrap(mat *cent_val, mat **sample,          \
                                       const size_t nboot, mat **dat,    \
                                       const size_t ndat, const size_t nobs, \
                                       rs_func *f, void *param);
+
 /* TODO : Jackknife resampling function
 static latan_errno resample_jackknife(mat *cent_val, mat **sample,          \
                                       const size_t jk_depth, mat **dat,\
@@ -396,7 +397,7 @@ latan_errno rs_mean(mat *res, mat **dat, const size_t ndat,\
     latan_errno status;
     size_t st_nothing;
     
-    nothing = NULL;
+    nothing    = NULL;
     st_nothing = sampno;
     
     status = mat_mean(res,dat,ndat);
@@ -411,9 +412,9 @@ latan_errno rs_finite_diff(mat *res, mat **dat, const size_t ndat,\
     mat *mean;
     size_t st_nothing;
     
-    nothing = NULL;
+    nothing    = NULL;
     st_nothing = sampno;
-    status = LATAN_SUCCESS;
+    status     = LATAN_SUCCESS;
     
     mean = mat_create_from_dim(dat[0]);
     
@@ -434,8 +435,8 @@ latan_errno rs_effmass(mat *res, mat **dat, const size_t ndat,\
     size_t st_nothing;
     
     st_nothing = sampno;
-    status = LATAN_SUCCESS;
-    parityt = *((int*)(parity));
+    status     = LATAN_SUCCESS;
+    parityt    = *((int*)(parity));
 
     mean = mat_create_from_dim(dat[0]);
     
@@ -456,12 +457,12 @@ latan_errno rs_effmass_PCAC(mat *res, mat **dat, const size_t ndat,\
     mat *mprop_AP,*mprop_PP;
     size_t st_nothing;
     
-    nothing = NULL;
+    nothing    = NULL;
     st_nothing = sampno;
-    status = LATAN_SUCCESS;
+    status     = LATAN_SUCCESS;
     
-    prop_AP = dat;
-    prop_PP = dat + ndat;
+    prop_AP  = dat;
+    prop_PP  = dat + ndat;
     mprop_AP = mat_create_from_dim(prop_AP[0]);
     mprop_PP = mat_create_from_dim(prop_PP[0]);
     

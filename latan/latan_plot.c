@@ -1,30 +1,39 @@
 #include <latan/latan_plot.h>
 #include <latan/latan_includes.h>
 
-static char *gnuplot_get_program_path(const char *pname);
+static char * gnuplot_get_program_path(const char *pname);
 static void gnuplot_cmd(FILE *ctrl, const char *cmd, ...);
 static void plot_add_tmpf(plot *p, const strbuf tmpfname);
 
 /*                              internal code                               */
 /****************************************************************************/
 
+#ifndef GNUPLOT_CMD
+#define GNUPLOT_CMD "gnuplot"
+#endif
+#ifndef GNUPLOT_CMD_ARGS
+#define GNUPLOT_CMD_ARGS "-persist"
+#endif
+
 /** part of Nicolas Devillard gnuplot interface **/
 /*** Maximal size of a gnuplot command ***/
-#define GP_CMD_SIZE         2048
+#define GP_CMD_SIZE 2048
 /*** Maximal size of a name in the PATH ***/
-#define PATH_MAXNAMESZ       4096
+#define PATH_MAXNAMESZ 4096
 
 #define GNUPLOT_OPEN(ctrl)\
 {\
+    strbuf cmd;\
     if (getenv("DISPLAY") == NULL)\
     {\
         LATAN_ERROR("cannot find DISPLAY variable: is it set ?",LATAN_ESYSTEM);\
     }\
-    if (gnuplot_get_program_path("gnuplot") == NULL)\
+    if (gnuplot_get_program_path(GNUPLOT_CMD) == NULL)\
     {\
         LATAN_ERROR("cannot find gnuplot in your PATH",LATAN_ESYSTEM);\
     }\
-    ctrl = popen("gnuplot -persist","w");\
+    sprintf(cmd,"%s %s",GNUPLOT_CMD,GNUPLOT_CMD_ARGS);\
+    ctrl = popen(cmd,"w");\
     if (ctrl == NULL)\
     {\
         LATAN_ERROR("error starting gnuplot",LATAN_ESYSTEM);\
@@ -39,30 +48,37 @@ static void plot_add_tmpf(plot *p, const strbuf tmpfname);
     }\
 }
 
-char *gnuplot_get_program_path(const char *pname)
+static char * gnuplot_get_program_path(const char *pname)
 {
     int         i, j, lg;
     char *      path;
     static char buf[PATH_MAXNAMESZ];
     
     /* Trivial case: try in CWD */
-    sprintf(buf, "./%s", pname) ;
-    if (access(buf, X_OK) == 0) {
-        sprintf(buf, ".");
+    sprintf(buf,"./%s", pname) ;
+    if (access(buf,X_OK) == 0)
+    {
+        sprintf(buf,".");
         return buf ;
     }
     /* Try out in all paths given in the PATH variable */
     buf[0] = 0;
     path = getenv("PATH") ;
-    if (path!=NULL) {
-        for (i=0; path[i]; ) {
-            for (j=i ; (path[j]) && (path[j]!=':') ; j++);
+    if (path != NULL)
+    {
+        for (i=0;path[i];)
+        {
+            for (j=i;(path[j])&&(path[j]!=':');j++);
             lg = j - i;
-            strncpy(buf, path + i,(size_t)(lg));
-            if (lg == 0) buf[lg++] = '.';
+            strncpy(buf,path + i,(size_t)(lg));
+            if (lg == 0)
+            {
+                buf[lg++] = '.';
+            }
             buf[lg++] = '/';
             strcpy(buf + lg, pname);
-            if (access(buf, X_OK) == 0) {
+            if (access(buf, X_OK) == 0)
+            {
                 /* Found it! */
                 break ;
             }
@@ -70,22 +86,29 @@ char *gnuplot_get_program_path(const char *pname)
             i = j;
             if (path[i] == ':') i++ ;
         }
-    } else {
+    } 
+    else
+    {
         fprintf(stderr, "PATH variable not set\n");
     }
     /* If the buffer is still empty, the command was not found */
-    if (buf[0] == 0) return NULL ;
+    if (buf[0] == 0)
+    {
+        return NULL;
+    }
     /* Otherwise truncate the command name to yield path only */
     lg = (int)(strlen(buf) - 1);
-    while (buf[lg]!='/') {
+    while (buf[lg]!='/')
+    {
         buf[lg] = 0;
         lg--;
     }
     buf[lg] = 0;
+    
     return buf ;
 }
 
-void gnuplot_cmd(FILE* ctrl, const char *cmd, ...)
+static void gnuplot_cmd(FILE* ctrl, const char *cmd, ...)
 {
     va_list ap;
     char local_cmd[GP_CMD_SIZE];
@@ -99,7 +122,7 @@ void gnuplot_cmd(FILE* ctrl, const char *cmd, ...)
 }
 
 /** temporary file management **/
-void plot_add_tmpf(plot *p, const strbuf tmpfname)
+static void plot_add_tmpf(plot *p, const strbuf tmpfname)
 {
     (p->ntmpf)++;
     REALLOC_NOERRET(p->tmpfname,p->tmpfname,strbuf*,p->ntmpf);

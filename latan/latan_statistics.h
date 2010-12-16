@@ -1,13 +1,11 @@
 #ifndef LATAN_STATISTICS_H_
 #define LATAN_STATISTICS_H_
 
-
 #include <latan/latan_globals.h>
 #include <latan/latan_rand.h>
 
 #define BOOT 0
-#define JACK 1
-#define GENERIC 2
+#define JACK(depth) ((depth >= 1) ? depth : 1)
 
 __BEGIN_DECLS
 
@@ -44,21 +42,19 @@ typedef struct
     mat *cent_val;
     mat **sample;
     size_t nsample;
-    int resamp_method;
     randgen_state gen_state;
 } rs_sample;
 
+/** jackknife sample number calculation **/
+size_t jackknife_nsample(const size_t ndat, const size_t jk_depth);
+
 /** allocation **/
-rs_sample *rs_sample_create_boot(const size_t init_nrow, const size_t nboot);
-rs_sample *rs_sample_create_jack(const size_t init_nrow, const size_t ndat,\
-                                const size_t jk_depth);
 rs_sample *rs_sample_create(const size_t init_nrow, const size_t nsample);
 void rs_sample_destroy(rs_sample *s);
 
 /** access **/
 size_t rs_sample_get_nrow(const rs_sample *s);
 size_t rs_sample_get_nsample(const rs_sample *s);
-int rs_sample_get_method(const rs_sample *s);
 void rs_sample_get_name(strbuf name, const rs_sample *s);
 mat *rs_sample_pt_cent_val(const rs_sample *s);
 mat *rs_sample_pt_sample(const rs_sample *s, const size_t i);
@@ -71,8 +67,9 @@ latan_errno rs_sample_covp(mat *cov, const rs_sample *s, const rs_sample *t);
 #define rs_sample_varp(cov,s) rs_sample_covp(cov,s,s);
 
 /* resampling function */
-latan_errno resample(rs_sample *s, mat **dat, const size_t ndat,\
-                     const size_t nobs, rs_func *f, void *param);
+latan_errno resample(rs_sample *s, mat **dat, const size_t ndat,               \
+                     const size_t nobs, rs_func *f, unsigned int resamp_method,\
+                     void *param);
 
 /* useful rs_func */
 latan_errno rs_mean(mat *res, mat **dat, const size_t ndat,\

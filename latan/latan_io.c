@@ -514,7 +514,7 @@ latan_errno hadron_prop_load_bin(mat **prop, const hadron *h,              \
     double mean;
     mat **dat[MAXPROP][MAXQUARKST];
     mat **prop_prebin;
-    strbuf fname;
+    strbuf buf,*fname;
     latan_errno status;
     
     nt      = nrow(prop[0]);
@@ -529,6 +529,7 @@ latan_errno hadron_prop_load_bin(mat **prop, const hadron *h,              \
     }
     
     prop_prebin = mat_ar_create(ndat,nt,1);
+    MALLOC(fname,strbuf *,ndat);
     
     for (p=0;p<chmix;p++)
     {
@@ -536,14 +537,24 @@ latan_errno hadron_prop_load_bin(mat **prop, const hadron *h,              \
         {
             dat[p][s] = mat_ar_create((size_t)(ndat),(size_t)(nt),1);
             i = 0;
-            BEGIN_FOR_LINE(fname,manfname)
+            BEGIN_FOR_LINE(buf,manfname)
             {
-                LATAN_UPDATE_STATUS(status,prop_load(dat[p][s][i],     \
-                                    h->channel[p],h->quarkst[s][0],    \
-                                    h->quarkst[s][1],source,sink,fname));
+                strcpy(fname[i],buf);
                 i++;
             }
             END_FOR_LINE
+#ifdef _OPENMP
+            #pragma omp parallel for
+#endif
+            for (i=0;i<ndat;i++)
+            {
+                LATAN_UPDATE_STATUS(status,prop_load(dat[p][s][i], \
+                                    h->channel[p],h->quarkst[s][0],\
+                                    h->quarkst[s][1],source,sink,fname[i]));
+            }
+#ifdef _OPENMP
+            #pragma omp barrier
+#endif
         }
     }
     for (i=0;i<ndat;i++)
@@ -584,6 +595,7 @@ latan_errno hadron_prop_load_bin(mat **prop, const hadron *h,              \
     }
     LATAN_UPDATE_STATUS(status,mat_ar_bin(prop,prop_prebin,ndat,binsize));
     
+
     mat_ar_destroy(prop_prebin,ndat);
     for (p=0;p<chmix;p++)
     {
@@ -592,6 +604,7 @@ latan_errno hadron_prop_load_bin(mat **prop, const hadron *h,              \
             mat_ar_destroy(dat[p][s],(size_t)(ndat));
         }
     }
+    FREE(fname);
     
     return status;
 }
@@ -734,35 +747,6 @@ int rs_sample_load_nsample(const strbuf f_name)
     fclose(f);
     
     return nsample;
-}
-
-int rs_sample_load_method(const strbuf f_name)
-{
-    FILE* f;
-    strbuf dumstr,errmsg;
-    int method;
-    
-    FOPEN(f,f_name,"r");
-    sprintf(errmsg,"error while reading resampling method in file %s",f_name);
-    if (fscanf(f,"%s ",dumstr)<0)
-    {
-        LATAN_ERROR(errmsg,LATAN_FAILURE);
-    }
-    if (fscanf(f,"%d ",&method)<0)
-    {
-        LATAN_ERROR(errmsg,LATAN_FAILURE);
-    }
-    if (fscanf(f,"%d ",&method)<0)
-    {
-        LATAN_ERROR(errmsg,LATAN_FAILURE);
-    }
-    if (fscanf(f,"%d\n",&method)<0)
-    {
-        LATAN_ERROR(errmsg,LATAN_FAILURE);
-    }
-    fclose(f);
-    
-    return method;
 }
 
 latan_errno rs_sample_load(rs_sample *s, const strbuf f_name)

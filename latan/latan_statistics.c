@@ -11,13 +11,12 @@ static latan_errno resample_bootstrap(mat *cent_val, mat **sample,          \
                                       const size_t nboot, mat **dat,    \
                                       const size_t ndat, const size_t nobs, \
                                       rs_func *f, void *param);
-/*
+/* TODO : Jackknife resampling function
 static latan_errno resample_jackknife(mat *cent_val, mat **sample,          \
                                       const size_t jk_depth, mat **dat,\
                                       const size_t ndat, const size_t nobs, \
                                       rs_func *f, void *param);
 */
-static size_t jackknife_nsample(const size_t ndat, const size_t jk_depth); 
 
 /*                      elementary estimators                               */
 /****************************************************************************/
@@ -243,49 +242,17 @@ size_t jackknife_nsample(const size_t ndat, const size_t jk_depth)
 }
 
 /** allocation **/
-rs_sample *rs_sample_create_boot(const size_t init_nrow, const size_t nboot)
-{
-    rs_sample *s;
-    
-    MALLOC_ERRVAL(s,rs_sample *,1,NULL);
-    
-    s->nsample = nboot;
-    s->resamp_method = BOOT;
-    
-    s->cent_val = mat_create(init_nrow,1);
-    s->sample = mat_ar_create_from_dim(s->nsample,s->cent_val);
-    
-    return s;
-}
-
-rs_sample *rs_sample_create_jack(const size_t init_nrow, const size_t ndat,\
-                                const size_t jk_depth)
-{
-    rs_sample *s;
-    
-    MALLOC_ERRVAL(s,rs_sample *,1,NULL);
-    
-    s->nsample = jackknife_nsample(ndat,jk_depth);
-    s->resamp_method = JACK;
-    
-    s->cent_val = mat_create(init_nrow,1);
-    s->sample = mat_ar_create_from_dim(s->nsample,s->cent_val);
-    
-    return s;
-}
-
 rs_sample *rs_sample_create(const size_t init_nrow, const size_t nsample)
 {
     rs_sample *s;
-    
+
     MALLOC_ERRVAL(s,rs_sample *,1,NULL);
-    
+
     s->nsample = nsample;
-    s->resamp_method = GENERIC;
-    
+
     s->cent_val = mat_create(init_nrow,1);
-    s->sample = mat_ar_create_from_dim(s->nsample,s->cent_val);
-    
+    s->sample   = mat_ar_create_from_dim(s->nsample,s->cent_val);
+
     return s;
 }
 
@@ -305,11 +272,6 @@ size_t rs_sample_get_nrow(const rs_sample *s)
 size_t rs_sample_get_nsample(const rs_sample *s)
 {
     return s->nsample;
-}
-
-int rs_sample_get_method(const rs_sample *s)
-{
-    return s->resamp_method;
 }
 
 void rs_sample_get_name(strbuf name, const rs_sample *s)
@@ -366,10 +328,10 @@ latan_errno rs_sample_covp(mat *cov, const rs_sample *s, const rs_sample *t)
 }
 /*                      resampling functions                                */
 /****************************************************************************/
-latan_errno resample_bootstrap(mat *cent_val, mat **sample,         \
-                               const size_t nboot, mat **dat,   \
-                               const size_t ndat, const size_t nobs,    \
-                               rs_func *f, void *param)
+static latan_errno resample_bootstrap(mat *cent_val, mat **sample,         \
+                                      const size_t nboot, mat **dat,       \
+                                      const size_t ndat, const size_t nobs,\
+                                      rs_func *f, void *param)
 {
     mat **fakedat;
     size_t i,j,k;
@@ -400,27 +362,30 @@ latan_errno resample_bootstrap(mat *cent_val, mat **sample,         \
     return status;
 }
 
-latan_errno resample(rs_sample *s, mat **dat, const size_t ndat,\
-                     const size_t nobs, rs_func *f, void *param)
+latan_errno resample(rs_sample *s, mat **dat, const size_t ndat,               \
+                     const size_t nobs, rs_func *f, unsigned int resamp_method,\
+                     void *param)
 {
     latan_errno status;
-    
-    switch (s->resamp_method) 
+
+    /** bootstrap **/
+    if (resamp_method == 0)
     {
-        case BOOT:
-            randgen_get_state(s->gen_state);
-            status = resample_bootstrap(s->cent_val,s->sample,s->nsample,dat,\
-                                        ndat,nobs,f,param);
-            break;
-        case JACK:
-            LATAN_ERROR("jackknife resampling is not implemented yet",\
-                        LATAN_FAILURE);
-            break;
-        default:
-            LATAN_ERROR("resampling method flag invalid",LATAN_EINVAL);
-            break;
+        randgen_get_state(s->gen_state);
+        status = resample_bootstrap(s->cent_val,s->sample,s->nsample,dat,ndat,\
+                                    nobs,f,param);
     }
-    
+    /** jacknife **/
+    else
+    {
+        if (resamp_method >= ndat)
+        {
+            LATAN_ERROR("jackknife resampling depth too large",LATAN_EINVAL);
+        }
+        LATAN_ERROR("jackknife resampling is not implemented yet",\
+                    LATAN_FAILURE);
+    }
+
     return status;
 }
 

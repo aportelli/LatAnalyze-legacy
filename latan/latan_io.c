@@ -674,8 +674,8 @@ latan_errno rs_sample_save(const rs_sample *s, const strbuf f_name)
     
     sprintf(full_f_name,"%s.rs",f_name);
     FOPEN(f,full_f_name,"w");
-    fprintf(f,"%s %lu %lu %d\n",s_name,(unsigned long)s_nrow,\
-            (unsigned long)s_nsample,rs_sample_get_method(s));
+    fprintf(f,"%s %lu %lu\n",s_name,(unsigned long)s_nrow,\
+            (unsigned long)s_nsample);
     for (i=0;i<s_nrow;i++)
     {
         fprintf(f,"%.10e ",mat_get(rs_sample_pt_cent_val(s),i,0));
@@ -686,10 +686,6 @@ latan_errno rs_sample_save(const rs_sample *s, const strbuf f_name)
         fprintf(f,"%.10e\n",mat_get(rs_sample_pt_sample(s,s_nsample-1),i,0));
     }
     fclose(f);
-    if (rs_sample_get_method(s) == BOOT)
-    {
-        randgen_save_state(f_name,s->gen_state);
-    }
     
     return LATAN_SUCCESS;
 }
@@ -808,17 +804,6 @@ latan_errno rs_sample_load(rs_sample *s, const strbuf f_name)
         sprintf(errmsg,"number of sample (%d) in file %s is invalid",ibuf,\
                 f_name);
         LATAN_ERROR(errmsg,LATAN_EBADLEN);
-    }
-    if (fscanf(f,"%d\n",&ibuf)<0)
-    {
-        sprintf(errmsg,"error while reading resampling method in file %s",\
-                f_name);
-        LATAN_ERROR(errmsg,LATAN_ELATSYN);
-    }
-    if (s->resamp_method != GENERIC)
-    {
-        LATAN_WARNING("resampled sample to load do not have GENERIC method",\
-                      LATAN_EINVAL);
     }
     for (i=0;i<rs_sample_get_nrow(s);i++)
     {

@@ -356,7 +356,7 @@ latan_errno get_firstfname(strbuf fname, const strbuf manifestfname)
 
 /*                              mat I/O                                     */
 /****************************************************************************/
-void mat_dump(FILE* stream, mat *m)
+void mat_dump(FILE* stream, mat *m, const strbuf fmt)
 {
     size_t i,j;
     
@@ -364,9 +364,11 @@ void mat_dump(FILE* stream, mat *m)
     {
         for (j=0;j<ncol(m)-1;j++)
         {
-            fprintf(stream,"%.10e ",mat_get(m,i,j));
+            fprintf(stream,fmt,mat_get(m,i,j));
+            fprintf(stream," ");
         }
-        fprintf(stream,"%.10e\n",mat_get(m,i,ncol(m)-1));
+        fprintf(stream,fmt,mat_get(m,i,ncol(m)-1));
+        fprintf(stream,"\n");
     }
 }
 

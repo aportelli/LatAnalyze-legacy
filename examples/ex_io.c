@@ -9,7 +9,7 @@ int main(void)
     prop = mat_create(32,1);
     
     prop_load(prop,ch_PP,0,0,ss_G,ss_G,"ex_io.xml");
-    mat_print(prop);
+    mat_print(prop,"%f");
     
     mat_destroy(prop);
 

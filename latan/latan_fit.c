@@ -471,13 +471,7 @@ latan_errno rs_data_fit(rs_sample *p, rs_sample *data, fit_data *d)
     size_t i;
     int verb_backup;
     double chi2pdof_backup;
-    
-    if (rs_sample_get_method(p) != GENERIC)
-    {
-        LATAN_WARNING("resampled sample fit result do not have GENERIC method",\
-                      LATAN_EINVAL);
-    }
-    
+        
     verb_backup = latan_get_verb();
     status = LATAN_SUCCESS;
     
@@ -518,12 +512,6 @@ latan_errno rs_x_data_fit(rs_sample *p, rs_sample *x, rs_sample *data,\
     size_t i;
     int verb_backup;
     double chi2pdof_backup;
-    
-    if (rs_sample_get_method(p) != GENERIC)
-    {
-        LATAN_WARNING("resampled sample fit result do not have GENERIC method",\
-                      LATAN_EINVAL);
-    }
     
     verb_backup = latan_get_verb();
     status = LATAN_SUCCESS;

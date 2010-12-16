@@ -30,6 +30,7 @@ build/*
 # NetBeans
 latanalyze-Makefile.mk
 nbproject/*
+.dep.inc
 
 # VIM
 *.swp

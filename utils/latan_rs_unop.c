@@ -67,9 +67,9 @@ int main(int argc, char *argv[])
     rs_sample_varp(sig,res);
     mat_eqsqrt(sig);
     printf("central value:\n");
-    mat_print(rs_sample_pt_cent_val(res));
+    mat_print(rs_sample_pt_cent_val(res),"%e");
     printf("standard deviation:\n");
-    mat_print(sig);
+    mat_print(sig,"%e");
     if (do_save_res)
     {
         rs_sample_set_name(res,res_name);

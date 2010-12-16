@@ -28,8 +28,8 @@ int get_nfile(const strbuf manifestfname);
 latan_errno get_firstfname(strbuf fname, const strbuf manifestfname);
 
 /* mat *I/O */
-void mat_dump(FILE* stream, mat *m);
-#define mat_print(m) mat_dump(stdout,m)
+void mat_dump(FILE* stream, mat *m, const strbuf fmt);
+#define mat_print(m,fmt) mat_dump(stdout,m,fmt)
 latan_errno mat_save_plotdat(mat *x, mat *m, const strbuf fname);
 latan_errno mat_save_plotdat_yerr(mat *x, mat *dat, mat *yerr,\
                                   const strbuf fname);

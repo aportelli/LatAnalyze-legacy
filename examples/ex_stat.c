@@ -37,13 +37,13 @@ int main(void)
     printf("-- computing mean...\n");
     mat_mean(mean,gvec,SEQ_LENGTH);
     printf("mean =\n");
-    mat_print(mean);
+    mat_print(mean,"%f");
     printf("\n");
     
     printf("-- computing naive variance...\n");
     mat_var(var,gvec,SEQ_LENGTH);
     printf("variance =\n");
-    mat_print(var);
+    mat_print(var,"%f");
     printf("\n");
     
     printf("-- resampling mean...\n");
@@ -53,7 +53,7 @@ int main(void)
     rs_sample_var(var,s_mean);
     mat_eqmuls(var,SEQ_LENGTH);
     printf("variance =\n");
-    mat_print(var);
+    mat_print(var,"%f");
     printf("\n");
     
     mat_destroy(mean);

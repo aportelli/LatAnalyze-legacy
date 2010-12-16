@@ -57,9 +57,9 @@ int main(void)
         printf("-- fitting datas...\n");
         data_fit(fit_param,d);
         printf("exact parameters=\n");
-        mat_print(real_param);
+        mat_print(real_param,"%f");
         printf("\nfit parameters=\n");
-        mat_print(fit_param);
+        mat_print(fit_param,"%f");
         printf("\nchi2/dof= %e\n",fit_data_get_chi2pdof(d));
         sprintf(plotcmd,plotfmt,mat_get(fit_param,0,0),\
                 mat_get(fit_param,1,0));

@@ -40,6 +40,8 @@ liblatan_la_SOURCES =			\
 	latan_plot.c			\
 	latan_rand.c			\
 	latan_statistics.c		\
+	latan_xml.h			\
+	latan_xml.c			\
 	../config.h
 liblatan_ladir = $(includedir)/latan
 liblatan_la_HEADERS =			\

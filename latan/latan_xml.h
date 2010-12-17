@@ -11,6 +11,7 @@
 #error libxml2 was built without XPath interface support
 #endif
 
+/* LatAnalyze XML format specification */
 #ifndef LATAN_XML_VER
 #define LATAN_XML_VER "1.0"
 #endif
@@ -23,11 +24,6 @@
 #ifndef LATAN_XMLNS_PREF
 #define LATAN_XMLNS_PREF "latan"
 #endif
-
-#define GOT_LATAN_NS(node)\
-(((node)->ns) &&\
- (strcmp((const char *)((node)->ns->href),LATAN_XMLNS) == 0) &&\
- (strcmp((const char *)((node)->ns->prefix),LATAN_XMLNS_PREF) == 0))
 
 #define NXML_MARK 10
 enum
@@ -46,6 +42,7 @@ enum
 
 extern const strbuf xml_mark[NXML_MARK];
 
+/* libxml2 workspace structure */
 typedef struct
 {
     xmlDoc *doc;
@@ -53,6 +50,7 @@ typedef struct
     xmlXPathContext* ctxt;
 } xml_workspace;
 
+/* elementary tree browsing macros */
 #define SKIP_COMMENTS(node)\
 {\
     while (strcmp((const char *)(node)->name,"comment") == 0)\
@@ -68,6 +66,12 @@ typedef struct
         node = (node)->next;\
     }\
 }
+
+/* namespace/mark test macros */
+#define GOT_LATAN_NS(node)\
+(((node)->ns) &&\
+ (strcmp((const char *)((node)->ns->href),LATAN_XMLNS) == 0) &&\
+ (strcmp((const char *)((node)->ns->prefix),LATAN_XMLNS_PREF) == 0))
 
 #define IF_GOT_LATAN_MARK(node,ind)\
 SKIP_COMMENTS(node);\
@@ -98,6 +102,7 @@ else if (strcmp((const char *)((node)->name),xml_mark[ind]) != 0)\
 }\
 else
 
+/* file I/O macros */
 #define BEGIN_XML_PARSING(ws,fname)\
 {\
     MALLOC(ws,xml_workspace *,1);\
@@ -167,8 +172,10 @@ else
     (ws)->ctxt = NULL;\
     FREE(ws);\
 }
+
 __BEGIN_DECLS
 
+/* data input functions */
 latan_errno xml_get_int(int *res, xmlNode *node);
 latan_errno xml_get_double(double *res, xmlNode *node);
 latan_errno xml_get_string(strbuf res, xmlNode *node);
@@ -179,6 +186,7 @@ latan_errno xml_get_mat_size(size_t s[2], xmlNode *node);
 latan_errno xml_get_prop(mat *prop, xmlNode *node);
 latan_errno xml_get_prop_nt(size_t *nt, xmlNode *node);
 
+/* XPath search function */
 xmlXPathObject * xml_get_nodeset(strbuf xpath_expr, xml_workspace *ws);
 
 __END_DECLS

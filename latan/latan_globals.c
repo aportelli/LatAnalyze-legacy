@@ -25,7 +25,7 @@ static latan_env env =
     CPU_MAT_OP,         \
 };
 
-static bool latan_is_cublas_run = 0;
+static bool latan_is_cublas_run = false;
 
 void latan_get_name(strbuf name)
 {

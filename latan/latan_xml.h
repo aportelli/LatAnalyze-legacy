@@ -73,17 +73,6 @@ typedef struct
  (strcmp((const char *)((node)->ns->href),LATAN_XMLNS) == 0) &&\
  (strcmp((const char *)((node)->ns->prefix),LATAN_XMLNS_PREF) == 0))
 
-#define IF_GOT_LATAN_MARK(node,ind)\
-SKIP_COMMENTS(node);\
-if (!GOT_LATAN_NS(node))\
-{\
-    strbuf _errmsg;\
-    sprintf(_errmsg,"XML namespace mismatch, expecting xmlns:%s=%s (%s:%d)",\
-            LATAN_XMLNS_PREF,LATAN_XMLNS,(node)->doc->URL,(node)->line);\
-    LATAN_ERROR(_errmsg,LATAN_ELATSYN);\
-}\
-else if (strcmp((const char *)((node)->name),xml_mark[ind]) == 0)
-
 #define IF_GOT_LATAN_MARK_ELSE_ERROR(node,ind)\
 SKIP_COMMENTS(node);\
 if (!GOT_LATAN_NS(node))\

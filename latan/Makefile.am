@@ -58,7 +58,8 @@ liblatan_la_HEADERS =			\
 	latan_nunits.h			\
 	latan_plot.h			\
 	latan_statistics.h		\
-	latan_rand.h
+	latan_rand.h			\
+	latan_xml.h
 liblatan_la_LIBADD = ./liblatancublas.la
 liblatan_la_CFLAGS = $(COM_CFLAGS)
 liblatan_la_CXXFLAGS = $(COM_CXXFLAGS)

@@ -131,7 +131,7 @@ else
     FREE(ws);\
 }
 
-#define BEGIN_XML_WRITING(ws)\
+#define BEGIN_XML_WRITING_NEW(ws)\
 {\
     xmlNs *_ns;\
     strbuf _buf,_ver,_name;\
@@ -153,7 +153,7 @@ else
     xmlAddPrevSibling((ws)->node,xmlNewDocComment((ws)->doc,\
                       (const xmlChar *)_buf));\
 
-#define END_XML_WRITING(ws,fname)\
+#define END_XML_WRITING_NEW(ws,fname)\
     xmlSaveFormatFileEnc(fname,(ws)->doc,LATAN_XML_ENC,1);\
     xmlFreeNs(_ns);\
     xmlFreeDoc((ws)->doc);\
@@ -162,6 +162,19 @@ else
     (ws)->ctxt = NULL;\
     FREE(ws);\
 }
+
+#define BEGIN_XML_WRITING_APPEND(ws,fname)\
+{\
+    BEGIN_XML_PARSING(ws,fname)\
+    {\
+        GOTO_LAST((ws)->node);
+
+#define END_XML_WRITING_APPEND(ws,fname)\
+        xmlSaveFormatFileEnc(fname,(ws)->doc,LATAN_XML_ENC,1);\
+    }\
+    END_XML_PARSING(ws)\
+}
+
 
 __BEGIN_DECLS
 

@@ -78,15 +78,15 @@ SKIP_COMMENTS(node);\
 if (!GOT_LATAN_NS(node))\
 {\
     strbuf _errmsg;\
-    sprintf(_errmsg,"XML namespace mismatch, expecting xmlns:%s=%s (%s:%d)",\
+    sprintf(_errmsg,"XML namespace mismatch, expecting xmlns:%s=\"%s\" (%s:%d)",\
             LATAN_XMLNS_PREF,LATAN_XMLNS,(node)->doc->URL,(node)->line);\
     LATAN_ERROR(_errmsg,LATAN_ELATSYN);\
 }\
 else if (strcmp((const char *)((node)->name),xml_mark[ind]) != 0)\
 {\
     strbuf _errmsg;\
-    sprintf(_errmsg,"XML mark %s not found (%s:%d)",xml_mark[i_int],\
-            (node)->doc->URL,(node)->line);\
+    sprintf(_errmsg,"XML mark %s:%s not found (%s:%d)",LATAN_XMLNS_PREF,\
+            xml_mark[i_int],(node)->doc->URL,(node)->line);\
     LATAN_ERROR(_errmsg,LATAN_ELATSYN);\
 }\
 else
@@ -109,8 +109,9 @@ else
     (ws)->ctxt = xmlXPathNewContext((ws)->doc);\
     if ((ws)->ctxt == NULL)\
     {\
-        sprintf(errmsg,"impossible to create XPath context (%s)",fname);\
-        LATAN_ERROR(errmsg,LATAN_EFAULT);\
+        strbuf _errmsg;\
+        sprintf(_errmsg,"impossible to create XPath context (%s)",fname);\
+        LATAN_ERROR(_errmsg,LATAN_EFAULT);\
     }\
     xmlXPathRegisterNs((ws)->ctxt,(const xmlChar *)LATAN_XMLNS_PREF,\
                        (const xmlChar *)LATAN_XMLNS);\

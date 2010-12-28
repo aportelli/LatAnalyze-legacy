@@ -183,6 +183,26 @@ latan_errno xml_get_prop_nt(size_t *nt, xmlNode *node)
     return status;
 }
 
+/*                          file writing function                           */
+/****************************************************************************/
+latan_errno xml_save(xml_workspace *ws, const strbuf fname)
+{
+    xmlDoc *doc;
+    int blank_bak,size;
+    char *buf;
+
+    xmlReconciliateNs(ws->doc,ws->root);
+    blank_bak = xmlKeepBlanksDefault(0);
+    xmlDocDumpFormatMemoryEnc(ws->doc,(xmlChar **)(&buf),&size,LATAN_XML_ENC,0);
+    doc = xmlReadMemory(buf,size,NULL,LATAN_XML_ENC,XML_PARSE_NOBLANKS);
+    xmlSaveFormatFileEnc(fname,doc,LATAN_XML_ENC,1);
+    xmlKeepBlanksDefault(blank_bak);
+
+    xmlFreeDoc(doc);
+    xmlFree(buf);
+
+    return LATAN_SUCCESS;
+}
 xmlXPathObject * xml_get_nodeset(strbuf xpath_expr, xml_workspace *ws)
 {
     strbuf errmsg;

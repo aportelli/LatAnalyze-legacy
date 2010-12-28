@@ -355,7 +355,7 @@ latan_errno randgen_load_state(randgen_state state, const strbuf f_name)
 /****************************************************************************/
 latan_errno rs_sample_save(const rs_sample *s, const strbuf f_name)
 {
-    strbuf full_f_name, s_name;
+    strbuf s_name;
     FILE* f;
     size_t i,j;
     size_t s_nrow, s_nsample;
@@ -364,14 +364,13 @@ latan_errno rs_sample_save(const rs_sample *s, const strbuf f_name)
     s_nsample = rs_sample_get_nsample(s);
     rs_sample_get_name(s_name,s);
     
-    
     if (strlen(s->name) == 0)
     {
         LATAN_ERROR("cannot save sample with an empty name",LATAN_EINVAL);
     }
-    
-    sprintf(full_f_name,"%s.rs",f_name);
-    FOPEN(f,full_f_name,"w");
+
+/*
+    FOPEN(f,good_f_name,"w");
     fprintf(f,"%s %lu %lu\n",s_name,(unsigned long)s_nrow,\
             (unsigned long)s_nsample);
     for (i=0;i<s_nrow;i++)
@@ -384,6 +383,7 @@ latan_errno rs_sample_save(const rs_sample *s, const strbuf f_name)
         fprintf(f,"%.10e\n",mat_get(rs_sample_pt_sample(s,s_nsample-1),i,0));
     }
     fclose(f);
+*/
     
     return LATAN_SUCCESS;
 }

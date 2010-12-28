@@ -203,6 +203,8 @@ latan_errno xml_get_mat(mat *m, xmlNode *node);
 latan_errno xml_get_mat_size(size_t s[2], xmlNode *node);
 latan_errno xml_get_prop(mat *prop, xmlNode *node);
 latan_errno xml_get_prop_nt(size_t *nt, xmlNode *node);
+/* file writing function */
+latan_errno xml_save(xml_workspace *ws, const strbuf fname);
 
 /* XPath search function */
 xmlXPathObject * xml_get_nodeset(strbuf xpath_expr, xml_workspace *ws);

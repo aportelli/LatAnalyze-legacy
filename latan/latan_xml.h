@@ -50,6 +50,21 @@ typedef struct
     xmlXPathContext* ctxt;
 } xml_workspace;
 
+/* macro to check XML extension */
+#define CHECK_XML_EXTENSION(f_name)\
+{\
+    char* ext;\
+    ext = strrchr(f_name,'.');\
+    if (ext == NULL)\
+    {\
+        sprintf(f_name,"%s.xml",f_name);\
+    }\
+    else if (strcmp(ext+1,"xml") != 0)\
+    {\
+        sprintf(f_name,"%s.xml",f_name);\
+    }\
+}
+
 /* elementary tree browsing macros */
 #define SKIP_COMMENTS(node)\
 {\

@@ -78,7 +78,8 @@ latan_errno mat_set_subm(mat *m, mat *n, const size_t k1, const size_t l1, \
                       LATAN_EFAULT);\
         (m)->mem_flag -= CPU_ALLOCATED;\
     }\
-    _nview        = gsl_matrix_submatrix((n)->data_cpu,k1,l1,k2-k1+1,l2-l1+1);\
+    _nview        = gsl_matrix_submatrix((n)->data_cpu,k1,l1,(k2)-(k1)+1,\
+                                         (l2)-(l1)+1);                   \
     (m)->data_cpu = &(_nview.matrix);\
     \
     MAT_CPU_LAST(m);\

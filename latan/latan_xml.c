@@ -1,6 +1,8 @@
 #include <latan/latan_xml.h>
 #include <latan/latan_includes.h>
 
+/*                   LatAnalyze XML format specification                    */
+/****************************************************************************/
 const strbuf xml_mark[NXML_MARK] =
 {
     "data",   \
@@ -9,12 +11,14 @@ const strbuf xml_mark[NXML_MARK] =
     "string", \
     "vect",   \
     "mat",    \
-    "row",    \
     "prop",   \
     "rgstate",\
     "sample"  \
 };
 
+/*                          data I/O functions                              */
+/****************************************************************************/
+/* input */
 latan_errno xml_get_int(int *res, xmlNode *node)
 {
     char *buf;
@@ -102,57 +106,52 @@ latan_errno xml_get_vect_size(size_t *row, xmlNode *node)
 
 latan_errno xml_get_mat(mat *m, xmlNode *node)
 {
-    xmlNode *rcur,*ccur;
-    double buf;
-    size_t i,j;
+    xmlNode *ccur;
+    size_t j;
+    mat mcol;
     latan_errno status;
 
-    i      = 0;
-    j      = 0;
-    status = LATAN_SUCCESS;
-    
+    j             = 0;
+    status        = LATAN_SUCCESS;
+    mcol.mem_flag = CPU_LAST;
+
     IF_GOT_LATAN_MARK_ELSE_ERROR(node,i_mat)
     {
-        for (rcur=node->children;rcur!=NULL;rcur=rcur->next)
+        for (ccur=node->children;ccur!=NULL;ccur=ccur->next)
         {
-            IF_GOT_LATAN_MARK_ELSE_ERROR(rcur,i_row)
-            {
-                for (ccur=rcur->children;ccur!=NULL;ccur=ccur->next)
-                {
-                    LATAN_UPDATE_STATUS(status,xml_get_double(&buf,ccur));
-                    mat_set(m,i,j,buf);
-                    j++;
-                }
-            }
-            i++;
+            MAT_PT_SUBM(&mcol,m,0,j,nrow(m)-1,j);
+            LATAN_UPDATE_STATUS(status,xml_get_vect(&mcol,ccur));
+            j++;
         }
     }
 
-    return status;
+    return LATAN_SUCCESS;
 }
 
 latan_errno xml_get_mat_size(size_t s[2], xmlNode *node)
 {
-    xmlNode *rcur,*ccur;
+    xmlNode *ccur;
+    size_t buf;
+    latan_errno status;
 
-    s[0] = 0;
-    s[1] = 0;
+    s[0]   = 0;
+    s[1]   = 0;
+    status = LATAN_SUCCESS;
 
     IF_GOT_LATAN_MARK_ELSE_ERROR(node,i_mat)
     {
-        for (rcur=node->children;rcur!=NULL;rcur=rcur->next)
+        for (ccur=node->children;ccur!=NULL;ccur=ccur->next)
         {
-            IF_GOT_LATAN_MARK_ELSE_ERROR(rcur,i_row)
+            LATAN_UPDATE_STATUS(status,xml_get_vect_size(&buf,ccur));
+            if ((s[0] != 0)&&(buf != s[0]))
             {
-                for (ccur=rcur->children;ccur!=NULL;ccur=ccur->next)
-                {
-                    IF_GOT_LATAN_MARK_ELSE_ERROR(ccur,i_double)
-                    {
-                        s[1]++;
-                    }
-                }
+                strbuf errmsg;
+                sprintf(errmsg,"reading matrix with variable column dimension (%s:%u)",\
+                        node->doc->URL,node->line);
+                LATAN_ERROR(errmsg,LATAN_EBADLEN);
             }
-            s[0]++;
+            s[0] = buf;
+            s[1]++;
         }
     }
 
@@ -183,6 +182,267 @@ latan_errno xml_get_prop_nt(size_t *nt, xmlNode *node)
     return status;
 }
 
+latan_errno xml_get_rgstate(rg_state state, xmlNode *node)
+{
+    xmlNode *vcur;
+    int i;
+    latan_errno status;
+
+    i      = 0;
+    status = LATAN_SUCCESS;
+
+    IF_GOT_LATAN_MARK_ELSE_ERROR(node,i_rgstate)
+    {
+        for (vcur=node->children;vcur!=NULL;vcur=vcur->next)
+        {
+            LATAN_UPDATE_STATUS(status,xml_get_int(state+i,vcur));
+            i++;
+        }
+    }
+
+    return status;
+}
+
+latan_errno xml_get_sample(rs_sample *s, xmlNode *node)
+{
+    xmlNode *scur;
+    size_t i;
+    latan_errno status;
+    mat *pt;
+
+    i      = 0;
+    status = LATAN_SUCCESS;
+
+    IF_GOT_LATAN_MARK_ELSE_ERROR(node,i_sample)
+    {
+        scur = node->children;
+        pt   = rs_sample_pt_cent_val(s);
+        LATAN_UPDATE_STATUS(status,xml_get_vect(pt,scur));
+        for (scur=scur->next;scur!=NULL;scur=scur->next)
+        {
+            pt = rs_sample_pt_sample(s,i);
+            LATAN_UPDATE_STATUS(status,xml_get_vect(pt,scur));
+            i++;
+        }
+    }
+
+    return LATAN_SUCCESS;
+}
+
+latan_errno xml_get_sample_nsample(size_t *nsample, xmlNode *node)
+{
+    xmlNode *scur;
+
+    *nsample = 0;
+
+    IF_GOT_LATAN_MARK_ELSE_ERROR(node,i_sample)
+    {
+        for (scur=node->children;scur!=NULL;scur=scur->next)
+        {
+            IF_GOT_LATAN_MARK_ELSE_ERROR(scur,i_vect)
+            {
+                (*nsample)++;
+            }
+        }
+    }
+    (*nsample)--;
+
+    return LATAN_SUCCESS;
+}
+
+latan_errno xml_get_sample_nrow(size_t *nr, xmlNode *node)
+{
+    xmlNode *scur;
+    size_t buf;
+
+    buf = 0;
+    
+    IF_GOT_LATAN_MARK_ELSE_ERROR(node,i_sample)
+    {
+        for (scur=node->children;scur!=NULL;scur=scur->next)
+        {
+            xml_get_vect_size(&buf,scur);
+            if ((*nr != 0)&&(*nr != buf))
+            {
+                strbuf errmsg;
+                sprintf(errmsg,"reading samples with variable length (%s:%u)",\
+                        node->doc->URL,node->line);
+                LATAN_ERROR(errmsg,LATAN_EBADLEN);
+            }
+            *nr = buf;
+        }
+    }
+
+    return LATAN_SUCCESS;
+}
+
+/* output */
+xmlNode * xml_insert_int(xmlNode *parent, const int i, const strbuf name)
+{
+    strbuf data;
+    xmlNode *node_new;
+
+    sprintf(data,"%d",i);
+    node_new = xmlNewChild(parent,NULL,(const xmlChar *)xml_mark[i_int],\
+                           (const xmlChar *)data);
+    if (strlen(name) > 0)
+    {
+        xmlNewProp(node_new,(const xmlChar *)"name",(const xmlChar *)name);
+    }
+
+    return node_new;
+}
+
+xmlNode * xml_insert_double(xmlNode *parent, const double d, const strbuf name)
+{
+    strbuf data;
+    xmlNode *node_new;
+
+    sprintf(data,"%e",d);
+    node_new = xmlNewChild(parent,NULL,(const xmlChar *)xml_mark[i_double],\
+                           (const xmlChar *)data);
+    if (strlen(name) > 0)
+    {
+        xmlNewProp(node_new,(const xmlChar *)"name",(const xmlChar *)name);
+    }
+
+    return node_new;
+}
+
+xmlNode * xml_insert_string(xmlNode *parent, const strbuf str,\
+                            const strbuf name)
+{
+    xmlNode *node_new;
+
+    node_new = xmlNewChild(parent,NULL,(const xmlChar *)xml_mark[i_string],\
+                           (const xmlChar *)str);
+    if (strlen(name) > 0)
+    {
+        xmlNewProp(node_new,(const xmlChar *)"name",(const xmlChar *)name);
+    }
+
+    return node_new;
+}
+
+xmlNode * xml_insert_vect(xmlNode *parent, mat *v, const strbuf name)
+{
+    xmlNode *node_new;
+    size_t i;
+
+    node_new = xmlNewChild(parent,NULL,(const xmlChar *)xml_mark[i_vect],\
+                           (const xmlChar *)"");
+    for (i=0;i<nrow(v);i++)
+    {
+        xml_insert_double(node_new,mat_get(v,i,0),"");
+    }
+    if (strlen(name) > 0)
+    {
+        xmlNewProp(node_new,(const xmlChar *)"name",(const xmlChar *)name);
+    }
+
+    return node_new;
+}
+
+xmlNode * xml_insert_mat(xmlNode *parent, mat *m, const strbuf name)
+{
+    xmlNode *node_new;
+    mat mcol;
+    strbuf buf;
+    size_t j;
+
+    mcol.mem_flag = CPU_LAST;
+    
+    node_new = xmlNewChild(parent,NULL,(const xmlChar *)xml_mark[i_mat],\
+                           (const xmlChar *)"");
+    for (j=0;j<ncol(m);j++)
+    {
+        MAT_PT_SUBM(&mcol,m,0,j,nrow(m)-1,j);
+        sprintf(buf,"col%lu",(unsigned long)j);
+        xml_insert_vect(node_new,&mcol,buf);
+    }
+    if (strlen(name) > 0)
+    {
+        xmlNewProp(node_new,(const xmlChar *)"name",(const xmlChar *)name);
+    }
+
+    return node_new;
+}
+
+xmlNode * xml_insert_prop(xmlNode *parent, mat *prop,            \
+                          const channel_no ch, const quark_no q1,\
+                          const quark_no q2, const ss_no source, \
+                          const ss_no sink, const strbuf name)
+{
+    xmlNode *node_new;
+    strbuf ch_id,q1_id,q2_id,source_id,sink_id;
+
+    
+    node_new = xmlNewChild(parent,NULL,(const xmlChar *)xml_mark[i_prop],\
+                           (const xmlChar *)"");
+    xml_insert_vect(node_new,prop,"");
+    channel_id_get(ch_id,ch);
+    quark_id_get(q1_id,q1);
+    quark_id_get(q2_id,q2);
+    ss_id_get(source_id,source);
+    ss_id_get(sink_id,sink);
+    if (strlen(name) > 0)
+    {
+        xmlNewProp(node_new,(const xmlChar *)"name",(const xmlChar *)name);
+    }
+    xmlNewProp(node_new,(const xmlChar *)"channel",(const xmlChar *)ch_id);
+    xmlNewProp(node_new,(const xmlChar *)"mass1",(const xmlChar *)q1_id);
+    xmlNewProp(node_new,(const xmlChar *)"mass2",(const xmlChar *)q2_id);
+    xmlNewProp(node_new,(const xmlChar *)"source",(const xmlChar *)source_id);
+    xmlNewProp(node_new,(const xmlChar *)"sink",(const xmlChar *)sink_id);
+
+    return node_new;
+}
+
+xmlNode * xml_insert_rgstate(xmlNode *parent, const rg_state state,\
+                             const strbuf name)
+{
+    xmlNode *node_new;
+    int i;
+
+    node_new = xmlNewChild(parent,NULL,(const xmlChar *)xml_mark[i_rgstate],\
+                           (const xmlChar *)"");
+    for (i=0;i<RLXG_STATE_SIZE;i++)
+    {
+        xml_insert_int(node_new,state[i],"");
+    }
+    if (strlen(name) > 0)
+    {
+        xmlNewProp(node_new,(const xmlChar *)"name",(const xmlChar *)name);
+    }
+
+    return node_new;
+}
+
+xmlNode * xml_insert_sample(xmlNode *parent, const rs_sample *s,\
+                            const strbuf name)
+{
+    xmlNode *node_new;
+    strbuf buf;
+    size_t i,nsample;
+
+    nsample = rs_sample_get_nsample(s);
+
+    node_new = xmlNewChild(parent,NULL,(const xmlChar *)xml_mark[i_sample],\
+                           (const xmlChar *)"");
+    xml_insert_vect(node_new,rs_sample_pt_cent_val(s),"central");
+    for (i=0;i<nsample;i++)
+    {
+        sprintf(buf,"sample%lu",(unsigned long)i);
+        xml_insert_vect(node_new,rs_sample_pt_sample(s,i),buf);
+    }
+    if (strlen(name) > 0)
+    {
+        xmlNewProp(node_new,(const xmlChar *)"name",(const xmlChar *)name);
+    }
+
+    return node_new;
+}
+
 /*                          file writing function                           */
 /****************************************************************************/
 latan_errno xml_save(xml_workspace *ws, const strbuf fname)
@@ -203,6 +463,9 @@ latan_errno xml_save(xml_workspace *ws, const strbuf fname)
 
     return LATAN_SUCCESS;
 }
+
+/*                          XPath search function                           */
+/****************************************************************************/
 xmlXPathObject * xml_get_nodeset(strbuf xpath_expr, xml_workspace *ws)
 {
     strbuf errmsg;

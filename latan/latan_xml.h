@@ -2,6 +2,8 @@
 #define	LATAN_XML_H_
 
 #include <latan/latan_globals.h>
+#include <latan/latan_hadron.h>
+#include <latan/latan_statistics.h>
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 #include <libxml/xpath.h>
@@ -34,10 +36,9 @@ enum
     i_string  = 3,
     i_vect    = 4,
     i_mat     = 5,
-    i_row     = 6,
-    i_prop    = 7,
-    i_rgstate = 8,
-    i_sample  = 9
+    i_prop    = 6,
+    i_rgstate = 7,
+    i_sample  = 8
 };
 
 extern const strbuf xml_mark[NXML_MARK];
@@ -194,7 +195,8 @@ else
 
 __BEGIN_DECLS
 
-/* data input functions */
+/* data I/O functions */
+/** input **/
 latan_errno xml_get_int(int *res, xmlNode *node);
 latan_errno xml_get_double(double *res, xmlNode *node);
 latan_errno xml_get_string(strbuf res, xmlNode *node);
@@ -204,6 +206,27 @@ latan_errno xml_get_mat(mat *m, xmlNode *node);
 latan_errno xml_get_mat_size(size_t s[2], xmlNode *node);
 latan_errno xml_get_prop(mat *prop, xmlNode *node);
 latan_errno xml_get_prop_nt(size_t *nt, xmlNode *node);
+latan_errno xml_get_rgstate(rg_state state, xmlNode *node);
+latan_errno xml_get_sample(rs_sample *s, xmlNode *node);
+latan_errno xml_get_sample_nsample(size_t *nsample, xmlNode *node);
+latan_errno xml_get_sample_nrow(size_t *nr, xmlNode *node);
+
+/** output **/
+xmlNode * xml_insert_int(xmlNode *parent, const int res, const strbuf name);
+xmlNode * xml_insert_double(xmlNode *parent, const double d, const strbuf name);
+xmlNode * xml_insert_string(xmlNode *parent, const strbuf res,\
+                            const strbuf name);
+xmlNode * xml_insert_vect(xmlNode *parent, mat *v, const strbuf name);
+xmlNode * xml_insert_mat(xmlNode *parent, mat *m, const strbuf name);
+xmlNode * xml_insert_prop(xmlNode *parent, mat *prop,            \
+                          const channel_no ch, const quark_no q1,\
+                          const quark_no q2, const ss_no source, \
+                          const ss_no sink, const strbuf name);
+xmlNode * xml_insert_rgstate(xmlNode *parent, const rg_state state,\
+                             const strbuf name);
+xmlNode * xml_insert_sample(xmlNode *parent, const rs_sample *s,\
+                            const strbuf name);
+
 /* file writing function */
 latan_errno xml_save(xml_workspace *ws, const strbuf fname);
 

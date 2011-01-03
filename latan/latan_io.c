@@ -312,7 +312,7 @@ latan_errno hadron_prop_load_nt(size_t *nt, const hadron *h,\
 /*                      random generator state I/O                          */
 /****************************************************************************/
 latan_errno randgen_save_state(const strbuf f_name,\
-                               const randgen_state state)
+                               const rg_state state)
 {
     strbuf full_f_name;
     FILE *f;
@@ -330,7 +330,7 @@ latan_errno randgen_save_state(const strbuf f_name,\
     return LATAN_SUCCESS;
 }
 
-latan_errno randgen_load_state(randgen_state state, const strbuf f_name)
+latan_errno randgen_load_state(rg_state state, const strbuf f_name)
 {
     strbuf errmsg;
     FILE *f;

@@ -6,7 +6,7 @@
 
 int main(int argc, char *argv[])
 {
-    randgen_state state;
+    rg_state state;
     
     if (argc != 2)
     {

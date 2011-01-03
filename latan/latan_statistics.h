@@ -42,7 +42,7 @@ typedef struct
     mat *cent_val;
     mat **sample;
     size_t nsample;
-    randgen_state gen_state;
+    rg_state gen_state;
 } rs_sample;
 
 /** jackknife sample number calculation **/

@@ -20,7 +20,7 @@ int main(void)
     int dice,hist_dice[DICE_NFACE];
     int i,f;
     double randd;
-    randgen_state state;
+    rg_state state;
     mat *rseq,*hist_cont,*x;
     plot *dist_plot;
     strbuf plotcmd;

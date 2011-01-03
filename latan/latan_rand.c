@@ -656,12 +656,12 @@ void randgen_init_from_time(void)
     randgen_init((int)time(NULL));
 }
 
-void randgen_get_state(randgen_state state)
+void randgen_get_state(rg_state state)
 {
     rlxd_get(state);
 }
 
-void randgen_set_state(randgen_state state)
+void randgen_set_state(rg_state state)
 {
     rlxd_reset(state);
 }

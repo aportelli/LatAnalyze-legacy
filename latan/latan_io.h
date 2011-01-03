@@ -54,8 +54,8 @@ latan_errno hadron_prop_load_nt(size_t *nt, const hadron *h,               \
 
 /* random generator state I/O */
 latan_errno randgen_save_state(const strbuf prefname,\
-                               const randgen_state state);
-latan_errno randgen_load_state(randgen_state state, const strbuf prefname);
+                               const rg_state state);
+latan_errno randgen_load_state(rg_state state, const strbuf prefname);
 
 /* reampled sample I/O */
 latan_errno rs_sample_save(const rs_sample *s, const strbuf f_name);

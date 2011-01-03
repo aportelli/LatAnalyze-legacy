@@ -7,12 +7,12 @@ __BEGIN_DECLS
 
 /* type for random generator state */
 #define RLXG_STATE_SIZE 105
-typedef int randgen_state[RLXG_STATE_SIZE];
+typedef int rg_state[RLXG_STATE_SIZE];
 
 void randgen_init(const int seed);
 void randgen_init_from_time(void);
-void randgen_set_state(randgen_state state);
-void randgen_get_state(randgen_state state);
+void randgen_set_state(rg_state state);
+void randgen_get_state(rg_state state);
 double rand_u(double a, double b);
 unsigned int rand_ud(const unsigned int n);
 double rand_n(const double mean, const double sigma);

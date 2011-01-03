@@ -136,7 +136,7 @@ else
     (ws)->ns   = (ws)->root->ns;\
     IF_GOT_LATAN_MARK_ELSE_ERROR((ws)->root,i_main)
 
-#define END_XML_PARSING(ws)\
+#define END_XML_PARSING(ws,fname)\
     xmlFreeDoc((ws)->doc);\
     xmlXPathFreeContext((ws)->ctxt);\
     xmlCleanupParser();\
@@ -147,7 +147,7 @@ else
     FREE(ws);\
 }
 
-#define BEGIN_XML_WRITING_NEW(ws)\
+#define BEGIN_XML_WRITING_NEW(ws,fname)\
 {\
     strbuf _fname;\
     strbuf _buf,_ver,_name;\
@@ -170,6 +170,7 @@ else
 #define END_XML_WRITING_NEW(ws,fname)\
     strcpy(_fname,fname);\
     CHECK_XML_EXTENSION(_fname);\
+    xml_save(ws,fname);\
     xmlFreeNs((ws)->ns);\
     xmlFreeDoc((ws)->doc);\
     (ws)->doc  = NULL;\
@@ -185,7 +186,7 @@ else
     {
 
 #define END_XML_WRITING_APPEND(ws,fname)\
-        xmlSaveFormatFileEnc(fname,(ws)->doc,LATAN_XML_ENC,1);\
+        xml_save(ws,fname);\
     }\
     END_XML_PARSING(ws)\
 }

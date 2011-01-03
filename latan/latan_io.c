@@ -144,7 +144,7 @@ latan_errno prop_load(mat *prop, const channel_no channel, \
         }
         xmlXPathFreeObject(nodeset);
     }
-    END_XML_PARSING(ws)
+    END_XML_PARSING(ws,fname)
 
     return status;
 }
@@ -183,7 +183,7 @@ latan_errno prop_load_nt(size_t *nt, const channel_no channel,\
         }
         xmlXPathFreeObject(nodeset);
     }
-    END_XML_PARSING(ws)
+    END_XML_PARSING(ws,fname)
 
     return status;
 }

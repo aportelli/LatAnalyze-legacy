@@ -44,10 +44,10 @@ int main(int argc, char *argv[])
     }
     
     /* getting sizes */
-    s1_nrow    = rs_sample_load_nrow(INF1_NAME);
-    s1_nsample = rs_sample_load_nsample(INF1_NAME);
-    s2_nrow    = rs_sample_load_nrow(INF2_NAME);
-    s2_nsample = rs_sample_load_nsample(INF2_NAME);
+    rs_sample_load_nrow(&s1_nrow,INF1_NAME,"");
+    rs_sample_load_nsample(&s1_nsample,INF1_NAME,"");
+    rs_sample_load_nrow(&s2_nrow,INF2_NAME,"");
+    rs_sample_load_nsample(&s2_nsample,INF2_NAME,"");
     
     /* error checking */
     if (s1_nsample != s2_nsample)
@@ -68,12 +68,12 @@ int main(int argc, char *argv[])
     
     /* loading samples */
     printf("-- loading resampled sample from %s...\n",INF1_NAME);
-    rs_sample_load(s1,INF1_NAME);
+    rs_sample_load(s1,INF1_NAME,"");
     printf("-- loading resampled sample from %s...\n",INF2_NAME);
-    rs_sample_load(s2,INF2_NAME);
+    rs_sample_load(s2,INF2_NAME,"");
     
     /* multiplying samples */
-    printf("-- dividing samples...\n");
+    printf("-- executing operation on samples...\n");
     mat_binop(rs_sample_pt_cent_val(res),rs_sample_pt_cent_val(s1),\
               rs_sample_pt_cent_val(s2));
     for (i=0;i<rs_sample_get_nsample(res);i++)
@@ -92,7 +92,7 @@ int main(int argc, char *argv[])
     if (do_save_res)
     {
         rs_sample_set_name(res,res_name);
-        rs_sample_save(res,OUTF_NAME);
+        rs_sample_save(OUTF_NAME,'w',res);
     }
     
     /* desallocation */

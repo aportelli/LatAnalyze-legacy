@@ -1,11 +1,11 @@
-COM_CFLAGS = -Wall -Wmissing-prototypes -Wstrict-prototypes					\
-	-Wshadow -Wpointer-arith -Wcast-qual -Wcast-align						\
-	-Wwrite-strings -Wnested-externs -W -fshort-enums -fno-common -O2		\
+COM_CFLAGS = -Wall -Wmissing-prototypes -Wstrict-prototypes			\
+	-Wshadow -Wpointer-arith -Wcast-qual -Wcast-align			\
+	-Wwrite-strings -Wnested-externs -W -fno-common -O2			\
 	-g -ansi -pedantic
 
 bin_PROGRAMS =				\
-	latan_create_rg_state	\
-	latan_info				\
+	latan_create_rg_state		\
+	latan_info			\
 	latan_mat_bench			\
 	latan_rs_add			\
 	latan_rs_div			\

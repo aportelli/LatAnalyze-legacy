@@ -140,7 +140,6 @@ else
 #define END_XML_PARSING(ws,fname)\
     xmlFreeDoc((ws)->doc);\
     xmlXPathFreeContext((ws)->ctxt);\
-    xmlCleanupParser();\
     (ws)->doc  = NULL;\
     (ws)->root = NULL;\
     (ws)->ns   = NULL;\
@@ -171,7 +170,7 @@ else
 #define END_XML_WRITING_NEW(ws,fname)\
     strcpy(_fname,fname);\
     CHECK_XML_EXTENSION(_fname);\
-    xml_save(ws,fname);\
+    xml_save(ws,_fname);\
     xmlFreeNs((ws)->ns);\
     xmlFreeDoc((ws)->doc);\
     (ws)->doc  = NULL;\
@@ -189,9 +188,30 @@ else
 #define END_XML_WRITING_APPEND(ws,fname)\
         xml_save(ws,fname);\
     }\
-    END_XML_PARSING(ws)\
+    END_XML_PARSING(ws,fname)\
 }
 
+#define XML_WRITE(ws,fname,mode,instruction)\
+switch(mode)\
+{\
+    case 'w':\
+        BEGIN_XML_WRITING_NEW(ws,fname)\
+        {\
+            instruction;\
+        }\
+        END_XML_WRITING_NEW(ws,fname)\
+        break;\
+    case 'a':\
+        BEGIN_XML_WRITING_APPEND(ws,fname)\
+        {\
+            instruction;\
+        }\
+        END_XML_WRITING_APPEND(ws,fname)\
+        break;\
+    default:\
+        LATAN_ERROR("unknown file mode",LATAN_EINVAL);\
+        break;\
+}
 
 __BEGIN_DECLS
 

@@ -23,6 +23,10 @@
 
 __BEGIN_DECLS
 
+/* I/O init/finish */
+void io_init(void);
+void io_finish(void);
+
 /* general I/O */
 int get_nfile(const strbuf manifestfname);
 latan_errno get_firstfname(strbuf fname, const strbuf manifestfname);
@@ -53,18 +57,19 @@ latan_errno hadron_prop_load_nt(size_t *nt, const hadron *h,               \
                                 const strbuf manfname);
 
 /* random generator state I/O */
-latan_errno randgen_save_state(const strbuf prefname,\
-                               const rg_state state);
-latan_errno randgen_load_state(rg_state state, const strbuf prefname);
+latan_errno randgen_save_state(const strbuf f_name, const char mode,
+                               const rg_state state, const strbuf name);
+latan_errno randgen_load_state(rg_state state, const strbuf f_name,\
+                               const strbuf name);
 
-/* reampled sample I/O */
-latan_errno rs_sample_save(const rs_sample *s, const strbuf f_name);
-int rs_sample_load_nrow(const strbuf f_name);
-int rs_sample_load_nsample(const strbuf f_name);
-int rs_sample_load_method(const strbuf f_name);
-latan_errno rs_sample_load(rs_sample *s, const strbuf f_name);
-
-/* plot output */
+/* resampled sample I/O */
+latan_errno rs_sample_save(const strbuf fname, const char mode,\
+                           const rs_sample *s);
+latan_errno rs_sample_load_nrow(size_t *nr, const strbuf fname,\
+                                const strbuf name);
+latan_errno rs_sample_load_nsample(size_t *nsample, const strbuf fname,\
+                                   const strbuf name);
+latan_errno rs_sample_load(rs_sample *s, const strbuf fname, const strbuf name);
 
 __END_DECLS
 

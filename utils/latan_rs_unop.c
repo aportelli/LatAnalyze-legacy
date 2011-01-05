@@ -43,8 +43,8 @@ int main(int argc, char *argv[])
     }
     
     /* getting sizes */
-    s1_nrow    = rs_sample_load_nrow(INF1_NAME);
-    s1_nsample = rs_sample_load_nsample(INF1_NAME);
+    rs_sample_load_nrow(&s1_nrow,INF1_NAME,"");
+    rs_sample_load_nsample(&s1_nsample,INF1_NAME,"");
     
     /* allocation */
     s1 = rs_sample_create(s1_nrow,s1_nsample);
@@ -53,10 +53,10 @@ int main(int argc, char *argv[])
     
     /* loading samples */
     printf("-- loading resampled sample from %s...\n",INF1_NAME);
-    rs_sample_load(s1,INF1_NAME);
+    rs_sample_load(s1,INF1_NAME,"");
     
     /* multiplying samples */
-    printf("-- taking square root of sample...\n");
+    printf("-- executing operation on sample...\n");
     mat_unop(rs_sample_pt_cent_val(res),rs_sample_pt_cent_val(s1));
     for (i=0;i<rs_sample_get_nsample(res);i++)
     {
@@ -73,7 +73,7 @@ int main(int argc, char *argv[])
     if (do_save_res)
     {
         rs_sample_set_name(res,res_name);
-        rs_sample_save(res,OUTF_NAME);
+        rs_sample_save(OUTF_NAME,'w',res);
     }
     
     /* desallocation */

@@ -3,7 +3,30 @@
 #include <latan/latan_math.h>
 #include <latan/latan_xml.h>
 
-/*                          general I/O                                     */
+/*                              I/O init/finish                             */
+/****************************************************************************/
+static bool io_is_init = false;
+
+void io_init(void)
+{
+    if (!io_is_init)
+    {
+        xmlInitParser();
+        io_is_init = true;
+    }
+}
+
+void io_finish(void)
+{
+    if (io_is_init)
+    {
+        xmlCleanupParser();
+        io_is_init = true;
+    }
+}
+
+
+/*                                general I/O                               */
 /****************************************************************************/
 int get_nfile(const strbuf manifestfname)
 {
@@ -117,7 +140,7 @@ latan_errno prop_load(mat *prop, const channel_no channel, \
 {
     xml_workspace *ws;
     xmlXPathObject *nodeset;
-    strbuf channel_id,q1_id,q2_id,source_id,sink_id,errmsg,xpath_expr;
+    strbuf channel_id,q1_id,q2_id,source_id,sink_id,xpath_expr;
     latan_errno status;
 
     channel_id_get(channel_id,channel);
@@ -138,6 +161,7 @@ latan_errno prop_load(mat *prop, const channel_no channel, \
         }
         else
         {
+            strbuf errmsg;
             sprintf(errmsg,"propagator (ch=\"%s\" m1=\"%s\" m2=\"%s\" so=\"%s\" si=\"%s\") not found in file %s",\
                     channel_id,q1_id,q2_id,source_id,sink_id,fname);
             LATAN_ERROR(errmsg,LATAN_ELATSYN);
@@ -145,7 +169,7 @@ latan_errno prop_load(mat *prop, const channel_no channel, \
         xmlXPathFreeObject(nodeset);
     }
     END_XML_PARSING(ws,fname)
-
+    
     return status;
 }
 
@@ -156,7 +180,7 @@ latan_errno prop_load_nt(size_t *nt, const channel_no channel,\
 {
     xml_workspace *ws;
     xmlXPathObject *nodeset;
-    strbuf channel_id,q1_id,q2_id,source_id,sink_id,errmsg,xpath_expr;
+    strbuf channel_id,q1_id,q2_id,source_id,sink_id,xpath_expr;
     latan_errno status;
 
     channel_id_get(channel_id,channel);
@@ -177,6 +201,7 @@ latan_errno prop_load_nt(size_t *nt, const channel_no channel,\
         }
         else
         {
+            strbuf errmsg;
             sprintf(errmsg,"propagator (ch=\"%s\" m1=\"%s\" m2=\"%s\" so=\"%s\" si=\"%s\") not found in file %s",\
                     channel_id,q1_id,q2_id,source_id,sink_id,fname);
             LATAN_ERROR(errmsg,LATAN_ELATSYN);
@@ -229,7 +254,7 @@ latan_errno hadron_prop_load_bin(mat **prop, const hadron *h,              \
             }
             END_FOR_LINE
 #ifdef _OPENMP
-            #pragma omp parallel for
+            #pragma omp parallel for    
 #endif
             for (i=0;i<ndat;i++)
             {
@@ -280,7 +305,6 @@ latan_errno hadron_prop_load_bin(mat **prop, const hadron *h,              \
     }
     LATAN_UPDATE_STATUS(status,mat_ar_bin(prop,prop_prebin,ndat,binsize));
     
-
     mat_ar_destroy(prop_prebin,ndat);
     for (p=0;p<chmix;p++)
     {
@@ -311,199 +335,202 @@ latan_errno hadron_prop_load_nt(size_t *nt, const hadron *h,\
 
 /*                      random generator state I/O                          */
 /****************************************************************************/
-latan_errno randgen_save_state(const strbuf f_name,\
-                               const rg_state state)
+latan_errno randgen_save_state(const strbuf fname, const char mode,\
+                               const rg_state state, const strbuf name)
 {
-    strbuf full_f_name;
-    FILE *f;
-    size_t i;
-    
-    sprintf(full_f_name,"%s.rand",f_name);
-    FOPEN(f,full_f_name,"w");
-    for (i=0;i<RLXG_STATE_SIZE;i++)
-    {
-        fprintf(f,"%d ",state[i]);
-    }
-    fprintf(f,"\n");
-    fclose(f);
+    xml_workspace *ws;
+
+    XML_WRITE(ws,fname,mode,xml_insert_rgstate(ws->root,state,name));
     
     return LATAN_SUCCESS;
 }
 
-latan_errno randgen_load_state(rg_state state, const strbuf f_name)
+latan_errno randgen_load_state(rg_state state, const strbuf fname,\
+                               const strbuf name)
 {
-    strbuf errmsg;
-    FILE *f;
-    size_t i;
-    
-    FOPEN(f,f_name,"r");
-    for (i=0;i<RLXG_STATE_SIZE;i++)
+    xml_workspace *ws;
+    xmlXPathObject *nodeset;
+    strbuf xpath_expr;
+    latan_errno status;
+
+    BEGIN_XML_PARSING(ws,fname)
     {
-        if(fscanf(f,"%d ",state+i)<0)
+        sprintf(xpath_expr,"/%s:%s/%s:%s",LATAN_XMLNS_PREF,xml_mark[i_main],\
+                LATAN_XMLNS_PREF,xml_mark[i_rgstate]);
+        if (strlen(name) > 0)
         {
-            sprintf(errmsg,"error while reading generator state component %lu in file %s",\
-                    (unsigned long)i,f_name);
+            sprintf(xpath_expr,"%s[@name='%s']",xpath_expr,name);
+        }
+        nodeset = xml_get_nodeset(xpath_expr,ws);
+        if (nodeset->nodesetval != NULL)
+        {
+            status = xml_get_rgstate(state,nodeset->nodesetval->nodeTab[0]);
+        }
+        else
+        {
+            strbuf errmsg;
+            if (strlen(name) > 0)
+            {
+                sprintf(errmsg,"(name=\"%s\")",name);
+            }
+            else
+            {
+                strcpy(errmsg,"");
+            }
+            sprintf(errmsg,"rgstate %snot found in file %s",errmsg,fname);
             LATAN_ERROR(errmsg,LATAN_ELATSYN);
         }
     }
-    fclose(f);
-    
+    END_XML_PARSING(ws,fname)
+
+    xmlXPathFreeObject(nodeset);
+
     return LATAN_SUCCESS;
 }
 
 /*                          resampled sample I/O                            */
 /****************************************************************************/
-latan_errno rs_sample_save(const rs_sample *s, const strbuf f_name)
+latan_errno rs_sample_save(const strbuf fname, const char mode,\
+                           const rs_sample *s)
 {
-    strbuf s_name;
-    FILE* f;
-    size_t i,j;
-    size_t s_nrow, s_nsample;
-    
-    s_nrow    = rs_sample_get_nrow(s);
-    s_nsample = rs_sample_get_nsample(s);
-    rs_sample_get_name(s_name,s);
-    
-    if (strlen(s->name) == 0)
+    xml_workspace *ws;
+    strbuf name;
+
+    rs_sample_get_name(name,s);
+    if (strlen(name) == 0)
     {
         LATAN_ERROR("cannot save sample with an empty name",LATAN_EINVAL);
     }
-
-/*
-    FOPEN(f,good_f_name,"w");
-    fprintf(f,"%s %lu %lu\n",s_name,(unsigned long)s_nrow,\
-            (unsigned long)s_nsample);
-    for (i=0;i<s_nrow;i++)
-    {
-        fprintf(f,"%.10e ",mat_get(rs_sample_pt_cent_val(s),i,0));
-        for (j=0;j<s_nsample-1;j++)
-        {
-            fprintf(f,"%.10e ",mat_get(rs_sample_pt_sample(s,j),i,0));
-        }
-        fprintf(f,"%.10e\n",mat_get(rs_sample_pt_sample(s,s_nsample-1),i,0));
-    }
-    fclose(f);
-*/
+    XML_WRITE(ws,fname,mode,xml_insert_sample(ws->root,s,name));
     
     return LATAN_SUCCESS;
 }
 
-int rs_sample_load_nrow(const strbuf f_name)
+latan_errno rs_sample_load_nrow(size_t *nr, const strbuf fname,\
+                                const strbuf name)
 {
-    FILE* f;
-    strbuf dumstr,errmsg;
-    int s_nrow;
-    
-    FOPEN(f,f_name,"r");
-    sprintf(errmsg,"error while reading sample dimension in file %s",f_name);
-    if (fscanf(f,"%s ",dumstr)<0)
-    {
-        LATAN_ERROR(errmsg,LATAN_FAILURE);
-    }
-    if (fscanf(f,"%d ",&s_nrow)<0)
-    {
-        LATAN_ERROR(errmsg,LATAN_FAILURE);
-    }
-    fclose(f);
-    
-    return s_nrow;
-}
+    xml_workspace *ws;
+    xmlXPathObject *nodeset;
+    strbuf xpath_expr;
+    latan_errno status;
 
-int rs_sample_load_nsample(const strbuf f_name)
-{
-    FILE* f;
-    strbuf dumstr,errmsg;
-    int nsample;
-    
-    FOPEN(f,f_name,"r");
-    sprintf(errmsg,"error while reading number of sample in file %s",f_name);
-    if (fscanf(f,"%s ",dumstr)<0)
+    BEGIN_XML_PARSING(ws,fname)
     {
-        LATAN_ERROR(errmsg,LATAN_FAILURE);
-    }
-    if (fscanf(f,"%d ",&nsample)<0)
-    {
-        LATAN_ERROR(errmsg,LATAN_FAILURE);
-    }
-    if (fscanf(f,"%d ",&nsample)<0)
-    {
-        LATAN_ERROR(errmsg,LATAN_FAILURE);
-    }
-    fclose(f);
-    
-    return nsample;
-}
-
-latan_errno rs_sample_load(rs_sample *s, const strbuf f_name)
-{
-    FILE* f;
-    size_t i,j;
-    strbuf dumstr,errmsg;
-    double dbuf;
-    int ibuf;
-    mat *pt;
-    
-    FOPEN(f,f_name,"r");
-    if (fscanf(f,"%s ",dumstr)<0)
-    {
-        sprintf(errmsg,"error while reading sample name in file %s",f_name);
-        LATAN_ERROR(errmsg,LATAN_ELATSYN);
-    }
-    strcpy(s->name,dumstr);
-    if (fscanf(f,"%d ",&ibuf)<0)
-    {
-        sprintf(errmsg,"error while reading sample dimension in file %s",\
-                f_name);
-        LATAN_ERROR(errmsg,LATAN_ELATSYN);
-    }
-    if ((size_t)ibuf != rs_sample_get_nrow(s))
-    {
-        sprintf(errmsg,"sample dimension (%d) in file %s is invalid",ibuf,\
-                f_name);
-        LATAN_ERROR(errmsg,LATAN_EBADLEN);
-    }
-    if (fscanf(f,"%d ",&ibuf)<0)
-    {
-        sprintf(errmsg,"error while reading number of sample in file %s",\
-                f_name);
-        LATAN_ERROR(errmsg,LATAN_ELATSYN);
-    }
-    if ((size_t)ibuf != rs_sample_get_nsample(s))
-    {
-        sprintf(errmsg,"number of sample (%d) in file %s is invalid",ibuf,\
-                f_name);
-        LATAN_ERROR(errmsg,LATAN_EBADLEN);
-    }
-    for (i=0;i<rs_sample_get_nrow(s);i++)
-    {
-        for (j=0;j<rs_sample_get_nsample(s);j++)
+        sprintf(xpath_expr,"/%s:%s/%s:%s",LATAN_XMLNS_PREF,xml_mark[i_main],\
+                LATAN_XMLNS_PREF,xml_mark[i_sample]);
+        if (strlen(name) > 0)
         {
-            if (fscanf(f,"%lf ",&dbuf)<0)
+            sprintf(xpath_expr,"%s[@name='%s']",xpath_expr,name);
+        }
+        nodeset = xml_get_nodeset(xpath_expr,ws);
+        if (nodeset->nodesetval != NULL)
+        {
+            status = xml_get_sample_nrow(nr,nodeset->nodesetval->nodeTab[0]);
+        }
+        else
+        {
+            strbuf errmsg;
+            if (strlen(name) > 0)
             {
-                sprintf(errmsg,"error reading component %lu of sample %lu in file %s",\
-                        (unsigned long)i,(unsigned long)j,f_name);
-                LATAN_ERROR(errmsg,LATAN_ELATSYN);
-            }
-            if (j == 0)
-            {
-                pt = rs_sample_pt_cent_val(s);
+                sprintf(errmsg,"(name=\"%s\")",name);
             }
             else
             {
-                pt = rs_sample_pt_sample(s,j-1);
+                strcpy(errmsg,"");
             }
-            mat_set(pt,i,0,dbuf);
-        }
-        j = rs_sample_get_nsample(s);
-        if (fscanf(f,"%lf\n",&dbuf)<0)
-        {
-            sprintf(errmsg,"error reading component %lu of sample %lu in file %s",\
-                    (unsigned long)i,(unsigned long)j,f_name);
+            sprintf(errmsg,"sample %snot found in file %s",errmsg,fname);
             LATAN_ERROR(errmsg,LATAN_ELATSYN);
         }
-        mat_set(rs_sample_pt_sample(s,j-1),i,0,dbuf);
     }
-    fclose(f);
-    
+    END_XML_PARSING(ws,fname)
+
+    xmlXPathFreeObject(nodeset);
+
+    return LATAN_SUCCESS;
+}
+
+latan_errno rs_sample_load_nsample(size_t *nsample, const strbuf fname,\
+                                   const strbuf name)
+{
+    xml_workspace *ws;
+    xmlXPathObject *nodeset;
+    strbuf xpath_expr;
+    latan_errno status;
+
+    BEGIN_XML_PARSING(ws,fname)
+    {
+        sprintf(xpath_expr,"/%s:%s/%s:%s",LATAN_XMLNS_PREF,xml_mark[i_main],\
+                LATAN_XMLNS_PREF,xml_mark[i_sample]);
+        if (strlen(name) > 0)
+        {
+            sprintf(xpath_expr,"%s[@name='%s']",xpath_expr,name);
+        }
+        nodeset = xml_get_nodeset(xpath_expr,ws);
+        if (nodeset->nodesetval != NULL)
+        {
+            status = xml_get_sample_nsample(nsample,\
+                                            nodeset->nodesetval->nodeTab[0]);
+        }
+        else
+        {
+            strbuf errmsg;
+            if (strlen(name) > 0)
+            {
+                sprintf(errmsg,"(name=\"%s\")",name);
+            }
+            else
+            {
+                strcpy(errmsg,"");
+            }
+            sprintf(errmsg,"sample %snot found in file %s",errmsg,fname);
+            LATAN_ERROR(errmsg,LATAN_ELATSYN);
+        }
+    }
+    END_XML_PARSING(ws,fname)
+
+    xmlXPathFreeObject(nodeset);
+
+    return LATAN_SUCCESS;
+}
+
+latan_errno rs_sample_load(rs_sample *s, const strbuf fname, const strbuf name)
+{
+    xml_workspace *ws;
+    xmlXPathObject *nodeset;
+    strbuf xpath_expr;
+    latan_errno status;
+
+    BEGIN_XML_PARSING(ws,fname)
+    {
+        sprintf(xpath_expr,"/%s:%s/%s:%s",LATAN_XMLNS_PREF,xml_mark[i_main],\
+                LATAN_XMLNS_PREF,xml_mark[i_sample]);
+        if (strlen(name) > 0)
+        {
+            sprintf(xpath_expr,"%s[@name='%s']",xpath_expr,name);
+        }
+        nodeset = xml_get_nodeset(xpath_expr,ws);
+        if (nodeset->nodesetval != NULL)
+        {
+            status = xml_get_sample(s,nodeset->nodesetval->nodeTab[0]);
+        }
+        else
+        {
+            strbuf errmsg;
+            if (strlen(name) > 0)
+            {
+                sprintf(errmsg,"(name=\"%s\")",name);
+            }
+            else
+            {
+                strcpy(errmsg,"");
+            }
+            sprintf(errmsg,"sample %snot found in file %s",errmsg,fname);
+            LATAN_ERROR(errmsg,LATAN_ELATSYN);
+        }
+    }
+    END_XML_PARSING(ws,fname)
+
+    xmlXPathFreeObject(nodeset);
+
     return LATAN_SUCCESS;
 }

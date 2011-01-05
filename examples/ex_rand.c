@@ -37,7 +37,7 @@ int main(void)
         if (i == GENTEST_SAVE_STEP)
         {
             randgen_get_state(state);
-            randgen_save_state("ex_rand",state);
+            randgen_save_state("ex_rand",'w',state,"");
             printf("generator state after step %d saved in ex_rand.rand\n",\
                    GENTEST_SAVE_STEP-1);
         }
@@ -48,7 +48,7 @@ int main(void)
     randgen_init_from_time();
     randgen_get_state(state);
     printf("-- reloading state from ex_rand.rand...\n");
-    randgen_load_state(state,"ex_rand.rand");
+    randgen_load_state(state,"ex_rand.xml","");
     randgen_set_state(state);
     printf("-- generating a %d steps random sequence...\n",GENTEST_SEQ_LENGTH);
     for (i=0;i<GENTEST_SEQ_LENGTH;i++) 
@@ -95,7 +95,7 @@ int main(void)
                1.0/DIS_SEQ_LENGTH*HIST_CONT_NINT/(2.0*GAUSS_HIST_MAX));
     dist_plot = plot_create();
     mat_set_step(x,-GAUSS_HIST_MAX,2.0*GAUSS_HIST_MAX/HIST_CONT_NINT);
-    plot_add_dat(dist_plot,x,hist_cont,"rand_n distribution","");
+    plot_add_dat(dist_plot,x,hist_cont,"rand_n distribution","rgb \"red\"");
     sprintf(plotcmd,"exp(-(x-%e)**2/(2.0*%e))/%e title \"theoretical distribution\"",\
             GAUSS_MU,SQ(GAUSS_SIG),sqrt(2*C_PI)*GAUSS_SIG);
     plot_add_plot(dist_plot,plotcmd);

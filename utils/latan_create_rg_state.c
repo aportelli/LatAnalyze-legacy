@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
     
     randgen_init_from_time();
     randgen_get_state(state);
-    randgen_save_state(OUTF_NAME,state);
+    randgen_save_state(OUTF_NAME,'w',state,"");
     
     return EXIT_SUCCESS;
 }

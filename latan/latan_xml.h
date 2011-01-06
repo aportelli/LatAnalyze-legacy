@@ -5,6 +5,7 @@
 #include <latan/latan_hadron.h>
 #include <latan/latan_statistics.h>
 #include <libxml/parser.h>
+#include <libxml/threads.h>
 #include <libxml/tree.h>
 #include <libxml/xpath.h>
 #include <libxml/xpathInternals.h>

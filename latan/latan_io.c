@@ -276,9 +276,6 @@ latan_errno hadron_prop_load_bin(mat **prop, const hadron *h,              \
                                     h->channel[p],h->quarkst[s][0],\
                                     h->quarkst[s][1],source,sink,fname[i]));
             }
-#ifdef _OPENMP
-            #pragma omp barrier
-#endif
         }
     }
     for (i=0;i<ndat;i++)

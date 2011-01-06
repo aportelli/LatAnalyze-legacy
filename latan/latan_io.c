@@ -11,6 +11,13 @@ void io_init(void)
 {
     if (!io_is_init)
     {
+#ifdef _OPENMP
+        if(omp_in_parallel())
+        {
+            LATAN_WARNING("I/O initialization called from a parallel region",\
+                          LATAN_FAILURE);
+        }
+#endif
         xmlInitParser();
         io_is_init = true;
     }
@@ -20,8 +27,15 @@ void io_finish(void)
 {
     if (io_is_init)
     {
+#ifdef _OPENMP
+        if(omp_in_parallel())
+        {
+            LATAN_WARNING("I/O finish called from a parallel region",\
+                          LATAN_FAILURE);
+        }
+#endif
         xmlCleanupParser();
-        io_is_init = true;
+        io_is_init = false;
     }
 }
 

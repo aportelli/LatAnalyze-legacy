@@ -127,6 +127,8 @@ void mat_id(mat *m);
 latan_errno mat_cp(mat *m, mat *n);
 latan_errno mat_eqadd(mat *m, mat *n);
 latan_errno mat_add(mat *m, mat *n, mat *o);
+#define mat_eqadds(m,s) mat_adds(m,m,s);
+latan_errno mat_adds(mat *m, mat *n, const double s);
 latan_errno mat_eqsub(mat *m, mat *n);
 latan_errno mat_sub(mat *m, mat *n, mat *o);
 #define mat_eqmul_l(m,n) mat_mul(m,n,m);

@@ -441,6 +441,21 @@ latan_errno mat_add(mat *m, mat *n, mat *o)
     return status;
 }
 
+latan_errno mat_adds(mat *m, mat *n, const double s)
+{
+    latan_errno status;
+    mat *cst;
+
+    cst = mat_create_from_dim(n);
+
+    mat_cst(cst,s);
+    status = mat_add(m,n,cst);
+
+    mat_destroy(cst);
+
+    return status;
+}
+
 latan_errno mat_eqsub(mat *m, mat *n)
 {
     latan_errno status;

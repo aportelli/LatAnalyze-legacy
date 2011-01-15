@@ -21,7 +21,7 @@
 #include <latan/latan_includes.h>
 
 /* Prototypes for CUBLAS on/off, we don't want to include cublas.h here
- * cause it is not ANSI compliant 
+ * because it is not ANSI compliant
  */
 #ifdef HAVE_LIBCUBLAS
 int cublasInit(void);
@@ -61,7 +61,7 @@ int latan_get_verb(void)
     return env.verb;
 }
 
-latan_errno latan_set_verb(int verb)
+latan_errno latan_set_verb(const int verb)
 {
     if ((verb < 0)||(verb > 2))
     {
@@ -78,7 +78,7 @@ int latan_get_mat_op(void)
     return env.mat_op;
 }
 
-latan_errno latan_set_mat_op(int mat_op)
+latan_errno latan_set_mat_op(const int mat_op)
 {
     if ((mat_op < 0)||(mat_op > 1))
     {

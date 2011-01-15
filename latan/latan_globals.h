@@ -170,8 +170,8 @@ void latan_get_version(strbuf version);
 int latan_get_verb(void);
 int latan_get_mat_op(void);
 #ifdef LATAN_ERRNO_DEF
-latan_errno latan_set_verb(int verb);
-latan_errno latan_set_mat_op(int mat_op);
+latan_errno latan_set_verb(const int verb);
+latan_errno latan_set_mat_op(const int mat_op);
 #endif
 
 /* LatAnalyze message function */

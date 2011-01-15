@@ -571,3 +571,51 @@ latan_errno rs_x_data_fit(rs_sample *p, rs_sample *x, rs_sample *data,\
     
     return status;
 }
+
+void fit_residual(mat *res, mat *p, fit_data *d)
+{
+    size_t i,ndata;
+    double res_i;
+
+    ndata = fit_data_get_ndata(d);
+    
+    for (i=0;i<ndata;i++)
+    {
+        res_i = fit_data_get_data(d,i)/fit_data_model_eval(d,i,p) - 1.0;
+        mat_set(res,i,0,res_i);
+    }
+}
+
+void rs_fit_residual(rs_sample *res, rs_sample *p, rs_sample *data,\
+                     fit_data *d)
+{
+    size_t i,nsample;
+    
+    nsample = rs_sample_get_nsample(data);
+
+    mat_cp(fit_data_pt_data(d),rs_sample_pt_cent_val(data));
+    fit_residual(rs_sample_pt_cent_val(res),rs_sample_pt_cent_val(p),d);
+    for (i=0;i<nsample;i++)
+    {
+        mat_cp(fit_data_pt_data(d),rs_sample_pt_sample(data,i));
+        fit_residual(rs_sample_pt_sample(res,i),rs_sample_pt_sample(p,i),d);
+    }
+}
+
+void rs_x_fit_residual(rs_sample *res, rs_sample *p, rs_sample *x,\
+                       rs_sample *data, fit_data *d)
+{
+    size_t i,nsample;
+
+    nsample = rs_sample_get_nsample(data);
+
+    mat_cp(fit_data_pt_x(d),rs_sample_pt_cent_val(x));
+    mat_cp(fit_data_pt_data(d),rs_sample_pt_cent_val(data));
+    fit_residual(rs_sample_pt_cent_val(res),rs_sample_pt_cent_val(p),d);
+    for (i=0;i<nsample;i++)
+    {
+        mat_cp(fit_data_pt_x(d),rs_sample_pt_sample(x,i));
+        mat_cp(fit_data_pt_data(d),rs_sample_pt_sample(data,i));
+        fit_residual(rs_sample_pt_sample(res,i),rs_sample_pt_sample(p,i),d);
+    }
+}

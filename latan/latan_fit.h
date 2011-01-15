@@ -138,7 +138,11 @@ latan_errno data_fit(mat *p, fit_data *d);
 latan_errno rs_data_fit(rs_sample *p, rs_sample *data, fit_data *d);
 latan_errno rs_x_data_fit(rs_sample *p, rs_sample *x, rs_sample *data,\
                           fit_data *d);
-
+void fit_residual(mat *res, mat *p, fit_data *d);
+void rs_fit_residual(rs_sample *res, rs_sample *p, rs_sample *data,\
+                     fit_data *d);
+void rs_x_fit_residual(rs_sample *res, rs_sample *p, rs_sample *x,\
+                       rs_sample *data, fit_data *d);
 __END_DECLS
 
 #endif

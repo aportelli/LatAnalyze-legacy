@@ -275,7 +275,7 @@ latan_errno xml_get_sample_nrow(size_t *nr, xmlNode *node)
     size_t buf;
 
     buf = 0;
-    
+
     IF_GOT_LATAN_MARK_ELSE_ERROR(node,i_sample)
     {
         for (scur=node->children;scur!=NULL;scur=scur->next)
@@ -464,6 +464,28 @@ xmlNode * xml_insert_sample(xmlNode *parent, const rs_sample *s,\
 
 /*                          file writing function                           */
 /****************************************************************************/
+void xml_check_extension(strbuf f_name)
+{
+    char* ext = NULL;
+    strbuf f_name_buf;
+
+    ext = strrchr(f_name,'.');
+    if (ext == NULL)
+    {
+        sprintf(f_name_buf,"%s.xml",f_name);
+    }
+    else if (strcmp(ext+1,"xml") != 0)
+    {
+        sprintf(f_name_buf,"%s.xml",f_name);
+    }
+    else
+    {
+        strcpy(f_name_buf,f_name);
+    }
+    
+    strcpy(f_name,f_name_buf);
+}
+
 latan_errno xml_save(xml_workspace *ws, const strbuf fname)
 {
     xmlDoc *doc;

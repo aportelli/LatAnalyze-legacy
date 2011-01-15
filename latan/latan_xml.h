@@ -72,21 +72,6 @@ typedef struct
     xmlXPathContext* ctxt;
 } xml_workspace;
 
-/* macro to check XML extension */
-#define CHECK_XML_EXTENSION(f_name)\
-{\
-    char* ext;\
-    ext = strrchr(f_name,'.');\
-    if (ext == NULL)\
-    {\
-        sprintf(f_name,"%s.xml",f_name);\
-    }\
-    else if (strcmp(ext+1,"xml") != 0)\
-    {\
-        sprintf(f_name,"%s.xml",f_name);\
-    }\
-}
-
 /* elementary tree browsing macros */
 #define SKIP_COMMENTS(node)\
 {\
@@ -189,7 +174,7 @@ else
 
 #define END_XML_WRITING_NEW(ws,fname)\
     strcpy(_fname,fname);\
-    CHECK_XML_EXTENSION(_fname);\
+    xml_check_extension(_fname);\
     xml_save(ws,_fname);\
     xmlFreeNs((ws)->ns);\
     xmlFreeDoc((ws)->doc);\
@@ -268,6 +253,7 @@ xmlNode * xml_insert_sample(xmlNode *parent, const rs_sample *s,\
                             const strbuf name);
 
 /* file writing function */
+void xml_check_extension(strbuf fname);
 latan_errno xml_save(xml_workspace *ws, const strbuf fname);
 
 /* XPath search function */

@@ -38,7 +38,6 @@ typedef struct
     model_func func[MAX_STAGE];
     npar_func *npar;
     size_t ndim;
-    strbuf plot_fmt;
 } fit_model;
 
 /** some useful constant npar_func **/
@@ -77,7 +76,7 @@ typedef struct
     void *model_param;
     unsigned int stage_flag;
     double chi2pdof;
-    mat *buf_chi2[4];
+    mat *buf_chi2[2];
 } fit_data;
 
 /** allocation **/
@@ -86,20 +85,20 @@ void fit_data_destroy(fit_data *d);
 
 /** access **/
 /*** sizes ***/
-size_t fit_data_get_ndata(fit_data *d);
-size_t fit_data_get_ndim(fit_data *d);
+size_t fit_data_get_ndata(const fit_data *d);
+size_t fit_data_get_ndim(const fit_data *d);
 
 /*** chi2 value ***/
 void fit_data_save_chi2pdof(fit_data *d, bool save);
-double fit_data_get_chi2pdof(fit_data *d);
+double fit_data_get_chi2pdof(const fit_data *d);
 
 /*** fit points ***/
 void fit_data_set_x(fit_data *d, const size_t i, const size_t j,\
                     const double x_i);
-double fit_data_get_x(const fit_data *d, const size_t i, const size_t j);
+double fit_data_get_x(fit_data *d, const size_t i, const size_t j);
 mat *fit_data_pt_x(const fit_data *d);
 latan_errno fit_data_set_x_var(fit_data *d, mat *var);
-bool fit_data_have_x_var(fit_data *d);
+bool fit_data_have_x_var(const fit_data *d);
 void fit_data_fit_all_points(fit_data *d, bool fit);
 void fit_data_fit_point(fit_data *d, size_t i, bool fit);
 void fit_data_fit_range(fit_data *d, size_t start, size_t end, bool fit);
@@ -108,7 +107,7 @@ size_t fit_data_fit_point_num(const fit_data *d);
 
 /*** data ***/
 void fit_data_set_data(fit_data *d, const size_t i, const double data_i);
-double fit_data_get_data(const fit_data *d, const size_t i);
+double fit_data_get_data(fit_data *d, const size_t i);
 mat *fit_data_pt_data(const fit_data *d);
 latan_errno fit_data_set_data_var(fit_data *d, mat *var);
 bool fit_data_is_correlated(const fit_data *d);
@@ -117,7 +116,7 @@ bool fit_data_is_correlated(const fit_data *d);
 latan_errno fit_data_set_model(fit_data *d, const fit_model *model);
 const fit_model *fit_data_pt_model(fit_data *d);
 void fit_data_set_model_param(fit_data *d, void *model_param);
-double fit_data_model_eval(const fit_data *d, const size_t i,mat *p);
+double fit_data_model_eval(const fit_data *d, const size_t i, mat *p);
 
 /*** stages ***/
 typedef bool stage_ar[MAX_STAGE];

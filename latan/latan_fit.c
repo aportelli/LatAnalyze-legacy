@@ -55,11 +55,6 @@ void fit_model_get_name(strbuf name, const fit_model *model)
     strcpy(name,model->name);
 }
 
-void fit_model_get_plot_fmt(strbuf plot_fmt, const fit_model *model)
-{
-    strcpy(plot_fmt,model->plot_fmt);
-}
-
 double fit_model_eval(const fit_model *model, mat *x, mat *p,    \
                       const unsigned int stage_flag, void *model_param)
 {
@@ -136,12 +131,12 @@ void fit_data_destroy(fit_data *d)
 
 /** access **/
 /*** sizes ***/
-size_t fit_data_get_ndata(fit_data *d)
+size_t fit_data_get_ndata(const fit_data *d)
 {
     return d->ndata;
 }
 
-size_t fit_data_get_ndim(fit_data *d)
+size_t fit_data_get_ndim(const fit_data *d)
 {
     return d->ndim;
 }
@@ -152,7 +147,7 @@ void fit_data_save_chi2pdof(fit_data *d, bool save)
     d->save_chi2pdof = save;
 }
 
-double fit_data_get_chi2pdof(fit_data *d)
+double fit_data_get_chi2pdof(const fit_data *d)
 {
     return d->chi2pdof;
 }
@@ -164,7 +159,7 @@ void fit_data_set_x(fit_data *d, const size_t i, const size_t j,\
     mat_set(d->x,i*d->ndim+j,0,x_ij);
 }
 
-double fit_data_get_x(const fit_data *d, const size_t i, const size_t j)
+double fit_data_get_x(fit_data *d, const size_t i, const size_t j)
 {
     return mat_get(d->x,i*d->ndim+j,0);
 }
@@ -211,7 +206,7 @@ latan_errno fit_data_set_x_var(fit_data *d, mat *var)
     return status;
 }
 
-bool fit_data_have_x_var(fit_data *d)
+bool fit_data_have_x_var(const fit_data *d)
 {
     return d->have_x_var;
 }
@@ -289,7 +284,7 @@ void fit_data_set_data(fit_data *d, const size_t i, const double data_i)
     mat_set(d->data,i,0,data_i);
 }
 
-double fit_data_get_data(const fit_data *d, const size_t i)
+double fit_data_get_data(fit_data *d, const size_t i)
 {
     return mat_get(d->data,i,0);
 }

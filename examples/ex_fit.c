@@ -18,12 +18,12 @@
 int main(void)
 {
     plot *p;
-    mat *x,*data,*var,*real_param,*fit_param;
+    mat *var,*real_param,*fit_param;
     size_t i;
     minalg_no alg;
     double step;
     fit_data *d;
-    strbuf plotfmt,plotcmd;
+    strbuf plotcmd;
     
     step = DRATIO(XMAX,NDATA);
     
@@ -48,7 +48,6 @@ int main(void)
     }
     fit_data_fit_all_points(d,true);
     latan_set_verb(DEBUG);
-    fit_model_get_plot_fmt(plotfmt,fit_data_pt_model(d));
     for (alg=0;alg<NMINALG;alg++)
     {
         mat_set(fit_param,0,0,0.3);
@@ -61,7 +60,7 @@ int main(void)
         printf("\nfit parameters=\n");
         mat_print(fit_param,"%f");
         printf("\nchi2/dof= %e\n",fit_data_get_chi2pdof(d));
-        sprintf(plotcmd,plotfmt,mat_get(fit_param,0,0),\
+        sprintf(plotcmd,"%e*exp(-%e*x)",mat_get(fit_param,0,0),\
                 mat_get(fit_param,1,0));
         plot_add_plot(p,plotcmd);
     }

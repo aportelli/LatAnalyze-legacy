@@ -85,6 +85,10 @@ fit_data *fit_data_create(const size_t ndata, const size_t ndim);
 void fit_data_destroy(fit_data *d);
 
 /** access **/
+/*** sizes ***/
+size_t fit_data_get_ndata(fit_data *d);
+size_t fit_data_get_ndim(fit_data *d);
+
 /*** chi2 value ***/
 void fit_data_save_chi2pdof(fit_data *d, bool save);
 double fit_data_get_chi2pdof(fit_data *d);
@@ -105,7 +109,6 @@ size_t fit_data_fit_point_num(const fit_data *d);
 /*** data ***/
 void fit_data_set_data(fit_data *d, const size_t i, const double data_i);
 double fit_data_get_data(const fit_data *d, const size_t i);
-size_t fit_data_get_ndata(const fit_data *d);
 mat *fit_data_pt_data(const fit_data *d);
 latan_errno fit_data_set_data_var(fit_data *d, mat *var);
 bool fit_data_is_correlated(const fit_data *d);

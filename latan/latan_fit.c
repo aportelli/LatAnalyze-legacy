@@ -135,6 +135,17 @@ void fit_data_destroy(fit_data *d)
 }
 
 /** access **/
+/*** sizes ***/
+size_t fit_data_get_ndata(fit_data *d)
+{
+    return d->ndata;
+}
+
+size_t fit_data_get_ndim(fit_data *d)
+{
+    return d->ndim;
+}
+
 /*** chi2 value ***/
 void fit_data_save_chi2pdof(fit_data *d, bool save)
 {
@@ -281,11 +292,6 @@ void fit_data_set_data(fit_data *d, const size_t i, const double data_i)
 double fit_data_get_data(const fit_data *d, const size_t i)
 {
     return mat_get(d->data,i,0);
-}
-
-size_t fit_data_get_ndata(const fit_data *d)
-{
-    return d->ndata;
 }
 
 mat *fit_data_pt_data(const fit_data *d)

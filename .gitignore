@@ -17,7 +17,9 @@ utils/latan_create_rg_state
 utils/latan_info
 utils/latan_mat_bench
 utils/latan_rs_add
+utils/latan_rs_adds
 utils/latan_rs_mul
+utils/latan_rs_muls
 utils/latan_rs_sub
 utils/latan_rs_div
 utils/latan_rs_sqrt

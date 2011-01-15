@@ -410,10 +410,9 @@ latan_errno randgen_load_state(rg_state state, const strbuf fname,\
             sprintf(errmsg,"rgstate %snot found in file %s",errmsg,fname);
             LATAN_ERROR(errmsg,LATAN_ELATSYN);
         }
+        xmlXPathFreeObject(nodeset);
     }
     END_XML_PARSING(ws,fname)
-
-    xmlXPathFreeObject(nodeset);
 
     return LATAN_SUCCESS;
 }
@@ -471,10 +470,9 @@ latan_errno rs_sample_load_nrow(size_t *nr, const strbuf fname,\
             sprintf(errmsg,"sample %snot found in file %s",errmsg,fname);
             LATAN_ERROR(errmsg,LATAN_ELATSYN);
         }
+        xmlXPathFreeObject(nodeset);
     }
     END_XML_PARSING(ws,fname)
-
-    xmlXPathFreeObject(nodeset);
 
     return LATAN_SUCCESS;
 }
@@ -515,10 +513,9 @@ latan_errno rs_sample_load_nsample(size_t *nsample, const strbuf fname,\
             sprintf(errmsg,"sample %snot found in file %s",errmsg,fname);
             LATAN_ERROR(errmsg,LATAN_ELATSYN);
         }
+        xmlXPathFreeObject(nodeset);
     }
     END_XML_PARSING(ws,fname)
-
-    xmlXPathFreeObject(nodeset);
 
     return LATAN_SUCCESS;
 }
@@ -557,10 +554,9 @@ latan_errno rs_sample_load(rs_sample *s, const strbuf fname, const strbuf name)
             sprintf(errmsg,"sample %snot found in file %s",errmsg,fname);
             LATAN_ERROR(errmsg,LATAN_ELATSYN);
         }
+        xmlXPathFreeObject(nodeset);
     }
     END_XML_PARSING(ws,fname)
-
-    xmlXPathFreeObject(nodeset);
 
     return LATAN_SUCCESS;
 }

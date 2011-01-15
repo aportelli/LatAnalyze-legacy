@@ -143,8 +143,8 @@ else
     IF_GOT_LATAN_MARK_ELSE_ERROR((ws)->root,i_main)
 
 #define END_XML_PARSING(ws,fname)\
-    xmlFreeDoc((ws)->doc);\
     xmlXPathFreeContext((ws)->ctxt);\
+    xmlFreeDoc((ws)->doc);\
     (ws)->doc  = NULL;\
     (ws)->root = NULL;\
     (ws)->ns   = NULL;\

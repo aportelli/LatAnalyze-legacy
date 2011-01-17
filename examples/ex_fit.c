@@ -60,8 +60,8 @@ int main(void)
         printf("\nfit parameters=\n");
         mat_print(fit_param,"%f");
         printf("\nchi2/dof= %e\n",fit_data_get_chi2pdof(d));
-        sprintf(plotcmd,"%e*exp(-%e*x)",mat_get(fit_param,0,0),\
-                mat_get(fit_param,1,0));
+        sprintf(plotcmd,"%e*exp(-%e*x)",mat_get(fit_param,1,0),\
+                mat_get(fit_param,0,0));
         plot_add_plot(p,plotcmd);
     }
     mat_eqsqrt(var);

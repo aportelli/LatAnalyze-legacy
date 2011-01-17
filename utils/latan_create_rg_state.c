@@ -13,10 +13,12 @@ int main(int argc, char *argv[])
         fprintf(stderr,"usage: %s <output_file>\n",argv[0]);
         return EXIT_FAILURE;
     }
-    
+
+    io_init();
     randgen_init_from_time();
     randgen_get_state(state);
     randgen_save_state(OUTF_NAME,'w',state,"");
+    io_finish();
     
     return EXIT_SUCCESS;
 }

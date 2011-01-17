@@ -171,12 +171,12 @@ latan_errno prop_load(mat *prop, const channel_no channel, \
                       const ss_no source, const ss_no sink,\
                       strbuf fname)
 {
-    xml_workspace *ws;
+    xml_file *f;
     xmlXPathObject *nodeset;
     strbuf channel_id,q1_id,q2_id,source_id,sink_id,xpath_expr;
     latan_errno status;
 
-    ws = xml_open_file(fname,'r');
+    f = xml_open_file(fname,'r');
     
     channel_id_get(channel_id,channel);
     quark_id_get(q1_id,q1);
@@ -187,7 +187,7 @@ latan_errno prop_load(mat *prop, const channel_no channel, \
             LATAN_XMLNS_PREF,xml_mark[i_main],\
             LATAN_XMLNS_PREF,xml_mark[i_prop],\
             channel_id,q1_id,q2_id,source_id,sink_id);
-    nodeset = xml_get_nodeset(xpath_expr,ws);
+    nodeset = xml_get_nodeset(xpath_expr,f);
     if (nodeset->nodesetval != NULL)
     {
         status = xml_get_prop(prop,nodeset->nodesetval->nodeTab[0]);
@@ -201,7 +201,7 @@ latan_errno prop_load(mat *prop, const channel_no channel, \
     }
 
     xmlXPathFreeObject(nodeset);
-    xml_close_file(ws);
+    xml_close_file(f);
     
     return status;
 }
@@ -211,12 +211,12 @@ latan_errno prop_load_nt(size_t *nt, const channel_no channel,\
                          const ss_no source, const ss_no sink,\
                          strbuf fname)
 {
-    xml_workspace *ws;
+    xml_file *f;
     xmlXPathObject *nodeset;
     strbuf channel_id,q1_id,q2_id,source_id,sink_id,xpath_expr;
     latan_errno status;
 
-    ws = xml_open_file(fname,'r');
+    f = xml_open_file(fname,'r');
 
     channel_id_get(channel_id,channel);
     quark_id_get(q1_id,q1);
@@ -227,7 +227,7 @@ latan_errno prop_load_nt(size_t *nt, const channel_no channel,\
             LATAN_XMLNS_PREF,xml_mark[i_main],\
             LATAN_XMLNS_PREF,xml_mark[i_prop],\
             channel_id,q1_id,q2_id,source_id,sink_id);
-    nodeset = xml_get_nodeset(xpath_expr,ws);
+    nodeset = xml_get_nodeset(xpath_expr,f);
     if (nodeset->nodesetval != NULL)
     {
         status = xml_get_prop_nt(nt,nodeset->nodesetval->nodeTab[0]);
@@ -241,7 +241,7 @@ latan_errno prop_load_nt(size_t *nt, const channel_no channel,\
     }
 
     xmlXPathFreeObject(nodeset);
-    xml_close_file(ws);
+    xml_close_file(f);
     
     return status;
 }
@@ -368,20 +368,20 @@ latan_errno hadron_prop_load_nt(size_t *nt, const hadron *h,\
 latan_errno randgen_save_state(const strbuf fname, const char mode,\
                                const rg_state state, const strbuf name)
 {
-    xml_workspace *ws;
+    xml_file *f;
 
     if (mode == 'w')
     {
-        ws = xml_new_file(fname);
+        f = xml_new_file(fname);
     }
     else
     {
-        ws = xml_open_file(fname,mode);
+        f = xml_open_file(fname,mode);
     }
     
-    xml_insert_rgstate(ws->root,state,name);
+    xml_insert_rgstate(f->root,state,name);
 
-    xml_close_file(ws);
+    xml_close_file(f);
     
     return LATAN_SUCCESS;
 }
@@ -389,12 +389,12 @@ latan_errno randgen_save_state(const strbuf fname, const char mode,\
 latan_errno randgen_load_state(rg_state state, const strbuf fname,\
                                const strbuf name)
 {
-    xml_workspace *ws;
+    xml_file *f;
     xmlXPathObject *nodeset;
     strbuf xpath_expr;
     latan_errno status;
 
-    ws = xml_open_file(fname,'r');
+    f = xml_open_file(fname,'r');
     
     sprintf(xpath_expr,"/%s:%s/%s:%s",LATAN_XMLNS_PREF,xml_mark[i_main],\
             LATAN_XMLNS_PREF,xml_mark[i_rgstate]);
@@ -402,7 +402,7 @@ latan_errno randgen_load_state(rg_state state, const strbuf fname,\
     {
         sprintf(xpath_expr,"%s[@name='%s']",xpath_expr,name);
     }
-    nodeset = xml_get_nodeset(xpath_expr,ws);
+    nodeset = xml_get_nodeset(xpath_expr,f);
     if (nodeset->nodesetval != NULL)
     {
         status = xml_get_rgstate(state,nodeset->nodesetval->nodeTab[0]);
@@ -423,7 +423,7 @@ latan_errno randgen_load_state(rg_state state, const strbuf fname,\
     }
 
     xmlXPathFreeObject(nodeset);
-    xml_close_file(ws);
+    xml_close_file(f);
 
     return LATAN_SUCCESS;
 }
@@ -433,16 +433,16 @@ latan_errno randgen_load_state(rg_state state, const strbuf fname,\
 latan_errno rs_sample_save(const strbuf fname, const char mode,\
                            const rs_sample *s)
 {
-    xml_workspace *ws;
+    xml_file *f;
     strbuf name;
 
     if (mode == 'w')
     {
-        ws = xml_new_file(fname);
+        f = xml_new_file(fname);
     }
     else
     {
-        ws = xml_open_file(fname,mode);
+        f = xml_open_file(fname,mode);
     }
 
     rs_sample_get_name(name,s);
@@ -450,9 +450,9 @@ latan_errno rs_sample_save(const strbuf fname, const char mode,\
     {
         LATAN_ERROR("cannot save sample with an empty name",LATAN_EINVAL);
     }
-    xml_insert_sample(ws->root,s,name);
+    xml_insert_sample(f->root,s,name);
 
-    xml_close_file(ws);
+    xml_close_file(f);
     
     return LATAN_SUCCESS;
 }
@@ -460,12 +460,12 @@ latan_errno rs_sample_save(const strbuf fname, const char mode,\
 latan_errno rs_sample_load_nrow(size_t *nr, const strbuf fname,\
                                 const strbuf name)
 {
-    xml_workspace *ws;
+    xml_file *f;
     xmlXPathObject *nodeset;
     strbuf xpath_expr;
     latan_errno status;
 
-    ws = xml_open_file(fname,'r');
+    f = xml_open_file(fname,'r');
 
     sprintf(xpath_expr,"/%s:%s/%s:%s",LATAN_XMLNS_PREF,xml_mark[i_main],\
             LATAN_XMLNS_PREF,xml_mark[i_sample]);
@@ -473,7 +473,7 @@ latan_errno rs_sample_load_nrow(size_t *nr, const strbuf fname,\
     {
         sprintf(xpath_expr,"%s[@name='%s']",xpath_expr,name);
     }
-    nodeset = xml_get_nodeset(xpath_expr,ws);
+    nodeset = xml_get_nodeset(xpath_expr,f);
     if (nodeset->nodesetval != NULL)
     {
         status = xml_get_sample_nrow(nr,nodeset->nodesetval->nodeTab[0]);
@@ -494,7 +494,7 @@ latan_errno rs_sample_load_nrow(size_t *nr, const strbuf fname,\
     }
     
     xmlXPathFreeObject(nodeset);
-    xml_close_file(ws);
+    xml_close_file(f);
 
     return LATAN_SUCCESS;
 }
@@ -502,12 +502,12 @@ latan_errno rs_sample_load_nrow(size_t *nr, const strbuf fname,\
 latan_errno rs_sample_load_nsample(size_t *nsample, const strbuf fname,\
                                    const strbuf name)
 {
-    xml_workspace *ws;
+    xml_file *f;
     xmlXPathObject *nodeset;
     strbuf xpath_expr;
     latan_errno status;
 
-    ws = xml_open_file(fname,'r');
+    f = xml_open_file(fname,'r');
     
     sprintf(xpath_expr,"/%s:%s/%s:%s",LATAN_XMLNS_PREF,xml_mark[i_main],\
             LATAN_XMLNS_PREF,xml_mark[i_sample]);
@@ -515,7 +515,7 @@ latan_errno rs_sample_load_nsample(size_t *nsample, const strbuf fname,\
     {
         sprintf(xpath_expr,"%s[@name='%s']",xpath_expr,name);
     }
-    nodeset = xml_get_nodeset(xpath_expr,ws);
+    nodeset = xml_get_nodeset(xpath_expr,f);
     if (nodeset->nodesetval != NULL)
     {
         status = xml_get_sample_nsample(nsample,\
@@ -537,19 +537,19 @@ latan_errno rs_sample_load_nsample(size_t *nsample, const strbuf fname,\
     }
     
     xmlXPathFreeObject(nodeset);
-    xml_close_file(ws);
+    xml_close_file(f);
 
     return LATAN_SUCCESS;
 }
 
 latan_errno rs_sample_load(rs_sample *s, const strbuf fname, const strbuf name)
 {
-    xml_workspace *ws;
+    xml_file *f;
     xmlXPathObject *nodeset;
     strbuf xpath_expr;
     latan_errno status;
 
-    ws = xml_open_file(fname,'r');
+    f = xml_open_file(fname,'r');
     
     sprintf(xpath_expr,"/%s:%s/%s:%s",LATAN_XMLNS_PREF,xml_mark[i_main],\
             LATAN_XMLNS_PREF,xml_mark[i_sample]);
@@ -557,7 +557,7 @@ latan_errno rs_sample_load(rs_sample *s, const strbuf fname, const strbuf name)
     {
         sprintf(xpath_expr,"%s[@name='%s']",xpath_expr,name);
     }
-    nodeset = xml_get_nodeset(xpath_expr,ws);
+    nodeset = xml_get_nodeset(xpath_expr,f);
     if (nodeset->nodesetval != NULL)
     {
         status = xml_get_sample(s,nodeset->nodesetval->nodeTab[0]);
@@ -578,7 +578,7 @@ latan_errno rs_sample_load(rs_sample *s, const strbuf fname, const strbuf name)
     }
 
     xmlXPathFreeObject(nodeset);
-    xml_close_file(ws);
+    xml_close_file(f);
 
     return LATAN_SUCCESS;
 }

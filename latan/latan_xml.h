@@ -72,7 +72,7 @@ typedef struct
     xmlXPathContext* ctxt;
     strbuf fname;
     char mode;
-} xml_workspace;
+} xml_file;
 
 __BEGIN_DECLS
 
@@ -110,14 +110,14 @@ xmlNode * xml_insert_sample(xmlNode *parent, const rs_sample *s,\
 
 /* file writing function */
 void xml_check_extension(strbuf fname);
-xml_workspace * xml_new_file(const strbuf fname);
-xml_workspace * xml_open_file(const strbuf fname, const char mode);
-latan_errno xml_save_file(xml_workspace *ws);
-void xml_workspace_destroy(xml_workspace *ws);
-void xml_close_file(xml_workspace *ws);
+xml_file * xml_new_file(const strbuf fname);
+xml_file * xml_open_file(const strbuf fname, const char mode);
+latan_errno xml_save_file(xml_file *f);
+void xml_file_destroy(xml_file *f);
+void xml_close_file(xml_file *f);
 
 /* XPath search function */
-xmlXPathObject * xml_get_nodeset(strbuf xpath_expr, xml_workspace *ws);
+xmlXPathObject * xml_get_nodeset(strbuf xpath_expr, xml_file *f);
 
 __END_DECLS
 

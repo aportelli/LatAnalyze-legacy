@@ -176,32 +176,32 @@ latan_errno prop_load(mat *prop, const channel_no channel, \
     strbuf channel_id,q1_id,q2_id,source_id,sink_id,xpath_expr;
     latan_errno status;
 
+    ws = xml_open_file(fname,'r');
+    
     channel_id_get(channel_id,channel);
     quark_id_get(q1_id,q1);
     quark_id_get(q2_id,q2);
     ss_id_get(source_id,source);
     ss_id_get(sink_id,sink);
-    BEGIN_XML_PARSING(ws,fname)
+    sprintf(xpath_expr,"/%s:%s/%s:%s[@channel='%s' and @mass1='%s' and @mass2='%s' and @source='%s' and @sink='%s']",\
+            LATAN_XMLNS_PREF,xml_mark[i_main],\
+            LATAN_XMLNS_PREF,xml_mark[i_prop],\
+            channel_id,q1_id,q2_id,source_id,sink_id);
+    nodeset = xml_get_nodeset(xpath_expr,ws);
+    if (nodeset->nodesetval != NULL)
     {
-        sprintf(xpath_expr,"/%s:%s/%s:%s[@channel='%s' and @mass1='%s' and @mass2='%s' and @source='%s' and @sink='%s']",\
-                LATAN_XMLNS_PREF,xml_mark[i_main],\
-                LATAN_XMLNS_PREF,xml_mark[i_prop],\
-                channel_id,q1_id,q2_id,source_id,sink_id);
-        nodeset = xml_get_nodeset(xpath_expr,ws);
-        if (nodeset->nodesetval != NULL)
-        {
-            status = xml_get_prop(prop,nodeset->nodesetval->nodeTab[0]);
-        }
-        else
-        {
-            strbuf errmsg;
-            sprintf(errmsg,"propagator (ch=\"%s\" m1=\"%s\" m2=\"%s\" so=\"%s\" si=\"%s\") not found in file %s",\
-                    channel_id,q1_id,q2_id,source_id,sink_id,fname);
-            LATAN_ERROR(errmsg,LATAN_ELATSYN);
-        }
-        xmlXPathFreeObject(nodeset);
+        status = xml_get_prop(prop,nodeset->nodesetval->nodeTab[0]);
     }
-    END_XML_PARSING(ws,fname)
+    else
+    {
+        strbuf errmsg;
+        sprintf(errmsg,"propagator (ch=\"%s\" m1=\"%s\" m2=\"%s\" so=\"%s\" si=\"%s\") not found in file %s",\
+                channel_id,q1_id,q2_id,source_id,sink_id,fname);
+        LATAN_ERROR(errmsg,LATAN_ELATSYN);
+    }
+
+    xmlXPathFreeObject(nodeset);
+    xml_close_file(ws);
     
     return status;
 }
@@ -216,33 +216,33 @@ latan_errno prop_load_nt(size_t *nt, const channel_no channel,\
     strbuf channel_id,q1_id,q2_id,source_id,sink_id,xpath_expr;
     latan_errno status;
 
+    ws = xml_open_file(fname,'r');
+
     channel_id_get(channel_id,channel);
     quark_id_get(q1_id,q1);
     quark_id_get(q2_id,q2);
     ss_id_get(source_id,source);
     ss_id_get(sink_id,sink);
-    BEGIN_XML_PARSING(ws,fname)
+    sprintf(xpath_expr,"/%s:%s/%s:%s[@channel='%s' and @mass1='%s' and @mass2='%s' and @source='%s' and @sink='%s']",\
+            LATAN_XMLNS_PREF,xml_mark[i_main],\
+            LATAN_XMLNS_PREF,xml_mark[i_prop],\
+            channel_id,q1_id,q2_id,source_id,sink_id);
+    nodeset = xml_get_nodeset(xpath_expr,ws);
+    if (nodeset->nodesetval != NULL)
     {
-        sprintf(xpath_expr,"/%s:%s/%s:%s[@channel='%s' and @mass1='%s' and @mass2='%s' and @source='%s' and @sink='%s']",\
-                LATAN_XMLNS_PREF,xml_mark[i_main],\
-                LATAN_XMLNS_PREF,xml_mark[i_prop],\
-                channel_id,q1_id,q2_id,source_id,sink_id);
-        nodeset = xml_get_nodeset(xpath_expr,ws);
-        if (nodeset->nodesetval != NULL)
-        {
-            status = xml_get_prop_nt(nt,nodeset->nodesetval->nodeTab[0]);
-        }
-        else
-        {
-            strbuf errmsg;
-            sprintf(errmsg,"propagator (ch=\"%s\" m1=\"%s\" m2=\"%s\" so=\"%s\" si=\"%s\") not found in file %s",\
-                    channel_id,q1_id,q2_id,source_id,sink_id,fname);
-            LATAN_ERROR(errmsg,LATAN_ELATSYN);
-        }
-        xmlXPathFreeObject(nodeset);
+        status = xml_get_prop_nt(nt,nodeset->nodesetval->nodeTab[0]);
     }
-    END_XML_PARSING(ws,fname)
+    else
+    {
+        strbuf errmsg;
+        sprintf(errmsg,"propagator (ch=\"%s\" m1=\"%s\" m2=\"%s\" so=\"%s\" si=\"%s\") not found in file %s",\
+                channel_id,q1_id,q2_id,source_id,sink_id,fname);
+        LATAN_ERROR(errmsg,LATAN_ELATSYN);
+    }
 
+    xmlXPathFreeObject(nodeset);
+    xml_close_file(ws);
+    
     return status;
 }
 
@@ -370,7 +370,18 @@ latan_errno randgen_save_state(const strbuf fname, const char mode,\
 {
     xml_workspace *ws;
 
-    XML_WRITE(ws,fname,mode,xml_insert_rgstate(ws->root,state,name));
+    if (mode == 'w')
+    {
+        ws = xml_new_file(fname);
+    }
+    else
+    {
+        ws = xml_open_file(fname,mode);
+    }
+    
+    xml_insert_rgstate(ws->root,state,name);
+
+    xml_close_file(ws);
     
     return LATAN_SUCCESS;
 }
@@ -383,36 +394,36 @@ latan_errno randgen_load_state(rg_state state, const strbuf fname,\
     strbuf xpath_expr;
     latan_errno status;
 
-    BEGIN_XML_PARSING(ws,fname)
+    ws = xml_open_file(fname,'r');
+    
+    sprintf(xpath_expr,"/%s:%s/%s:%s",LATAN_XMLNS_PREF,xml_mark[i_main],\
+            LATAN_XMLNS_PREF,xml_mark[i_rgstate]);
+    if (strlen(name) > 0)
     {
-        sprintf(xpath_expr,"/%s:%s/%s:%s",LATAN_XMLNS_PREF,xml_mark[i_main],\
-                LATAN_XMLNS_PREF,xml_mark[i_rgstate]);
+        sprintf(xpath_expr,"%s[@name='%s']",xpath_expr,name);
+    }
+    nodeset = xml_get_nodeset(xpath_expr,ws);
+    if (nodeset->nodesetval != NULL)
+    {
+        status = xml_get_rgstate(state,nodeset->nodesetval->nodeTab[0]);
+    }
+    else
+    {
+        strbuf errmsg;
         if (strlen(name) > 0)
         {
-            sprintf(xpath_expr,"%s[@name='%s']",xpath_expr,name);
-        }
-        nodeset = xml_get_nodeset(xpath_expr,ws);
-        if (nodeset->nodesetval != NULL)
-        {
-            status = xml_get_rgstate(state,nodeset->nodesetval->nodeTab[0]);
+            sprintf(errmsg,"(name=\"%s\")",name);
         }
         else
         {
-            strbuf errmsg;
-            if (strlen(name) > 0)
-            {
-                sprintf(errmsg,"(name=\"%s\")",name);
-            }
-            else
-            {
-                STRBUFCPY(errmsg,"");
-            }
-            sprintf(errmsg,"rgstate %snot found in file %s",errmsg,fname);
-            LATAN_ERROR(errmsg,LATAN_ELATSYN);
+            STRBUFCPY(errmsg,"");
         }
-        xmlXPathFreeObject(nodeset);
+        sprintf(errmsg,"rgstate %snot found in file %s",errmsg,fname);
+        LATAN_ERROR(errmsg,LATAN_ELATSYN);
     }
-    END_XML_PARSING(ws,fname)
+
+    xmlXPathFreeObject(nodeset);
+    xml_close_file(ws);
 
     return LATAN_SUCCESS;
 }
@@ -425,12 +436,23 @@ latan_errno rs_sample_save(const strbuf fname, const char mode,\
     xml_workspace *ws;
     strbuf name;
 
+    if (mode == 'w')
+    {
+        ws = xml_new_file(fname);
+    }
+    else
+    {
+        ws = xml_open_file(fname,mode);
+    }
+
     rs_sample_get_name(name,s);
     if (strlen(name) == 0)
     {
         LATAN_ERROR("cannot save sample with an empty name",LATAN_EINVAL);
     }
-    XML_WRITE(ws,fname,mode,xml_insert_sample(ws->root,s,name));
+    xml_insert_sample(ws->root,s,name);
+
+    xml_close_file(ws);
     
     return LATAN_SUCCESS;
 }
@@ -443,36 +465,36 @@ latan_errno rs_sample_load_nrow(size_t *nr, const strbuf fname,\
     strbuf xpath_expr;
     latan_errno status;
 
-    BEGIN_XML_PARSING(ws,fname)
+    ws = xml_open_file(fname,'r');
+
+    sprintf(xpath_expr,"/%s:%s/%s:%s",LATAN_XMLNS_PREF,xml_mark[i_main],\
+            LATAN_XMLNS_PREF,xml_mark[i_sample]);
+    if (strlen(name) > 0)
     {
-        sprintf(xpath_expr,"/%s:%s/%s:%s",LATAN_XMLNS_PREF,xml_mark[i_main],\
-                LATAN_XMLNS_PREF,xml_mark[i_sample]);
+        sprintf(xpath_expr,"%s[@name='%s']",xpath_expr,name);
+    }
+    nodeset = xml_get_nodeset(xpath_expr,ws);
+    if (nodeset->nodesetval != NULL)
+    {
+        status = xml_get_sample_nrow(nr,nodeset->nodesetval->nodeTab[0]);
+    }
+    else
+    {
+        strbuf errmsg;
         if (strlen(name) > 0)
         {
-            sprintf(xpath_expr,"%s[@name='%s']",xpath_expr,name);
-        }
-        nodeset = xml_get_nodeset(xpath_expr,ws);
-        if (nodeset->nodesetval != NULL)
-        {
-            status = xml_get_sample_nrow(nr,nodeset->nodesetval->nodeTab[0]);
+            sprintf(errmsg,"(name=\"%s\")",name);
         }
         else
         {
-            strbuf errmsg;
-            if (strlen(name) > 0)
-            {
-                sprintf(errmsg,"(name=\"%s\")",name);
-            }
-            else
-            {
-                STRBUFCPY(errmsg,"");
-            }
-            sprintf(errmsg,"sample %snot found in file %s",errmsg,fname);
-            LATAN_ERROR(errmsg,LATAN_ELATSYN);
+            STRBUFCPY(errmsg,"");
         }
-        xmlXPathFreeObject(nodeset);
+        sprintf(errmsg,"sample %snot found in file %s",errmsg,fname);
+        LATAN_ERROR(errmsg,LATAN_ELATSYN);
     }
-    END_XML_PARSING(ws,fname)
+    
+    xmlXPathFreeObject(nodeset);
+    xml_close_file(ws);
 
     return LATAN_SUCCESS;
 }
@@ -485,37 +507,37 @@ latan_errno rs_sample_load_nsample(size_t *nsample, const strbuf fname,\
     strbuf xpath_expr;
     latan_errno status;
 
-    BEGIN_XML_PARSING(ws,fname)
+    ws = xml_open_file(fname,'r');
+    
+    sprintf(xpath_expr,"/%s:%s/%s:%s",LATAN_XMLNS_PREF,xml_mark[i_main],\
+            LATAN_XMLNS_PREF,xml_mark[i_sample]);
+    if (strlen(name) > 0)
     {
-        sprintf(xpath_expr,"/%s:%s/%s:%s",LATAN_XMLNS_PREF,xml_mark[i_main],\
-                LATAN_XMLNS_PREF,xml_mark[i_sample]);
+        sprintf(xpath_expr,"%s[@name='%s']",xpath_expr,name);
+    }
+    nodeset = xml_get_nodeset(xpath_expr,ws);
+    if (nodeset->nodesetval != NULL)
+    {
+        status = xml_get_sample_nsample(nsample,\
+                                        nodeset->nodesetval->nodeTab[0]);
+    }
+    else
+    {
+        strbuf errmsg;
         if (strlen(name) > 0)
         {
-            sprintf(xpath_expr,"%s[@name='%s']",xpath_expr,name);
-        }
-        nodeset = xml_get_nodeset(xpath_expr,ws);
-        if (nodeset->nodesetval != NULL)
-        {
-            status = xml_get_sample_nsample(nsample,\
-                                            nodeset->nodesetval->nodeTab[0]);
+            sprintf(errmsg,"(name=\"%s\")",name);
         }
         else
         {
-            strbuf errmsg;
-            if (strlen(name) > 0)
-            {
-                sprintf(errmsg,"(name=\"%s\")",name);
-            }
-            else
-            {
-                STRBUFCPY(errmsg,"");
-            }
-            sprintf(errmsg,"sample %snot found in file %s",errmsg,fname);
-            LATAN_ERROR(errmsg,LATAN_ELATSYN);
+            STRBUFCPY(errmsg,"");
         }
-        xmlXPathFreeObject(nodeset);
+        sprintf(errmsg,"sample %snot found in file %s",errmsg,fname);
+        LATAN_ERROR(errmsg,LATAN_ELATSYN);
     }
-    END_XML_PARSING(ws,fname)
+    
+    xmlXPathFreeObject(nodeset);
+    xml_close_file(ws);
 
     return LATAN_SUCCESS;
 }
@@ -527,36 +549,36 @@ latan_errno rs_sample_load(rs_sample *s, const strbuf fname, const strbuf name)
     strbuf xpath_expr;
     latan_errno status;
 
-    BEGIN_XML_PARSING(ws,fname)
+    ws = xml_open_file(fname,'r');
+    
+    sprintf(xpath_expr,"/%s:%s/%s:%s",LATAN_XMLNS_PREF,xml_mark[i_main],\
+            LATAN_XMLNS_PREF,xml_mark[i_sample]);
+    if (strlen(name) > 0)
     {
-        sprintf(xpath_expr,"/%s:%s/%s:%s",LATAN_XMLNS_PREF,xml_mark[i_main],\
-                LATAN_XMLNS_PREF,xml_mark[i_sample]);
+        sprintf(xpath_expr,"%s[@name='%s']",xpath_expr,name);
+    }
+    nodeset = xml_get_nodeset(xpath_expr,ws);
+    if (nodeset->nodesetval != NULL)
+    {
+        status = xml_get_sample(s,nodeset->nodesetval->nodeTab[0]);
+    }
+    else
+    {
+        strbuf errmsg;
         if (strlen(name) > 0)
         {
-            sprintf(xpath_expr,"%s[@name='%s']",xpath_expr,name);
-        }
-        nodeset = xml_get_nodeset(xpath_expr,ws);
-        if (nodeset->nodesetval != NULL)
-        {
-            status = xml_get_sample(s,nodeset->nodesetval->nodeTab[0]);
+            sprintf(errmsg,"(name=\"%s\")",name);
         }
         else
         {
-            strbuf errmsg;
-            if (strlen(name) > 0)
-            {
-                sprintf(errmsg,"(name=\"%s\")",name);
-            }
-            else
-            {
-                STRBUFCPY(errmsg,"");
-            }
-            sprintf(errmsg,"sample %snot found in file %s",errmsg,fname);
-            LATAN_ERROR(errmsg,LATAN_ELATSYN);
+            STRBUFCPY(errmsg,"");
         }
-        xmlXPathFreeObject(nodeset);
+        sprintf(errmsg,"sample %snot found in file %s",errmsg,fname);
+        LATAN_ERROR(errmsg,LATAN_ELATSYN);
     }
-    END_XML_PARSING(ws,fname)
+
+    xmlXPathFreeObject(nodeset);
+    xml_close_file(ws);
 
     return LATAN_SUCCESS;
 }

@@ -282,7 +282,7 @@ latan_errno hadron_prop_load_bin(mat **prop, const hadron *h,              \
             i = 0;
             BEGIN_FOR_LINE(buf,manfname)
             {
-                strcpy(fname[i],buf);
+                STRBUFCPY(fname[i],buf);
                 i++;
             }
             END_FOR_LINE
@@ -405,7 +405,7 @@ latan_errno randgen_load_state(rg_state state, const strbuf fname,\
             }
             else
             {
-                strcpy(errmsg,"");
+                STRBUFCPY(errmsg,"");
             }
             sprintf(errmsg,"rgstate %snot found in file %s",errmsg,fname);
             LATAN_ERROR(errmsg,LATAN_ELATSYN);
@@ -465,7 +465,7 @@ latan_errno rs_sample_load_nrow(size_t *nr, const strbuf fname,\
             }
             else
             {
-                strcpy(errmsg,"");
+                STRBUFCPY(errmsg,"");
             }
             sprintf(errmsg,"sample %snot found in file %s",errmsg,fname);
             LATAN_ERROR(errmsg,LATAN_ELATSYN);
@@ -508,7 +508,7 @@ latan_errno rs_sample_load_nsample(size_t *nsample, const strbuf fname,\
             }
             else
             {
-                strcpy(errmsg,"");
+                STRBUFCPY(errmsg,"");
             }
             sprintf(errmsg,"sample %snot found in file %s",errmsg,fname);
             LATAN_ERROR(errmsg,LATAN_ELATSYN);
@@ -549,7 +549,7 @@ latan_errno rs_sample_load(rs_sample *s, const strbuf fname, const strbuf name)
             }
             else
             {
-                strcpy(errmsg,"");
+                STRBUFCPY(errmsg,"");
             }
             sprintf(errmsg,"sample %snot found in file %s",errmsg,fname);
             LATAN_ERROR(errmsg,LATAN_ELATSYN);

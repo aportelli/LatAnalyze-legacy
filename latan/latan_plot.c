@@ -95,7 +95,7 @@ static char * gnuplot_get_program_path(const char *pname)
                 buf[lg++] = '.';
             }
             buf[lg++] = '/';
-            strcpy(buf + lg, pname);
+            STRBUFCPY(buf + lg, pname);
             if (access(buf, X_OK) == 0)
             {
                 /* Found it! */
@@ -145,7 +145,7 @@ static void plot_add_tmpf(plot *p, const strbuf tmpfname)
 {
     (p->ntmpf)++;
     REALLOC_NOERRET(p->tmpfname,p->tmpfname,strbuf*,p->ntmpf);
-    strcpy(p->tmpfname[p->ntmpf-1],tmpfname);
+    STRBUFCPY(p->tmpfname[p->ntmpf-1],tmpfname);
 }
 
 /*                              allocation                                  */
@@ -160,17 +160,17 @@ plot *plot_create(void)
     p->plotbuf = NULL;
     p->ntmpf = 0;
     p->tmpfname = NULL;
-    strcpy(p->title,"");
-    strcpy(p->term,DEFTERM);
-    strcpy(p->output,"");
+    STRBUFCPY(p->title,"");
+    STRBUFCPY(p->term,DEFTERM);
+    STRBUFCPY(p->output,"");
     p->scale = AUTO;
     p->log = NOLOG;
     p->xmin = 0.0;
     p->xmax = 0.0;
-    strcpy(p->xlabel,"");
+    STRBUFCPY(p->xlabel,"");
     p->ymin = 0.0;
     p->ymax = 0.0;
-    strcpy(p->ylabel,"");
+    STRBUFCPY(p->ylabel,"");
     
     return p;
 }
@@ -241,27 +241,27 @@ void plot_set_scale_xylog(plot *p)
 
 void plot_set_title(plot *p, const strbuf title)
 {
-    strcpy(p->title,title);
+    STRBUFCPY(p->title,title);
 }
 
 void plot_set_xlabel(plot *p, const strbuf xlabel)
 {
-    strcpy(p->xlabel,xlabel);
+    STRBUFCPY(p->xlabel,xlabel);
 }
 
 void plot_set_ylabel(plot *p, const strbuf ylabel)
 {
-    strcpy(p->ylabel,ylabel);
+    STRBUFCPY(p->ylabel,ylabel);
 }
 
 void plot_set_term(plot *p, const strbuf term)
 {
-    strcpy(p->term,term);
+    STRBUFCPY(p->term,term);
 }
 
 void plot_set_output(plot *p, const strbuf output)
 {
-    strcpy(p->output,output);
+    STRBUFCPY(p->output,output);
 }
 
 /*                              plot functions                              */
@@ -270,7 +270,7 @@ void plot_add_plot(plot *p, const strbuf cmd)
 {
     (p->nplot)++;
     REALLOC_NOERRET(p->plotbuf,p->plotbuf,strbuf*,p->nplot);
-    strcpy(p->plotbuf[p->nplot-1],cmd);
+    STRBUFCPY(p->plotbuf[p->nplot-1],cmd);
 }
 
 void plot_add_dat(plot *p, mat *x, mat *dat, const strbuf title,\
@@ -280,7 +280,7 @@ void plot_add_dat(plot *p, mat *x, mat *dat, const strbuf title,\
     strbuf tmpfname, plotcmd, colorcmd;
     size_t i;
     
-    strcpy(tmpfname,"latan_plot_tmp_XXXXXX");
+    STRBUFCPY(tmpfname,"latan_plot_tmp_XXXXXX");
     mkstemp(tmpfname);
     FOPEN_NOERRET(tmpf,tmpfname,"w");
     for (i=0;i<nrow(dat);i++)
@@ -291,7 +291,7 @@ void plot_add_dat(plot *p, mat *x, mat *dat, const strbuf title,\
     plot_add_tmpf(p,tmpfname);
     if (strlen(color) == 0)
     {
-        strcpy(colorcmd,"");
+        STRBUFCPY(colorcmd,"");
     }
     else
     {
@@ -308,7 +308,7 @@ void plot_add_dat_yerr(plot *p, mat *x, mat *dat, mat *yerr,\
     strbuf tmpfname, plotcmd, colorcmd;
     size_t i;
     
-    strcpy(tmpfname,"latan_plot_tmp_XXXXXX");
+    STRBUFCPY(tmpfname,"latan_plot_tmp_XXXXXX");
     mkstemp(tmpfname);
     FOPEN_NOERRET(tmpf,tmpfname,"w");
     for (i=0;i<nrow(dat);i++)
@@ -320,7 +320,7 @@ void plot_add_dat_yerr(plot *p, mat *x, mat *dat, mat *yerr,\
     plot_add_tmpf(p,tmpfname);
     if (strlen(color) == 0)
     {
-        strcpy(colorcmd,"");
+        STRBUFCPY(colorcmd,"");
     }
     else
     {
@@ -339,7 +339,7 @@ void plot_add_dat_xyerr(plot *p, mat *x, mat *dat, mat *xerr,\
     strbuf tmpfname, plotcmd, colorcmd;
     size_t i;
     
-    strcpy(tmpfname,"latan_plot_tmp_XXXXXX");
+    STRBUFCPY(tmpfname,"latan_plot_tmp_XXXXXX");
     mkstemp(tmpfname);
     FOPEN_NOERRET(tmpf,tmpfname,"w");
     for (i=0;i<nrow(dat);i++)
@@ -351,7 +351,7 @@ void plot_add_dat_xyerr(plot *p, mat *x, mat *dat, mat *xerr,\
     plot_add_tmpf(p,tmpfname);
     if (strlen(color) == 0)
     {
-        strcpy(colorcmd,"");
+        STRBUFCPY(colorcmd,"");
     }
     else
     {
@@ -438,19 +438,19 @@ latan_errno plot_parse(FILE* outstr, const plot *p)
     {
         if (i == 0)
         {
-            strcpy(begin,"plot ");
+            STRBUFCPY(begin,"plot ");
         }
         else 
         {
-            strcpy(begin,"");
+            STRBUFCPY(begin,"");
         }
         if (i == p->nplot-1)
         {
-            strcpy(end,"");
+            STRBUFCPY(end,"");
         }
         else
         {
-            strcpy(end,",\\");
+            STRBUFCPY(end,",\\");
         }
         gnuplot_cmd(outstr,"%s%s%s",begin,p->plotbuf[i],end);
     }

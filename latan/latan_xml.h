@@ -173,7 +173,7 @@ else
     xmlAddPrevSibling((ws)->root,xmlNewComment((const xmlChar *)_buf));\
 
 #define END_XML_WRITING_NEW(ws,fname)\
-    strcpy(_fname,fname);\
+    STRBUFCPY(_fname,fname);\
     xml_check_extension(_fname);\
     xml_save(ws,_fname);\
     xmlFreeNs((ws)->ns);\

@@ -73,7 +73,7 @@ latan_errno xml_get_string(strbuf res, xmlNode *node)
     IF_GOT_LATAN_MARK_ELSE_ERROR(node,i_int)
     {
         buf = (char *)xmlNodeListGetString(node->doc,node->children,1);
-        strcpy(res,buf);
+        STRBUFCPY(res,buf);
         xmlFree(buf);
     }
 
@@ -480,10 +480,10 @@ void xml_check_extension(strbuf f_name)
     }
     else
     {
-        strcpy(f_name_buf,f_name);
+        STRBUFCPY(f_name_buf,f_name);
     }
     
-    strcpy(f_name,f_name_buf);
+    STRBUFCPY(f_name,f_name_buf);
 }
 
 latan_errno xml_save(xml_workspace *ws, const strbuf fname)

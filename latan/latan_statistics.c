@@ -296,7 +296,7 @@ size_t rs_sample_get_nsample(const rs_sample *s)
 
 void rs_sample_get_name(strbuf name, const rs_sample *s)
 {
-    strcpy(name,s->name);
+    STRBUFCPY(name,s->name);
 }
 
 mat *rs_sample_pt_cent_val(const rs_sample *s)
@@ -311,7 +311,7 @@ mat *rs_sample_pt_sample(const rs_sample *s, const size_t i)
 
 void rs_sample_set_name(rs_sample *s, const strbuf name)
 {
-    strcpy(s->name,name);
+    STRBUFCPY(s->name,name);
 }
 
 /** estimators **/

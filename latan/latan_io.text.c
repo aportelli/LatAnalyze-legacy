@@ -37,22 +37,22 @@ static io_env env =
 
 void io_get_prop_mark(strbuf prop_mark)
 {
-    strcpy(prop_mark,env.prop_mark);
+    STRBUFCPY(prop_mark,env.prop_mark);
 }
 
 void io_set_prop_mark(const strbuf prop_mark)
 {
-    strcpy(env.prop_mark,prop_mark);
+    STRBUFCPY(env.prop_mark,prop_mark);
 }
 
 void io_get_prop_idfmt(strbuf prop_idfmt)
 {
-    strcpy(prop_idfmt,env.prop_idfmt);
+    STRBUFCPY(prop_idfmt,env.prop_idfmt);
 }
 
 void io_set_prop_idfmt(const strbuf prop_idfmt)
 {
-    strcpy(env.prop_idfmt,prop_idfmt);
+    STRBUFCPY(env.prop_idfmt,prop_idfmt);
 }
 
 /*                          general I/O                                     */
@@ -213,14 +213,14 @@ latan_errno mat_load(mat *m, const strbuf mark, const strbuf matid,\
         }
         else
         {
-            strcpy(datfmt,"%lf");
+            STRBUFCPY(datfmt,"%lf");
             for (col=0;col<ncol(m);col++)
             {
                 if (sscanf(buf1,datfmt,&buf)>0)
                 {
                     mat_set(m,row,col,buf);
-                    strcpy(tmp,datfmt);
-                    strcpy(datfmt,"%*lf ");
+                    STRBUFCPY(tmp,datfmt);
+                    STRBUFCPY(datfmt,"%*lf ");
                     strcat(datfmt,tmp);
                 }
                 else if (sscanf(buf1,"%s",buf2)>0)
@@ -624,7 +624,7 @@ latan_errno rs_sample_load(rs_sample *s, const strbuf f_name)
         sprintf(errmsg,"error while reading sample name in file %s",f_name);
         LATAN_ERROR(errmsg,LATAN_ELATSYN);
     }
-    strcpy(s->name,dumstr);
+    STRBUFCPY(s->name,dumstr);
     if (fscanf(f,"%d ",&ibuf)<0)
     {
         sprintf(errmsg,"error while reading sample dimension in file %s",\

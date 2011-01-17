@@ -246,7 +246,7 @@ latan_errno fit_data_mass_fit_tune(fit_data *d, mat *fit_init, mat *prop,\
     
     /* setting points to fit */
     fit_data_fit_all_points(d,false);
-    strcpy(ranges,"");
+    STRBUFCPY(ranges,"");
     for (p=0;p<nplat;p++)
     {
         fit_data_fit_range(d,em_plat[p].start+1,em_plat[p].end+1,true);

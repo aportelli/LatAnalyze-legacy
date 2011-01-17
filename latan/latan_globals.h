@@ -44,6 +44,7 @@ typedef int bool;
 #ifndef STRING_LENGTH
 #define STRING_LENGTH 512
 #endif
+#define STRBUFCPY(a,b) strncpy(a,b,STRING_LENGTH)
 
 typedef char strbuf[STRING_LENGTH];
 

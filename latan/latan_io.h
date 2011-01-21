@@ -22,6 +22,7 @@
 
 #include <latan/latan_globals.h>
 #include <latan/latan_hadron.h>
+#include <latan/latan_io_xml.h>
 #include <latan/latan_rand.h>
 #include <latan/latan_statistics.h>
 
@@ -43,8 +44,8 @@
 __BEGIN_DECLS
 
 /* I/O init/finish */
-void io_init(void);
-void io_finish(void);
+extern void (*io_init)(void);
+extern void (*io_finish)(void);
 
 /* general I/O */
 int get_nfile(const strbuf manifestfname);
@@ -60,14 +61,14 @@ latan_errno mat_save_plotdat_xyerr(mat *x, mat *dat, mat *xerr,\
                                    mat *yerr, const strbuf fname);
 
 /* propagator I/O */
-latan_errno prop_load(mat *prop, const channel_no channel, \
-                      const quark_no q1, const quark_no q2,\
-                      const ss_no source, const ss_no sink,\
-                      strbuf fname);
-latan_errno prop_load_nt(size_t *nt, const channel_no channel,\
-                         const quark_no q1, const quark_no q2,\
-                         const ss_no source, const ss_no sink,\
-                         strbuf fname);
+extern latan_errno (*prop_load_nt)(size_t *nt, const channel_no channel,\
+                                   const quark_no q1, const quark_no q2,\
+                                   const ss_no source, const ss_no sink,\
+                                   strbuf fname);
+extern latan_errno (*prop_load)(mat *prop, const channel_no channel, \
+                                const quark_no q1, const quark_no q2,\
+                                const ss_no source, const ss_no sink,\
+                                strbuf fname);
 latan_errno hadron_prop_load_bin(mat **prop, const hadron *h,              \
                                  const ss_no source, const ss_no sink,     \
                                  const strbuf manfname,const size_t binsize);
@@ -76,19 +77,22 @@ latan_errno hadron_prop_load_nt(size_t *nt, const hadron *h,               \
                                 const strbuf manfname);
 
 /* random generator state I/O */
-latan_errno randgen_save_state(const strbuf f_name, const char mode,
-                               const rg_state state, const strbuf name);
-latan_errno randgen_load_state(rg_state state, const strbuf f_name,\
-                               const strbuf name);
+extern latan_errno (*randgen_save_state)(const strbuf f_name, const char mode,\
+                                         const rg_state state,                \
+                                         const strbuf name);
+extern latan_errno (*randgen_load_state)(rg_state state, const strbuf f_name,\
+                                         const strbuf name);
 
 /* resampled sample I/O */
-latan_errno rs_sample_save(const strbuf fname, const char mode,\
-                           const rs_sample *s);
-latan_errno rs_sample_load_nrow(size_t *nr, const strbuf fname,\
-                                const strbuf name);
-latan_errno rs_sample_load_nsample(size_t *nsample, const strbuf fname,\
-                                   const strbuf name);
-latan_errno rs_sample_load(rs_sample *s, const strbuf fname, const strbuf name);
+extern latan_errno (*rs_sample_save)(const strbuf fname, const char mode,\
+                                     const rs_sample *s);
+extern latan_errno (*rs_sample_load_nrow)(size_t *nr, const strbuf fname,\
+                                          const strbuf name);
+extern latan_errno (*rs_sample_load_nsample)(size_t *nsample,   \
+                                             const strbuf fname,\
+                                             const strbuf name);
+extern latan_errno (*rs_sample_load)(rs_sample *s, const strbuf fname,\
+                                     const strbuf name);
 
 __END_DECLS
 

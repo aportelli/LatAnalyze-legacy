@@ -28,6 +28,7 @@ liblatan_la_SOURCES =			\
 	latan_hadron.c			\
 	latan_includes.h		\
 	latan_io.c			\
+	latan_io_xml.c			\
 	latan_mass.c			\
 	latan_mat.c			\
 	latan_math.c			\
@@ -50,6 +51,7 @@ liblatan_la_HEADERS =			\
 	latan_globals.h			\
 	latan_hadron.h			\
 	latan_io.h			\
+	latan_io_xml.h			\
 	latan_mass.h			\
 	latan_mat.h			\
 	latan_math.h			\

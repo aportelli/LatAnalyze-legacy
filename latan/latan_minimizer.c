@@ -56,7 +56,7 @@ latan_errno minalg_id_get(strbuf m_id, const minalg_no n)
         LATAN_ERROR("wrong minimizer flag",LATAN_EINVAL);
     }
     
-    STRBUFCPY(m_id,minalg_id[n]);
+    strbufcpy(m_id,minalg_id[n]);
     
     return LATAN_SUCCESS;
 }
@@ -125,23 +125,23 @@ latan_errno minimizer_get_alg_name(strbuf name)
     switch (env.alg)
     {
         case GSL_GRAD_FR:
-            STRBUFCPY(name,"Fletcher-Reeves conjugate gradient (GSL)");
+            strbufcpy(name,"Fletcher-Reeves conjugate gradient (GSL)");
             break;
         case GSL_GRAD_PR:
-            STRBUFCPY(name,"Polak-Ribiere conjugate gradient (GSL)");
+            strbufcpy(name,"Polak-Ribiere conjugate gradient (GSL)");
             break;
         case GSL_VEC_BFGS:
-            STRBUFCPY(name,\
+            strbufcpy(name,\
                    "improved Broyden-Fletcher-Goldfarb-Shanno vector (GSL)");
             break;
         case GSL_SIMPLEX_NM:
-            STRBUFCPY(name,"improved Nelder-Mead simplex (GSL)");
+            strbufcpy(name,"improved Nelder-Mead simplex (GSL)");
             break;
         case MIN_MIGRAD:
-            STRBUFCPY(name,"variable metric (MINUIT)");
+            strbufcpy(name,"variable metric (MINUIT)");
             break;
         case MIN_SIMPLEX:
-            STRBUFCPY(name,"simplex (MINUIT)");
+            strbufcpy(name,"simplex (MINUIT)");
             break;
         default:
             LATAN_ERROR("minimization algorithm flag invalid",LATAN_EINVAL);

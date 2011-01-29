@@ -193,7 +193,7 @@ latan_errno hadron_prop_load_bin(mat **prop, const hadron *h,              \
             i = 0;
             BEGIN_FOR_LINE(buf,manfname)
             {
-                STRBUFCPY(fname[i],buf);
+                strbufcpy(fname[i],buf);
                 i++;
             }
             END_FOR_LINE

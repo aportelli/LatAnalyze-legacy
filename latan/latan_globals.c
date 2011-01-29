@@ -48,12 +48,12 @@ static bool latan_is_cublas_run = false;
 
 void latan_get_name(strbuf name)
 {
-    STRBUFCPY(name,env.name);
+    strbufcpy(name,env.name);
 }
 
 void latan_get_version(strbuf version)
 {
-    STRBUFCPY(version,env.version);
+    strbufcpy(version,env.version);
 }
 
 int latan_get_verb(void)
@@ -125,11 +125,11 @@ void latan_printf(const int verb, const strbuf fmt, ...)
         latan_get_version(version);
         if (verb == DEBUG)
         {
-            STRBUFCPY(debug," - DEBUG");
+            strbufcpy(debug," - DEBUG");
         }
         else
         {
-            STRBUFCPY(debug,"");
+            strbufcpy(debug,"");
         }
         
         sprintf(head,"[%s v%s%s]",name,version,debug);
@@ -138,4 +138,13 @@ void latan_printf(const int verb, const strbuf fmt, ...)
         va_end(args);
         printf("%s %s",head,tail);
     }
+}
+
+char * strbufcpy(strbuf a, const strbuf b)
+{
+    char *pt;
+
+    pt = strncpy(a,b,STRING_LENGTH);
+    
+    return pt;
 }

@@ -231,7 +231,7 @@ latan_errno minimize_gsl(mat *x, double *f_min, min_func *f, void *param)
             gsl_vector_memcpy(gsl_x,minimizer_f->x);
         }
         gsl_vector_mul(gsl_x,gf_param.scale);
-        STRBUFCPY(x_dump,"");
+        strbufcpy(x_dump,"");
         for (i=0;i<n;i++)
         {
             sprintf(buf,"x_%lu= %10.6f ",(long unsigned)i,\

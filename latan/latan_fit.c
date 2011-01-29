@@ -52,7 +52,7 @@ DEFINE_CST_NPAR_FUNC(10)
 /** access **/
 void fit_model_get_name(strbuf name, const fit_model *model)
 {
-    STRBUFCPY(name,model->name);
+    strbufcpy(name,model->name);
 }
 
 double fit_model_eval(const fit_model *model, mat *x, mat *p,    \
@@ -471,7 +471,7 @@ latan_errno data_fit(mat *p, fit_data *d)
     double chi2_min;
     
     fit_data_is_correlated(d) ? \
-    (STRBUFCPY(cor_status,"correlated")) : (STRBUFCPY(cor_status,"uncorrelated"));
+    (strbufcpy(cor_status,"correlated")) : (strbufcpy(cor_status,"uncorrelated"));
     latan_printf(VERB,"fitting (%s) %u data points with %s model...\n",
                  cor_status,(unsigned int)fit_data_fit_point_num(d),\
                  d->model->name);

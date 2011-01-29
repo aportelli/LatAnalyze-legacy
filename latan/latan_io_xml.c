@@ -192,7 +192,7 @@ latan_errno randgen_load_state_xml(rg_state state, const strbuf fname,\
         }
         else
         {
-            STRBUFCPY(errmsg,"");
+            strbufcpy(errmsg,"");
         }
         sprintf(errmsg,"rgstate %snot found in file %s",errmsg,fname);
         LATAN_ERROR(errmsg,LATAN_ELATSYN);
@@ -263,7 +263,7 @@ latan_errno rs_sample_load_nrow_xml(size_t *nr, const strbuf fname,\
         }
         else
         {
-            STRBUFCPY(errmsg,"");
+            strbufcpy(errmsg,"");
         }
         sprintf(errmsg,"sample %snot found in file %s",errmsg,fname);
         LATAN_ERROR(errmsg,LATAN_ELATSYN);
@@ -306,7 +306,7 @@ latan_errno rs_sample_load_nsample_xml(size_t *nsample, const strbuf fname,\
         }
         else
         {
-            STRBUFCPY(errmsg,"");
+            strbufcpy(errmsg,"");
         }
         sprintf(errmsg,"sample %snot found in file %s",errmsg,fname);
         LATAN_ERROR(errmsg,LATAN_ELATSYN);
@@ -348,7 +348,7 @@ latan_errno rs_sample_load_xml(rs_sample *s, const strbuf fname,\
         }
         else
         {
-            STRBUFCPY(errmsg,"");
+            strbufcpy(errmsg,"");
         }
         sprintf(errmsg,"sample %snot found in file %s",errmsg,fname);
         LATAN_ERROR(errmsg,LATAN_ELATSYN);

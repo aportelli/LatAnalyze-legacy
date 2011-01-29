@@ -30,11 +30,11 @@ int main(int argc, char *argv[])
     {
         case 3:
             do_save_res = false;
-            STRBUFCPY(res_name,"");
+            strbufcpy(res_name,"");
             break;
         case 4:
             do_save_res = true;
-            STRBUFCPY(res_name,OUTF_NAME);
+            strbufcpy(res_name,OUTF_NAME);
             break;
         default:
             fprintf(stderr,"usage: %s <sample> <double> [<output sample>]\n",\

@@ -84,12 +84,12 @@ channel_no channel_no_get(const strbuf label)
 
 void channel_id_set(const channel_no i, const strbuf new_id)
 {
-    STRBUFCPY(channel_id[i],new_id);
+    strbufcpy(channel_id[i],new_id);
 }
 
 void channel_id_get(strbuf str, const channel_no i)
 {
-    STRBUFCPY(str,channel_id[i]);
+    strbufcpy(str,channel_id[i]);
 }
 
 /* quarks */
@@ -103,12 +103,12 @@ static strbuf quark_id[] =
 
 void quark_id_set(const quark_no i, const strbuf new_id)
 {
-    STRBUFCPY(quark_id[i],new_id);
+    strbufcpy(quark_id[i],new_id);
 }
 
 void quark_id_get(strbuf str, const quark_no i)
 {
-    STRBUFCPY(str,quark_id[i]);
+    strbufcpy(str,quark_id[i]);
 }
 
 /* sources/sinks */
@@ -121,12 +121,12 @@ static strbuf ss_id[] =
 
 void ss_id_set(const ss_no i, const strbuf new_id)
 {
-    STRBUFCPY(ss_id[i],new_id);
+    strbufcpy(ss_id[i],new_id);
 }
 
 void ss_id_get(strbuf str, const ss_no i)
 {
-    STRBUFCPY(str,ss_id[i]);
+    strbufcpy(str,ss_id[i]);
 }
 
 /* hadron */
@@ -150,7 +150,7 @@ void hadron_set_2q_nomix(hadron *h, const strbuf name, const int parity,  \
                          const channel_no channel, const quark_no q1,     \
                          const quark_no q2)
 {
-    STRBUFCPY(h->name,name);
+    strbufcpy(h->name,name);
     h->parity        = parity;
     h->chmix         = NOMIX;
     h->stmix         = NOMIX;
@@ -164,7 +164,7 @@ void hadron_set_2q_2stmean(hadron *h, const strbuf name, const int parity,\
                            const quark_no q12, const quark_no q21,        \
                            const quark_no q22)
 {
-    STRBUFCPY(h->name,name);
+    strbufcpy(h->name,name);
     h->parity        = parity;
     h->chmix         = NOMIX;
     h->stmix         = MEAN;
@@ -177,7 +177,7 @@ void hadron_set_2q_2stmean(hadron *h, const strbuf name, const int parity,\
 
 void hadron_get_name(strbuf str, const hadron *h)
 {
-    STRBUFCPY(str,h->name);
+    strbufcpy(str,h->name);
 }
 
 /* spectrum */

@@ -44,7 +44,6 @@ typedef int bool;
 #ifndef STRING_LENGTH
 #define STRING_LENGTH 512
 #endif
-#define STRBUFCPY(a,b) strncpy(a,b,STRING_LENGTH)
 
 typedef char strbuf[STRING_LENGTH];
 
@@ -177,6 +176,9 @@ latan_errno latan_set_mat_op(const int mat_op);
 
 /* LatAnalyze message function */
 void latan_printf(const int verb, const strbuf fmt, ...);
+
+/* safe string operations */
+char * strbufcpy(strbuf a, const strbuf b);
 
 __END_DECLS
 

@@ -101,7 +101,7 @@ latan_errno xml_get_string(strbuf res, xmlNode *node)
     IF_GOT_LATAN_MARK_ELSE_ERROR(node,i_int)
     {
         buf = (char *)xmlNodeListGetString(node->doc,node->children,1);
-        STRBUFCPY(res,buf);
+        strbufcpy(res,buf);
         xmlFree(buf);
     }
 
@@ -508,10 +508,10 @@ void xml_check_extension(strbuf fname)
     }
     else
     {
-        STRBUFCPY(f_name_buf,fname);
+        strbufcpy(f_name_buf,fname);
     }
     
-    STRBUFCPY(fname,f_name_buf);
+    strbufcpy(fname,f_name_buf);
 }
 
 xml_file * xml_new_file(const strbuf fname)
@@ -525,7 +525,7 @@ xml_file * xml_new_file(const strbuf fname)
     f->root = NULL;
     f->ns   = NULL;
     f->ctxt = NULL;
-    STRBUFCPY(f->fname,fname);
+    strbufcpy(f->fname,fname);
     xml_check_extension(f->fname);
     f->mode = 'w';
 
@@ -561,7 +561,7 @@ xml_file * xml_open_file(const strbuf fname, const char mode)
     f->root = NULL;
     f->ns   = NULL;
     f->ctxt = NULL;
-    STRBUFCPY(f->fname,fname);
+    strbufcpy(f->fname,fname);
     if ((mode != 'r')&&(mode != 'a'))
     {
         xml_file_destroy(f);
@@ -654,7 +654,7 @@ void xml_file_destroy(xml_file *f)
     f->root = NULL;
     f->ns   = NULL;
     f->ctxt = NULL;
-    STRBUFCPY(f->fname,"");
+    strbufcpy(f->fname,"");
     FREE(f);
 }
 

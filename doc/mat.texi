@@ -2,9 +2,9 @@ This chapter explains how to manipulate the matrix type defined
 in LatAnalyze that is the main numerical data type of the
 library. All operations (matrix product,
 inversion...) are performed at low level by the @acronym{CBLAS}
-library. The performance of the functions described here
+library. The performancea of the functions described here
 will greatly depend of the optimization level of the 
-@acronym{CBLAS} binary linked to LatAnalyze at installation
+@acronym{CBLAS} binary linked to LatAnalyze at compilation
 time.
 
 @menu
@@ -191,6 +191,7 @@ control the size of the matrix arguments and throw errors through LatAnalyze
 error handler in case of mismatch.
 
 @subsection Matrix initialization
+@cindex matrix initialization
 @deftypefun void mat_zero (mat * m)
 This function set to @math{0} all the elements of matrix @var{m}.
 @tex
@@ -199,7 +200,7 @@ $$m_{i,i}\leftarrow 0$$
 @end deftypefun
 
 @deftypefun void mat_rand_u (mat * m, const double a, const double b)
-This function fill matrix with random number uniformly drawn between @var{a} and
+This function fill matrix with random numbers uniformly drawn between @var{a} and
 @var{b}.
 @tex
 $$m_{i,j}\leftarrow{\tt rand\_u}(a,b)$$
@@ -209,7 +210,7 @@ $$m_{i,j}\leftarrow{\tt rand\_u}(a,b)$$
 @deftypefun void mat_id (mat * m)
 This function set @var{m} to the identity matrix.
 @tex
-$$m_{i,i}\leftarrow \delta_{i,j}$$
+$$m_{i,j}\leftarrow \delta_{i,j}$$
 @end tex
 @end deftypefun
 
@@ -218,7 +219,7 @@ $$m_{i,i}\leftarrow \delta_{i,j}$$
 All unary operations function have the form 
 @code{mat_op} (@var{mat * m, mat * n}) where @code{op} is the considered
 operation. The operation is done taking @var{n} as an argument, and the result
-is stored in @var{m}. Systematically a macro @code{mat_eqop} with one argument
+is stored in @var{m}. When it makes sense a macro/function @code{mat_eqop} with one argument
 is defined such that @code{mat_eqop(m)} is equivalent to @code{mat_op(m,m)}.
 
 @deftypefun latan_errno mat_cp (mat * m, mat * n)
@@ -246,14 +247,92 @@ $$m_{i,j}\leftarrow\sqrt{|n_{i,j}|}$$
 @end tex
 @end deftypefun
 
+@findex mat_eqtranspose
+@deftypefun latan_errno mat_transpose (mat * m, mat * n)
+This function set matrix @var{m} to the transposed matrix of @var{n}.
+@tex
+$$m_{i,j}\leftarrow n_{j,i}$$
+@end tex
+@end deftypefun
+
 @subsection Binary operations
 @findex mat_eq*
+
+@subsubsection Operations with a matrix
+
 All binary operations function have the form 
 @code{mat_op} (@var{mat * m, mat * n, mat * o}) where @code{op} is 
 the considered operation. The operation is done taking (@var{n},@var{o}) as an
-argument, and the result is stored in @var{m}. Systematically a macro 
+argument, and the result is stored in @var{m}. When it makes sense a macro/function 
 @code{mat_eqop} with two arguments is defined such that @code{mat_eqop(m,n)} is 
 equivalent to @code{mat_op(m,m,n)}.
+
+@findex mat_eqadd
+@cindex matrix sum
+@deftypefun latan_errno mat_add (mat * m, mat * n, mat * o)
+This function set matrix @var{m} elements to the sum of @var{n} and @var{o}.
+@tex
+$$m_{i,j}\leftarrow n_{i,j} + o_{i,j}$$
+@end tex
+@end deftypefun
+
+@findex mat_eqsub
+@deftypefun latan_errno mat_sub (mat * m, mat * n, mat * o)
+This function set matrix @var{m} elements to the difference of @var{n} and @var{o}.
+@tex
+$$m_{i,j}\leftarrow n_{i,j} - o_{i,j}$$
+@end tex
+@end deftypefun
+
+@cindex matrix product
+@deftypefun latan_errno mat_mul_nn (mat * m, mat * n, mat * o)
+This function set matrix @var{m} elements to the matrix product of @var{n} and @var{o}.
+@tex
+$$m_{i,j}\leftarrow \sum_k n_{i,k}o_{k,j}$$
+@end tex
+@end deftypefun
+
+@cindex matrix product
+@deftypefun latan_errno mat_mul_nt (mat * m, mat * n, mat * o)
+This function set matrix @var{m} elements to the matrix product of @var{n} and @var{o} transposed matrix.
+@tex
+$$m_{i,j}\leftarrow \sum_k n_{i,k}o_{j,k}$$
+@end tex
+@end deftypefun
+
+@cindex matrix product
+@deftypefun latan_errno mat_mul_tn (mat * m, mat * n, mat * o)
+This function set matrix @var{m} elements to the matrix product of @var{n} transposed matrix and @var{o}.
+@tex
+$$m_{i,j}\leftarrow \sum_k n_{k,i}o_{k,j}$$
+@end tex
+@end deftypefun
+
+@cindex matrix product
+@deftypefun latan_errno mat_mul_tt (mat * m, mat * n, mat * o)
+This function set matrix @var{m} elements to the matrix product of @var{n} transposed matrix and @var{o} transposed matrix.
+@tex
+$$m_{i,j}\leftarrow \sum_k n_{k,i}o_{j,k}$$
+@end tex
+@end deftypefun
+
+@cindex matrix product
+@findex mat_eqmulp
+@deftypefun latan_errno mat_mulp (mat * m, mat * n, mat * o)
+This function set matrix @var{m} elements to the product of @var{n} and @var{o} element by element.
+@tex
+$$m_{i,j}\leftarrow n_{i,j}o_{i,j}$$
+@end tex
+@end deftypefun
+
+@cindex matrix ratio
+@findex mat_eqdivp
+@deftypefun latan_errno mat_divp (mat * m, mat * n, mat * o)
+This function set matrix @var{m} elements to the ratio of @var{n} by @var{o} element by element.
+@tex
+$$m_{i,j}\leftarrow {n_{i,j}\over o_{i,j}}$$
+@end tex
+@end deftypefun
 
 @node Linear algebra, , Operations, Matrices
 @section Linear Algebra

@@ -261,7 +261,7 @@ spectrum *spectrum_create_qcd(void)
 }
 
 /** QCD+QED spectrum **/
-#define SPECT_QCDQED_SIZE 26
+#define SPECT_QCDQED_SIZE 29
 enum
 {
     h_pi_0      = 0,
@@ -286,10 +286,13 @@ enum
     h_Sigmast_p = 19,
     h_Xist_m    = 20,
     h_Xist_0    = 21,
-    h_PP_uu     = 22,
-    h_PP_dd     = 23,
-    h_VV_uu     = 24,
-    h_VV_dd     = 25
+    h_Omega_m   = 22,
+    h_PP_uu     = 23,
+    h_PP_dd     = 24,
+    h_PP_ss     = 25,
+    h_VV_uu     = 26,
+    h_VV_dd     = 27,
+    h_VV_ss     = 28
 };
 
 spectrum *spectrum_create_qcdqed(void)
@@ -313,10 +316,14 @@ spectrum *spectrum_create_qcdqed(void)
                         qu_u);
     hadron_set_2q_nomix(s_qcdqed->particle[h_PP_dd],"PP_dd",ODD,ch_PP,qu_d,\
                         qu_d);
+    hadron_set_2q_nomix(s_qcdqed->particle[h_PP_ss],"PP_ss",ODD,ch_PP,qu_s,\
+                        qu_s);
     hadron_set_2q_nomix(s_qcdqed->particle[h_VV_uu],"VV_uu",ODD,ch_VV,qu_u,\
                         qu_u);
     hadron_set_2q_nomix(s_qcdqed->particle[h_VV_dd],"VV_dd",ODD,ch_VV,qu_d,\
                         qu_d);
+    hadron_set_2q_nomix(s_qcdqed->particle[h_VV_ss],"VV_ss",ODD,ch_VV,qu_s,\
+                        qu_s);
     
     /* baryons */
     hadron_set_2q_nomix(s_qcdqed->particle[h_n],"n",EVEN,ch_N,qu_u,qu_d);
@@ -343,6 +350,8 @@ spectrum *spectrum_create_qcdqed(void)
                         qu_s);
     hadron_set_2q_nomix(s_qcdqed->particle[h_Xist_0],"Xi*0",EVEN,ch_Delta,qu_u,\
                         qu_s);
+    hadron_set_2q_nomix(s_qcdqed->particle[h_Omega_m],"Omega-",EVEN,ch_Delta,\
+                        qu_s,qu_s);
     return s_qcdqed;
 }
 

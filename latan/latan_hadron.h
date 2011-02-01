@@ -53,7 +53,8 @@ typedef enum
     ch_Delta    = 8     /* Delta-like       -> Delta-like       */
 } channel_no;
 
-channel_no channel_no_get(const strbuf label);
+channel_no channel_get_no_from_label(const strbuf label);
+channel_no channel_get_no_from_id(const strbuf id);
 void channel_id_set(const channel_no i, const strbuf new_id);
 void channel_id_get(strbuf str, const channel_no i);
 

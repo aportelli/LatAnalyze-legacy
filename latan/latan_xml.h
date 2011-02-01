@@ -99,9 +99,9 @@ xmlNode * xml_insert_string(xmlNode *parent, const strbuf res,\
                             const strbuf name);
 xmlNode * xml_insert_vect(xmlNode *parent, mat *v, const strbuf name);
 xmlNode * xml_insert_mat(xmlNode *parent, mat *m, const strbuf name);
-xmlNode * xml_insert_prop(xmlNode *parent, mat *prop,            \
-                          const channel_no ch, const quark_no q1,\
-                          const quark_no q2, const ss_no source, \
+xmlNode * xml_insert_prop(xmlNode *parent, mat *prop,                   \
+                          const strbuf ch, const quark_no q1,           \
+                          const quark_no q2, const ss_no source,        \
                           const ss_no sink, const strbuf name);
 xmlNode * xml_insert_rgstate(xmlNode *parent, const rg_state state,\
                              const strbuf name);

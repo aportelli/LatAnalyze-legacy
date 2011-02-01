@@ -416,32 +416,31 @@ xmlNode * xml_insert_mat(xmlNode *parent, mat *m, const strbuf name)
 }
 
 xmlNode * xml_insert_prop(xmlNode *parent, mat *prop,            \
-                          const channel_no ch, const quark_no q1,\
+                          const strbuf ch, const quark_no q1,    \
                           const quark_no q2, const ss_no source, \
                           const ss_no sink, const strbuf name)
 {
     xmlNode *node_new;
-    strbuf ch_id,q1_id,q2_id,source_id,sink_id;
+    strbuf q1_id,q2_id,source_id,sink_id;
 
     
     node_new = xmlNewChild(parent,NULL,(const xmlChar *)xml_mark[i_prop],\
                            (const xmlChar *)"");
     xml_insert_vect(node_new,prop,"");
-    channel_id_get(ch_id,ch);
-    quark_id_get(q1_id,q1);
-    quark_id_get(q2_id,q2);
+    sprintf(q1_id,"%d",q1);
+    sprintf(q2_id,"%d",q2);
     ss_id_get(source_id,source);
     ss_id_get(sink_id,sink);
-    if (strlen(name) > 0)
-    {
-        xmlNewProp(node_new,(const xmlChar *)"name",(const xmlChar *)name);
-    }
-    xmlNewProp(node_new,(const xmlChar *)"channel",(const xmlChar *)ch_id);
+    xmlNewProp(node_new,(const xmlChar *)"channel",(const xmlChar *)ch);
     xmlNewProp(node_new,(const xmlChar *)"mass1",(const xmlChar *)q1_id);
     xmlNewProp(node_new,(const xmlChar *)"mass2",(const xmlChar *)q2_id);
     xmlNewProp(node_new,(const xmlChar *)"source",(const xmlChar *)source_id);
     xmlNewProp(node_new,(const xmlChar *)"sink",(const xmlChar *)sink_id);
-
+    if (strlen(name) > 0)
+    {
+        xmlNewProp(node_new,(const xmlChar *)"name",(const xmlChar *)name);
+    }
+    
     return node_new;
 }
 

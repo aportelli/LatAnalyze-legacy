@@ -37,6 +37,19 @@ latan_errno prop_load_xml(mat *prop, const channel_no channel, \
                           const quark_no q1, const quark_no q2,\
                           const ss_no source, const ss_no sink,\
                           strbuf fname);
+latan_errno prop_ar_load_nprop_xml(size_t *nprop, const channel_no channel,\
+                                   const quark_no q1, const quark_no q2,   \
+                                   const ss_no source, const ss_no sink,   \
+                                   strbuf manfname);
+latan_errno prop_ar_load_xml(mat **prop, const channel_no channel,\
+                             const quark_no q1, const quark_no q2,\
+                             const ss_no source, const ss_no sink,\
+                             strbuf manfname);
+latan_errno prop_save_xml(strbuf fname, const char mode, mat *prop, \
+                          const strbuf channel,                     \
+                          const quark_no q1, const quark_no q2,     \
+                          const ss_no source, const ss_no sink,     \
+                          const strbuf name);
 
 /* random generator state I/O */
 latan_errno randgen_save_state_xml(const strbuf f_name, const char mode,

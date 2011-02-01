@@ -177,7 +177,7 @@ latan_errno latan_set_mat_op(const int mat_op);
 /* LatAnalyze message function */
 void latan_printf(const int verb, const strbuf fmt, ...);
 
-/* safe string operations */
+/* string operations */
 char * strbufcpy(strbuf a, const strbuf b);
 
 __END_DECLS

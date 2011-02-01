@@ -24,7 +24,7 @@
 static strbuf channel_id[] = 
 {
     "SS"    ,\
-    "ViVi"  ,\
+    "V4V4"  ,\
     "PP"    ,\
     "PA4"   ,\
     "A4P"   ,\
@@ -34,7 +34,7 @@ static strbuf channel_id[] =
     "DELTA"  \
 };
 
-channel_no channel_no_get(const strbuf label)
+channel_no channel_get_no_from_label(const strbuf label)
 {
     channel_no res;
     
@@ -79,6 +79,54 @@ channel_no channel_no_get(const strbuf label)
         LATAN_ERROR("wrong channel name",LATAN_FAILURE);
     }
     
+    return res;
+}
+
+channel_no channel_get_no_from_id(const strbuf id)
+{
+    channel_no res;
+
+    if (strcmp(id,channel_id[ch_SS]) == 0)
+    {
+        res = ch_SS;
+    }
+    else if (strcmp(id,channel_id[ch_VV]) == 0)
+    {
+        res = ch_VV;
+    }
+    else if (strcmp(id,channel_id[ch_PP]) == 0)
+    {
+        res = ch_PP;
+    }
+    else if (strcmp(id,channel_id[ch_PA]) == 0)
+    {
+        res = ch_PA;
+    }
+    else if (strcmp(id,channel_id[ch_AP]) == 0)
+    {
+        res = ch_AP;
+    }
+    else if (strcmp(id,channel_id[ch_AA]) == 0)
+    {
+        res = ch_AA;
+    }
+    else if (strcmp(id,channel_id[ch_N]) == 0)
+    {
+        res = ch_N;
+    }
+    else if (strcmp(id,channel_id[ch_Lambda]) == 0)
+    {
+        res = ch_Lambda;
+    }
+    else if (strcmp(id,channel_id[ch_Delta]) == 0)
+    {
+        res = ch_Delta;
+    }
+    else
+    {
+        LATAN_ERROR("unknown channel ID",LATAN_FAILURE);
+    }
+
     return res;
 }
 

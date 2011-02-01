@@ -554,57 +554,71 @@ xml_file * xml_open_file(const strbuf fname, const char mode)
 {
     xml_file *f;
 
-    MALLOC_ERRVAL(f,xml_file *,1,NULL);
+    if (access(fname,F_OK) == 0)
+    {
+        MALLOC_ERRVAL(f,xml_file *,1,NULL);
 
-    f->doc  = NULL;
-    f->root = NULL;
-    f->ns   = NULL;
-    f->ctxt = NULL;
-    strbufcpy(f->fname,fname);
-    if ((mode != 'r')&&(mode != 'a'))
-    {
-        xml_file_destroy(f);
-        LATAN_ERROR_NULL("XML file mode unknown (choose 'a' or 'r')",\
-                         LATAN_EINVAL);
-    }
-    f->mode = mode;
+        f->doc  = NULL;
+        f->root = NULL;
+        f->ns   = NULL;
+        f->ctxt = NULL;
+        strbufcpy(f->fname,fname);
+        if ((mode != 'r')&&(mode != 'a'))
+        {
+            xml_file_destroy(f);
+            LATAN_ERROR_NULL("XML file mode unknown (choose 'a' or 'r')",\
+                             LATAN_EINVAL);
+        }
+        f->mode = mode;
 
-    LIBXML_TEST_VERSION;
-    f->doc = xmlReadFile(f->fname,NULL,XML_PARSE_NOBLANKS|XML_PARSE_NONET);
-    if (f->doc == NULL)
+        LIBXML_TEST_VERSION;
+        f->doc = xmlReadFile(f->fname,NULL,XML_PARSE_NOBLANKS|XML_PARSE_NONET);
+        if (f->doc == NULL)
+        {
+            strbuf errmsg;
+            sprintf(errmsg,"impossible to parse file %s",f->fname);
+            xml_file_destroy(f);
+            LATAN_ERROR_NULL(errmsg,LATAN_EFAULT);
+        }
+        f->ctxt = xmlXPathNewContext((f)->doc);
+        if (f->ctxt == NULL)
+        {
+            strbuf errmsg;
+            sprintf(errmsg,"impossible to create XPath context (%s)",f->fname);
+            xml_file_destroy(f);
+            LATAN_ERROR_NULL(errmsg,LATAN_EFAULT);
+        }
+        xmlXPathRegisterNs((f)->ctxt,(const xmlChar *)LATAN_XMLNS_PREF,\
+                           (const xmlChar *)LATAN_XMLNS);
+        f->root = xmlDocGetRootElement((f)->doc);
+        f->ns   = (f)->root->ns;
+        if (!GOT_LATAN_NS(f->root))
+        {
+            strbuf errmsg;
+            sprintf(errmsg,"XML namespace mismatch, expecting xmlns:%s=\"%s\" (%s:%d)",\
+                    LATAN_XMLNS_PREF,LATAN_XMLNS,f->root->doc->URL,f->root->line);
+            xml_file_destroy(f);
+            LATAN_ERROR_NULL(errmsg,LATAN_ELATSYN);
+        }
+        else if (strcmp((const char *)(f->root->name),xml_mark[i_main]) != 0)
+        {
+            strbuf errmsg;
+            sprintf(errmsg,"XML mark %s:%s not found (%s:%d)",LATAN_XMLNS_PREF,\
+                    xml_mark[i_main],f->root->doc->URL,f->root->line);
+            xml_file_destroy(f);
+            LATAN_ERROR_NULL(errmsg,LATAN_ELATSYN);
+        }
+    }
+    else if (mode == 'a')
+    {
+        f = xml_new_file(fname);
+        f->mode = 'w';
+    }
+    else
     {
         strbuf errmsg;
-        sprintf(errmsg,"impossible to parse file %s",f->fname);
-        xml_file_destroy(f);
+        sprintf(errmsg,"file %s does not exist",fname);
         LATAN_ERROR_NULL(errmsg,LATAN_EFAULT);
-    }
-    f->ctxt = xmlXPathNewContext((f)->doc);
-    if (f->ctxt == NULL)
-    {
-        strbuf errmsg;
-        sprintf(errmsg,"impossible to create XPath context (%s)",f->fname);
-        xml_file_destroy(f);
-        LATAN_ERROR_NULL(errmsg,LATAN_EFAULT);
-    }
-    xmlXPathRegisterNs((f)->ctxt,(const xmlChar *)LATAN_XMLNS_PREF,\
-                       (const xmlChar *)LATAN_XMLNS);
-    f->root = xmlDocGetRootElement((f)->doc);
-    f->ns   = (f)->root->ns;
-    if (!GOT_LATAN_NS(f->root))
-    {
-        strbuf errmsg;
-        sprintf(errmsg,"XML namespace mismatch, expecting xmlns:%s=\"%s\" (%s:%d)",\
-                LATAN_XMLNS_PREF,LATAN_XMLNS,f->root->doc->URL,f->root->line);
-        xml_file_destroy(f);
-        LATAN_ERROR_NULL(errmsg,LATAN_ELATSYN);
-    }
-    else if (strcmp((const char *)(f->root->name),xml_mark[i_main]) != 0)
-    {
-        strbuf errmsg;
-        sprintf(errmsg,"XML mark %s:%s not found (%s:%d)",LATAN_XMLNS_PREF,\
-                xml_mark[i_main],f->root->doc->URL,f->root->line);
-        xml_file_destroy(f);
-        LATAN_ERROR_NULL(errmsg,LATAN_ELATSYN);
     }
 
     return f;
@@ -657,13 +671,19 @@ void xml_file_destroy(xml_file *f)
     FREE(f);
 }
 
-void xml_close_file(xml_file *f)
+latan_errno xml_close_file(xml_file *f)
 {
+    latan_errno status;
+
+    status = LATAN_SUCCESS;
+    
     if ((f->mode == 'w')||(f->mode == 'a'))
     {
-        xml_save_file(f);
+        status = xml_save_file(f);
     }
     xml_file_destroy(f);
+
+    return status;
 }
 
 /*                          XPath search function                           */

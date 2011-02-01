@@ -26,17 +26,25 @@
 #include <latan/latan_rand.h>
 #include <latan/latan_statistics.h>
 
-/* loop on lines of a file */
+/* loop on the lines of a file */
 #define BEGIN_FOR_LINE(str,f_name)\
 {\
     FILE* _f;\
-    strbuf _buf;\
-    FOPEN(_f,f_name,"r");\
+    size_t _l;\
+    _f = fopen(f_name,"r");\
     while (!feof(_f))\
     {\
-        if ((fgets(_buf,STRING_LENGTH,_f))&&(sscanf(_buf,"%s\n",str)>0))
+        if (fgets(str,STRING_LENGTH,_f))\
+        {\
+            _l = strlen(str);\
+            if ((_l > 0)&&(strspn(str," \n\t") < _l))\
+            {\
+                (str)[_l-1] = ((str)[_l-1] == '\n') ? '\0' : (str)[_l-1];\
+
 
 #define END_FOR_LINE\
+            }\
+        }\
     }\
     fclose(_f);\
 }

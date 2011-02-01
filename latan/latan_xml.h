@@ -114,7 +114,7 @@ xml_file * xml_new_file(const strbuf fname);
 xml_file * xml_open_file(const strbuf fname, const char mode);
 latan_errno xml_save_file(xml_file *f);
 void xml_file_destroy(xml_file *f);
-void xml_close_file(xml_file *f);
+latan_errno xml_close_file(xml_file *f);
 
 /* XPath search function */
 xmlXPathObject * xml_get_nodeset(strbuf xpath_expr, xml_file *f);

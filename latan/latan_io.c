@@ -23,16 +23,62 @@
 
 /*                            default I/O functions                         */
 /****************************************************************************/
+#define DEF_IO_FMT                 IO_XML
 #define DEF_IO_INIT                io_init_xml
 #define DEF_IO_FINISH              io_finish_xml
 #define DEF_PROP_LOAD_NT           prop_load_nt_xml
 #define DEF_PROP_LOAD              prop_load_xml
+#define DEF_PROP_AR_LOAD_NPROP     prop_ar_load_nprop_xml
+#define DEF_PROP_AR_LOAD           prop_ar_load_xml
+#define DEF_PROP_SAVE              prop_save_xml
 #define DEF_RANDGEN_SAVE_STATE     randgen_save_state_xml
 #define DEF_RANDGEN_LOAD_STATE     randgen_load_state_xml
 #define DEF_RS_SAMPLE_SAVE         rs_sample_save_xml
 #define DEF_RS_SAMPLE_LOAD_NROW    rs_sample_load_nrow_xml
 #define DEF_RS_SAMPLE_LOAD_NSAMPLE rs_sample_load_nsample_xml
 #define DEF_RS_SAMPLE_LOAD         rs_sample_load_xml
+
+/*                              I/O format                                  */
+/****************************************************************************/
+static io_fmt_no io_fmt = DEF_IO_FMT;
+
+#define SET_IO_FUNC(func_name,suf) func_name = &func_name##_##suf
+#define SET_IO_FUNCS(suf)\
+SET_IO_FUNC(io_init,suf);\
+SET_IO_FUNC(io_finish,suf);\
+SET_IO_FUNC(prop_load_nt,suf);\
+SET_IO_FUNC(prop_load,suf);\
+SET_IO_FUNC(prop_ar_load,suf);\
+SET_IO_FUNC(prop_ar_load_nprop,suf);\
+SET_IO_FUNC(prop_save,suf);\
+SET_IO_FUNC(randgen_save_state,suf);\
+SET_IO_FUNC(randgen_load_state,suf);\
+SET_IO_FUNC(rs_sample_save,suf);\
+SET_IO_FUNC(rs_sample_load_nrow,suf);\
+SET_IO_FUNC(rs_sample_load_nsample,suf);\
+SET_IO_FUNC(rs_sample_load,suf);
+
+latan_errno io_set_fmt(const io_fmt_no fmt)
+{
+    switch (fmt)
+    {
+        case IO_XML:
+            SET_IO_FUNCS(xml);
+            break;
+        default:
+            LATAN_ERROR("I/O format flag unknown",LATAN_EINVAL);
+            break;
+    }
+
+    return LATAN_SUCCESS;
+}
+#undef SET_IO_FUNCS
+#undef SET_IO_FUNC
+
+io_fmt_no io_get_fmt(void)
+{
+    return io_fmt;
+}
 
 /*                              I/O init/finish                             */
 /****************************************************************************/
@@ -156,6 +202,23 @@ latan_errno (*prop_load)(mat *prop, const channel_no channel, \
                          const ss_no source, const ss_no sink,\
                          strbuf fname)                        \
         = &DEF_PROP_LOAD;
+latan_errno (*prop_ar_load_nprop)(size_t *nprop,                       \
+                                  const channel_no channel,            \
+                                  const quark_no q1, const quark_no q2,\
+                                  const ss_no source, const ss_no sink,\
+                                  strbuf manfname)                     \
+        = &DEF_PROP_AR_LOAD_NPROP;
+latan_errno (*prop_ar_load)(mat **prop, const channel_no channel,\
+                            const quark_no q1, const quark_no q2,\
+                            const ss_no source, const ss_no sink,\
+                            strbuf manfname)                     \
+        = &DEF_PROP_AR_LOAD;
+latan_errno (*prop_save)(strbuf fname, const char mode, mat *prop, \
+                         const strbuf channel,                     \
+                         const quark_no q1, const quark_no q2,     \
+                         const ss_no source, const ss_no sink,     \
+                         const strbuf name)                        \
+        = &DEF_PROP_SAVE;
 
 latan_errno hadron_prop_load_bin(mat **prop, const hadron *h,              \
                                  const ss_no source, const ss_no sink,     \

@@ -43,6 +43,16 @@
 
 __BEGIN_DECLS
 
+/* I/O format */
+typedef enum
+{
+    IO_XML   = 0,\
+    IO_ASCII = 1 \
+} io_fmt_no;
+
+latan_errno io_set_fmt(const io_fmt_no fmt);
+io_fmt_no io_get_fmt(void);
+
 /* I/O init/finish */
 extern void (*io_init)(void);
 extern void (*io_finish)(void);
@@ -51,7 +61,7 @@ extern void (*io_finish)(void);
 int get_nfile(const strbuf manifestfname);
 latan_errno get_firstfname(strbuf fname, const strbuf manifestfname);
 
-/* mat *I/O */
+/* mat I/O */
 void mat_dump(FILE* stream, mat *m, const strbuf fmt);
 #define mat_print(m,fmt) mat_dump(stdout,m,fmt)
 latan_errno mat_save_plotdat(mat *x, mat *m, const strbuf fname);
@@ -69,6 +79,20 @@ extern latan_errno (*prop_load)(mat *prop, const channel_no channel, \
                                 const quark_no q1, const quark_no q2,\
                                 const ss_no source, const ss_no sink,\
                                 strbuf fname);
+extern latan_errno (*prop_ar_load_nprop)(size_t *nprop,                       \
+                                         const channel_no channel,            \
+                                         const quark_no q1, const quark_no q2,\
+                                         const ss_no source, const ss_no sink,\
+                                         strbuf manfname);
+extern latan_errno (*prop_ar_load)(mat **prop, const channel_no channel,\
+                                    const quark_no q1, const quark_no q2,\
+                                    const ss_no source, const ss_no sink,\
+                                    strbuf manfname);
+extern latan_errno (*prop_save)(strbuf fname, const char mode, mat *prop, \
+                                const strbuf channel,                     \
+                                const quark_no q1, const quark_no q2,     \
+                                const ss_no source, const ss_no sink,     \
+                                const strbuf name);
 latan_errno hadron_prop_load_bin(mat **prop, const hadron *h,              \
                                  const ss_no source, const ss_no sink,     \
                                  const strbuf manfname,const size_t binsize);

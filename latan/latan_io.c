@@ -28,8 +28,6 @@
 #define DEF_IO_FINISH              io_finish_xml
 #define DEF_PROP_LOAD_NT           prop_load_nt_xml
 #define DEF_PROP_LOAD              prop_load_xml
-#define DEF_PROP_AR_LOAD_NPROP     prop_ar_load_nprop_xml
-#define DEF_PROP_AR_LOAD           prop_ar_load_xml
 #define DEF_PROP_SAVE              prop_save_xml
 #define DEF_RANDGEN_SAVE_STATE     randgen_save_state_xml
 #define DEF_RANDGEN_LOAD_STATE     randgen_load_state_xml
@@ -48,8 +46,6 @@ SET_IO_FUNC(io_init,suf);\
 SET_IO_FUNC(io_finish,suf);\
 SET_IO_FUNC(prop_load_nt,suf);\
 SET_IO_FUNC(prop_load,suf);\
-SET_IO_FUNC(prop_ar_load,suf);\
-SET_IO_FUNC(prop_ar_load_nprop,suf);\
 SET_IO_FUNC(prop_save,suf);\
 SET_IO_FUNC(randgen_save_state,suf);\
 SET_IO_FUNC(randgen_load_state,suf);\
@@ -202,17 +198,6 @@ latan_errno (*prop_load)(mat *prop, const channel_no channel, \
                          const ss_no source, const ss_no sink,\
                          strbuf fname)                        \
         = &DEF_PROP_LOAD;
-latan_errno (*prop_ar_load_nprop)(size_t *nprop,                       \
-                                  const channel_no channel,            \
-                                  const quark_no q1, const quark_no q2,\
-                                  const ss_no source, const ss_no sink,\
-                                  strbuf manfname)                     \
-        = &DEF_PROP_AR_LOAD_NPROP;
-latan_errno (*prop_ar_load)(mat **prop, const channel_no channel,\
-                            const quark_no q1, const quark_no q2,\
-                            const ss_no source, const ss_no sink,\
-                            strbuf manfname)                     \
-        = &DEF_PROP_AR_LOAD;
 latan_errno (*prop_save)(strbuf fname, const char mode, mat *prop, \
                          const strbuf channel,                     \
                          const quark_no q1, const quark_no q2,     \

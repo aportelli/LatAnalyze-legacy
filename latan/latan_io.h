@@ -49,6 +49,32 @@
     fclose(_f);\
 }
 
+/* loop on the lines of a file with tokenization of each line (thread safe) */
+/* field is assumed to be a non allocated strbuf*                           */
+#define BEGIN_FOR_LINE_TOK(field,f_name,tok)\
+{\
+    strbuf _line;\
+    BEGIN_FOR_LINE(_line,f_name)\
+    {\
+        char *_line_ptr,*_save_ptr;\
+        int _line_ind;\
+        _line_ptr = strtok_r(_line,tok,&_save_ptr);\
+        _line_ind = 0;\
+        while(_line_ptr != NULL)\
+        {\
+            REALLOC_NOERRET(field,field,strbuf *,(size_t)(_line_ind+1));\
+            strbufcpy(field[_line_ind],_line_ptr);\
+            _line_ptr = strtok_r(NULL,tok,&_save_ptr);\
+            _line_ind++;\
+        }\
+        _save_ptr = NULL;
+
+#define END_FOR_LINE_TOK(field)\
+    }\
+    END_FOR_LINE;\
+    FREE(field);\
+}
+
 __BEGIN_DECLS
 
 /* I/O format */

@@ -211,7 +211,7 @@ latan_errno hadron_prop_load_bin(mat **prop, const hadron *h,              \
 {
     int i,p,s;
     size_t j;
-    int ndat, chmix, stmix;
+    int ndat, chmix, stmix, dumb;
     size_t nt;
     double mean;
     mat **dat[MAXPROP][MAXQUARKST];
@@ -239,7 +239,7 @@ latan_errno hadron_prop_load_bin(mat **prop, const hadron *h,              \
         {
             dat[p][s] = mat_ar_create((size_t)(ndat),(size_t)(nt),1);
             i = 0;
-            BEGIN_FOR_LINE(buf,manfname)
+            BEGIN_FOR_LINE(buf,manfname,dumb)
             {
                 strbufcpy(fname[i],buf);
                 i++;

@@ -27,52 +27,79 @@
 #include <latan/latan_statistics.h>
 
 /* loop on the lines of a file */
-#define BEGIN_FOR_LINE(str,f_name)\
+#define BEGIN_FOR_LINE_F(str,f,lc)\
 {\
-    FILE* _f;\
     size_t _l;\
-    _f = fopen(f_name,"r");\
-    while (!feof(_f))\
+    (lc) = 0;\
+    rewind(f);\
+    while (!feof(f))\
     {\
-        if (fgets(str,STRING_LENGTH,_f))\
+        if (fgets(str,STRING_LENGTH,f))\
         {\
             _l = strlen(str);\
-            if ((_l > 0)&&(strspn(str," \n\t") < _l))\
+            if (str[_l-1] == '\n')\
             {\
-                (str)[_l-1] = ((str)[_l-1] == '\n') ? '\0' : (str)[_l-1];\
+                (lc)++;\
+                (str)[_l-1] = '\0';\
+            }\
+            if ((_l > 0)&&(strspn(str," \n\t") < strlen(str)))\
+            {
 
-
-#define END_FOR_LINE\
+#define END_FOR_LINE_F\
             }\
         }\
     }\
+}
+
+#define BEGIN_FOR_LINE(str,f_name,lc)\
+{\
+    FILE* _f;\
+    _f = fopen(f_name,"r");\
+    BEGIN_FOR_LINE_F(str,_f,lc)\
+    {
+
+#define END_FOR_LINE\
+    }\
+    END_FOR_LINE_F;\
     fclose(_f);\
 }
 
 /* loop on the lines of a file with tokenization of each line (thread safe) */
 /* field is assumed to be a non allocated strbuf*                           */
-#define BEGIN_FOR_LINE_TOK(field,f_name,tok)\
+#define BEGIN_FOR_LINE_TOK_F(field,f,tok,nf,lc)\
 {\
     strbuf _line;\
-    BEGIN_FOR_LINE(_line,f_name)\
+    BEGIN_FOR_LINE_F(_line,f,lc)\
     {\
         char *_line_ptr,*_save_ptr;\
-        int _line_ind;\
         _line_ptr = strtok_r(_line,tok,&_save_ptr);\
-        _line_ind = 0;\
+        nf        = 0;\
         while(_line_ptr != NULL)\
         {\
-            REALLOC_NOERRET(field,field,strbuf *,(size_t)(_line_ind+1));\
-            strbufcpy(field[_line_ind],_line_ptr);\
+            REALLOC_NOERRET(field,field,strbuf *,(size_t)(nf+1));\
+            strbufcpy(field[nf],_line_ptr);\
             _line_ptr = strtok_r(NULL,tok,&_save_ptr);\
-            _line_ind++;\
+            nf++;\
         }\
         _save_ptr = NULL;
 
+#define END_FOR_LINE_TOK_F(field)\
+    }\
+    END_FOR_LINE_F;\
+    FREE(field);\
+}
+
+#define BEGIN_FOR_LINE_TOK(field,f_name,tok,nf,lc)\
+{\
+    FILE* _f;\
+    _f = fopen(f_name,"r");\
+    BEGIN_FOR_LINE_TOK_F(field,_f,tok,nf,lc)\
+    {
+
 #define END_FOR_LINE_TOK(field)\
     }\
-    END_FOR_LINE;\
-    FREE(field);\
+    END_FOR_LINE_TOK_F(field);\
+    fclose(_f);\
 }
 
 __BEGIN_DECLS

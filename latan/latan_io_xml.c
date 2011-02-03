@@ -52,16 +52,21 @@ static latan_errno xml_new_file_buf(const strbuf fname)
 #endif
     status  = LATAN_SUCCESS;
 
-    if (nthread > env.nfile)
+#ifdef _OPENMP
+    #pragma omp critical
+#endif
     {
-        REALLOC(env.xml_buf,env.xml_buf,xml_file **,env.nfile);
-        REALLOC(env.file_is_loaded,env.file_is_loaded,bool *,env.nfile);
-        for (i=env.nfile;i<nthread;i++)
+        if (nthread > env.nfile)
         {
-            env.file_is_loaded[i] = false;
-            env.xml_buf[i]        = NULL;
+            REALLOC_NOERRET(env.xml_buf,env.xml_buf,xml_file **,env.nfile);
+            REALLOC_NOERRET(env.file_is_loaded,env.file_is_loaded,bool *,env.nfile);
+            for (i=env.nfile;i<nthread;i++)
+            {
+                env.file_is_loaded[i] = false;
+                env.xml_buf[i]        = NULL;
+            }
+            env.nfile = nthread;
         }
-        env.nfile = nthread;
     }
     if (env.file_is_loaded[thread])
     {
@@ -87,16 +92,21 @@ static latan_errno xml_open_file_buf(const strbuf fname, const char mode)
 #endif
     status = LATAN_SUCCESS;
 
-    if (nthread > env.nfile)
+#ifdef _OPENMP
+    #pragma omp critical
+#endif
     {
-        REALLOC(env.xml_buf,env.xml_buf,xml_file **,nthread);
-        REALLOC(env.file_is_loaded,env.file_is_loaded,bool *,nthread);
-        for (i=env.nfile;i<nthread;i++)
+        if (nthread > env.nfile)
         {
-            env.file_is_loaded[i] = false;
-            env.xml_buf[i]        = NULL;
+            REALLOC_NOERRET(env.xml_buf,env.xml_buf,xml_file **,nthread);
+            REALLOC_NOERRET(env.file_is_loaded,env.file_is_loaded,bool *,nthread);
+            for (i=env.nfile;i<nthread;i++)
+            {
+                env.file_is_loaded[i] = false;
+                env.xml_buf[i]        = NULL;
+            }
+            env.nfile = nthread;
         }
-        env.nfile = nthread;
     }
     if (env.file_is_loaded[thread])
     {

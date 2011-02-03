@@ -25,6 +25,9 @@ int main(int argc, char *argv[])
     bool do_save_res;
     strbuf res_name;
 
+    /* I/O init */
+    io_init();
+
     /* argument parsing */
     switch (argc)
     {
@@ -82,6 +85,9 @@ int main(int argc, char *argv[])
     rs_sample_destroy(s1);
     rs_sample_destroy(res);
     mat_destroy(sig);
+
+    /* I/O finish */
+    io_finish();
 
     return EXIT_SUCCESS;
 }

@@ -23,24 +23,25 @@
 
 /*                            default I/O functions                         */
 /****************************************************************************/
-#define DEF_IO_FMT                 IO_XML
-#define DEF_IO_INIT                io_init_xml
-#define DEF_IO_FINISH              io_finish_xml
-#define DEF_PROP_LOAD_NT           prop_load_nt_xml
-#define DEF_PROP_LOAD              prop_load_xml
-#define DEF_PROP_SAVE              prop_save_xml
-#define DEF_RANDGEN_SAVE_STATE     randgen_save_state_xml
-#define DEF_RANDGEN_LOAD_STATE     randgen_load_state_xml
-#define DEF_RS_SAMPLE_SAVE         rs_sample_save_xml
-#define DEF_RS_SAMPLE_LOAD_NROW    rs_sample_load_nrow_xml
-#define DEF_RS_SAMPLE_LOAD_NSAMPLE rs_sample_load_nsample_xml
-#define DEF_RS_SAMPLE_LOAD         rs_sample_load_xml
+#define IO_FUNC(func_name,suf) func_name##_##suf
+#define DEF_IO_FMT                 IO_ASCII
+#define DEF_IO_INIT                IO_FUNC(io_init,ascii)
+#define DEF_IO_FINISH              IO_FUNC(io_finish,ascii)
+#define DEF_PROP_LOAD_NT           IO_FUNC(prop_load_nt,ascii)
+#define DEF_PROP_LOAD              IO_FUNC(prop_load,ascii)
+#define DEF_PROP_SAVE              IO_FUNC(prop_save,ascii)
+#define DEF_RANDGEN_SAVE_STATE     IO_FUNC(randgen_save_state,ascii)
+#define DEF_RANDGEN_LOAD_STATE     IO_FUNC(randgen_load_state,ascii)
+#define DEF_RS_SAMPLE_SAVE         IO_FUNC(rs_sample_save,ascii)
+#define DEF_RS_SAMPLE_LOAD_NROW    IO_FUNC(rs_sample_load_nrow,ascii)
+#define DEF_RS_SAMPLE_LOAD_NSAMPLE IO_FUNC(rs_sample_load_nsample,ascii)
+#define DEF_RS_SAMPLE_LOAD         IO_FUNC(rs_sample_load,ascii)
 
 /*                              I/O format                                  */
 /****************************************************************************/
 static io_fmt_no io_fmt = DEF_IO_FMT;
 
-#define SET_IO_FUNC(func_name,suf) func_name = &func_name##_##suf
+#define SET_IO_FUNC(func_name,suf) func_name = &IO_FUNC(func_name,suf)
 #define SET_IO_FUNCS(suf)\
 SET_IO_FUNC(io_init,suf);\
 SET_IO_FUNC(io_finish,suf);\
@@ -60,6 +61,9 @@ latan_errno io_set_fmt(const io_fmt_no fmt)
     {
         case IO_XML:
             SET_IO_FUNCS(xml);
+            break;
+        case IO_ASCII:
+            SET_IO_FUNCS(ascii);
             break;
         default:
             LATAN_ERROR("I/O format flag unknown",LATAN_EINVAL);

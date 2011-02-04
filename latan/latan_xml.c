@@ -345,7 +345,7 @@ xmlNode * xml_insert_double(xmlNode *parent, const double d, const strbuf name)
     strbuf data;
     xmlNode *node_new;
 
-    sprintf(data,"%e",d);
+    sprintf(data,"%.15e",d);
     node_new = xmlNewChild(parent,NULL,(const xmlChar *)xml_mark[i_double],\
                            (const xmlChar *)data);
     if (strlen(name) > 0)

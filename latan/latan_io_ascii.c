@@ -353,7 +353,7 @@ latan_errno prop_save_ascii(strbuf fname, const char mode, mat *prop,\
     }
     ss_id_get(source_id,source);
     ss_id_get(sink_id,sink);
-    fprintf(env.f_buf[thread],"# %s %s %-8.8s %d %d\n",source_id,sink_id,\
+    fprintf(env.f_buf[thread],"# %s %s %-8.8s %d %d -1\n",source_id,sink_id,\
             channel,q1,q2);
     fprintf(env.f_buf[thread],"%d\n",(int)nrow(prop));
     mat_dump(env.f_buf[thread],prop,"%.15e");

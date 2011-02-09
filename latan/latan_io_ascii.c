@@ -230,6 +230,13 @@ latan_errno prop_load_nt_ascii(size_t *nt, const channel_no channel,\
         }
     }
     END_FOR_LINE_TOK_F(field);
+    if (!is_in_prop)
+    {
+        strbuf errmsg;
+        sprintf(errmsg,"propagator (ch=\"%s\" m1=\"%s\" m2=\"%s\" so=\"%s\" si=\"%s\") not found in file %s",\
+                channel_id,q1_id,q2_id,source_id,sink_id,fname);
+        LATAN_ERROR(errmsg,LATAN_ELATSYN);
+    }
 
     return LATAN_SUCCESS;
 }
@@ -267,7 +274,6 @@ latan_errno prop_load_ascii(mat *prop, const channel_no channel, \
     {
         if(is_in_prop&&(strcmp(field[0],"#") == 0))
         {
-            is_in_prop = false;
             break;
         }
         else if((nf >= 6)&&(strcmp(field[0],"#")==0)&&                         \
@@ -308,6 +314,13 @@ latan_errno prop_load_ascii(mat *prop, const channel_no channel, \
         }
     }
     END_FOR_LINE_TOK_F(field);
+    if (!is_in_prop)
+    {
+        strbuf errmsg;
+        sprintf(errmsg,"propagator (ch=\"%s\" m1=\"%s\" m2=\"%s\" so=\"%s\" si=\"%s\") not found in file %s",\
+                channel_id,q1_id,q2_id,source_id,sink_id,fname);
+        LATAN_ERROR(errmsg,LATAN_ELATSYN);
+    }
 
     return LATAN_SUCCESS;
 }

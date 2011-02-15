@@ -86,36 +86,36 @@ static union
     float num[96];
 } rlxd_x __attribute__ ((aligned (16)));
 
-#define STEP(pi,pj) \
-__asm__ __volatile__ ("movaps %4, %%xmm4 \n\t" \
-                      "movaps %%xmm2, %%xmm3 \n\t" \
-                      "subps %2, %%xmm4 \n\t" \
-                      "movaps %%xmm1, %%xmm5 \n\t" \
+#define STEP(pi,pj)                                     \
+__asm__ __volatile__ ("movaps %4, %%xmm4 \n\t"          \
+                      "movaps %%xmm2, %%xmm3 \n\t"      \
+                      "subps %2, %%xmm4 \n\t"           \
+                      "movaps %%xmm1, %%xmm5 \n\t"      \
                       "cmpps $0x6, %%xmm4, %%xmm2 \n\t" \
-                      "andps %%xmm2, %%xmm5 \n\t" \
-                      "subps %%xmm3, %%xmm4 \n\t" \
-                      "andps %%xmm0, %%xmm2 \n\t" \
-                      "addps %%xmm4, %%xmm5 \n\t" \
-                      "movaps %%xmm5, %0 \n\t" \
-                      "movaps %5, %%xmm6 \n\t" \
-                      "movaps %%xmm2, %%xmm3 \n\t" \
-                      "subps %3, %%xmm6 \n\t" \
-                      "movaps %%xmm1, %%xmm7 \n\t" \
+                      "andps %%xmm2, %%xmm5 \n\t"       \
+                      "subps %%xmm3, %%xmm4 \n\t"       \
+                      "andps %%xmm0, %%xmm2 \n\t"       \
+                      "addps %%xmm4, %%xmm5 \n\t"       \
+                      "movaps %%xmm5, %0 \n\t"          \
+                      "movaps %5, %%xmm6 \n\t"          \
+                      "movaps %%xmm2, %%xmm3 \n\t"      \
+                      "subps %3, %%xmm6 \n\t"           \
+                      "movaps %%xmm1, %%xmm7 \n\t"      \
                       "cmpps $0x6, %%xmm6, %%xmm2 \n\t" \
-                      "andps %%xmm2, %%xmm7 \n\t" \
-                      "subps %%xmm3, %%xmm6 \n\t" \
-                      "andps %%xmm0, %%xmm2 \n\t" \
-                      "addps %%xmm6, %%xmm7 \n\t" \
-                      "movaps %%xmm7, %1" \
-                      : \
-                      "=m" ((*pi).c1), \
-                      "=m" ((*pi).c2) \
-                      : \
-                      "m" ((*pi).c1), \
-                      "m" ((*pi).c2), \
-                      "m" ((*pj).c1), \
-                      "m" ((*pj).c2) \
-                      : \
+                      "andps %%xmm2, %%xmm7 \n\t"       \
+                      "subps %%xmm3, %%xmm6 \n\t"       \
+                      "andps %%xmm0, %%xmm2 \n\t"       \
+                      "addps %%xmm6, %%xmm7 \n\t"       \
+                      "movaps %%xmm7, %1"               \
+                      :                                 \
+                      "=m" ((*pi).c1),                  \
+                      "=m" ((*pi).c2)                   \
+                      :                                 \
+                      "m" ((*pi).c1),                   \
+                      "m" ((*pi).c2),                   \
+                      "m" ((*pj).c1),                   \
+                      "m" ((*pj).c2)                    \
+                      :                                 \
                       "xmm2", "xmm3", "xmm4", "xmm5", "xmm6", "xmm7")
 
 static void error(int no)

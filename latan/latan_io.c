@@ -281,7 +281,6 @@ latan_errno hadron_prop_load_bin(mat **prop, const hadron *h,              \
             LATAN_UPDATE_STATUS(status,mat_eqmuls(prop_prebin[i],\
                                                   DRATIO(1,MAXQUARKST)));
         }
-        mat_eqabs(prop_prebin[i]);
     }
     if ((h->parity) == ODD)
     {

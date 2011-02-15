@@ -23,7 +23,7 @@
 #include <latan/latan_models.h>
 
 #ifndef PLAT_TOL
-#define PLAT_TOL 0.25
+#define PLAT_TOL 0.40
 #endif
 #ifndef NSIGMA
 #define NSIGMA 1.0
@@ -128,7 +128,7 @@ plat *search_plat(size_t *nplat, mat *data, mat *sigdata,\
             {
                 (*nplat)++;
                 cplat = *nplat - 1;
-                REALLOC_ERRVAL(plat_ar,plat_ar,plat*,*nplat,NULL);
+                REALLOC_ERRVAL(plat_ar,plat_ar,plat *,*nplat,NULL);
                 plat_ar[cplat].mean  = 0.0;
                 plat_ar[cplat].sig   = 0.0;
                 plat_ar[cplat].start = i;
@@ -193,13 +193,13 @@ plat *search_plat(size_t *nplat, mat *data, mat *sigdata,\
 }
 
 latan_errno fit_data_mass_fit_tune(fit_data *d, mat *fit_init, mat *prop,\
-                                   mat *em, mat *sigem,         \
+                                   mat *em, mat *sigem,                  \
                                    const int parity)
 {
     plat *em_plat;
     size_t nplat,nt,ntmax;
     size_t p,t;
-    double shift,mem,pref,logslope;
+    double shift,mem,pref;
     strbuf ranges,buf;
     const fit_model *model;
     
@@ -246,7 +246,7 @@ latan_errno fit_data_mass_fit_tune(fit_data *d, mat *fit_init, mat *prop,\
     
     /* setting points to fit */
     fit_data_fit_all_points(d,false);
-    STRBUFCPY(ranges,"");
+    strbufcpy(ranges,"");
     for (p=0;p<nplat;p++)
     {
         fit_data_fit_range(d,em_plat[p].start+1,em_plat[p].end+1,true);
@@ -258,18 +258,11 @@ latan_errno fit_data_mass_fit_tune(fit_data *d, mat *fit_init, mat *prop,\
     
     /* setting initial fit parameters */
     latan_printf(VERB,"searching initial parameter values...\n");
-    mem = 0.0;
-    for (p=0;p<nplat;p++)
-    {
-        mem += em_plat[p].mean;
-    }
-    mem /= (double)(nplat);
+    mem = mat_get(em,nt/8-1,0);
     switch (parity)
     {
         case EVEN:
-            logslope = log(mat_get(prop,nt/8,0))*(1.0+nt/8) \
-                        - log(mat_get(prop,nt/8+1,0))*nt/8;
-            pref = exp(logslope);
+            pref = mat_get(prop,nt/8,0)*exp((int)(nt)*mem/8);
             break;
         case ODD:
             pref = mat_get(prop,nt/2,0);
@@ -279,9 +272,8 @@ latan_errno fit_data_mass_fit_tune(fit_data *d, mat *fit_init, mat *prop,\
             break;
     }
     latan_printf(VERB,"prefactor = %e mass = %e\n",pref,mem);
-    mat_set(fit_init,1,0,pref);
     mat_set(fit_init,0,0,mem);
-    
+    mat_set(fit_init,1,0,pref);
     FREE(em_plat);
     
     return LATAN_SUCCESS;

@@ -455,8 +455,8 @@ latan_errno rs_sample_save_ascii(const strbuf fname, const char mode,\
                                  const rs_sample *s)
 {
     int thread;
-    size_t i;
-    size_t nsample;
+    size_t i,j;
+    size_t nsample,nr;
     strbuf smode,name;
 
 #ifdef _OPENMP
@@ -467,6 +467,7 @@ latan_errno rs_sample_save_ascii(const strbuf fname, const char mode,\
     smode[0] = mode;
     smode[1] = '\0';
     nsample  = rs_sample_get_nsample(s);
+    nr       = rs_sample_get_nrow(s);
 
     if (mode == 'w')
     {
@@ -480,10 +481,15 @@ latan_errno rs_sample_save_ascii(const strbuf fname, const char mode,\
     rs_sample_get_name(name,s);
     fprintf(env.f_buf[thread],"# latan_resampled_sample %s\n",name);
     fprintf(env.f_buf[thread],"%lu\n",(long unsigned int)nsample);
-    mat_dump(env.f_buf[thread],rs_sample_pt_cent_val(s),"%.15e");
-    for (i=0;i<nsample;i++)
+    for (i=0;i<nr;i++)
     {
-        mat_dump(env.f_buf[thread],rs_sample_pt_sample(s,i),"%.15e");
+        fprintf(env.f_buf[thread],"%.15e\n",         \
+                mat_get(rs_sample_pt_cent_val(s),i,0));
+        for (j=0;j<nsample;j++)
+        {
+            fprintf(env.f_buf[thread],"%.15e\n",         \
+                    mat_get(rs_sample_pt_sample(s,j),i,0));
+        }
     }
     fprintf(env.f_buf[thread],"\n");
     
@@ -655,15 +661,16 @@ latan_errno rs_sample_load_ascii(rs_sample *s, const strbuf fname,\
             {
                 if (sscanf(field[i],"%lf",&buf) > 0)
                 {
-                    jmod = j%nr;
-                    if (jmod == j)
+                    jmod = j%(nsample+1);
+                    if (jmod == 0)
                     {
-                        mat_set(rs_sample_pt_cent_val(s),(size_t)jmod,0,buf);
+                        mat_set(rs_sample_pt_cent_val(s),    \
+                                (size_t)(j/(nsample+1)),0,buf);
                     }
                     else
                     {
-                        mat_set(rs_sample_pt_sample(s,(size_t)(j/nr-1)),\
-                                (size_t)jmod,0,buf);
+                        mat_set(rs_sample_pt_sample(s,(size_t)(jmod-1)),\
+                                (size_t)(j/(nsample+1)),0,buf);
                     }
                     j++;
                 }

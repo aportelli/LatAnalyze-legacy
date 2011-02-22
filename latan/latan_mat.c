@@ -46,18 +46,15 @@
 #define mat_gpu_mul_nt(m,n,o) LATAN_FAILURE
 #define mat_gpu_mul_tn(m,n,o) LATAN_FAILURE
 #define mat_gpu_mul_tt(m,n,o) LATAN_FAILURE
-#endif
-
 static latan_errno mat_nothing(mat *m);
 
-/*                              dummy function                              */
-/****************************************************************************/
 static latan_errno mat_nothing(mat *m)
 {
     m = NULL;
 
     return LATAN_SUCCESS;
 }
+#endif
 
 /*                              allocation                                  */
 /****************************************************************************/

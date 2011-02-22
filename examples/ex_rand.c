@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <math.h>
+#include <latan/latan_io.h>
 #include <latan/latan_mat.h>
 #include <latan/latan_math.h>
 #include <latan/latan_statistics.h>
@@ -28,7 +29,8 @@ int main(void)
     rseq = mat_create(DIS_SEQ_LENGTH,1);
     hist_cont = mat_create(HIST_CONT_NINT,1);
     x = mat_create(HIST_CONT_NINT,1);
-    
+
+    io_init();
     printf("- GENERATOR STATE I/O TESTS\n");
     randgen_init_from_time();
     printf("-- generating a %d steps random sequence...\n",GENTEST_SEQ_LENGTH);
@@ -37,7 +39,7 @@ int main(void)
         if (i == GENTEST_SAVE_STEP)
         {
             randgen_get_state(state);
-            randgen_save_state("ex_rand",'w',state,"");
+            randgen_save_state("ex_rand.seed",'w',state,"");
             printf("generator state after step %d saved in ex_rand.rand\n",\
                    GENTEST_SAVE_STEP-1);
         }
@@ -47,8 +49,8 @@ int main(void)
     printf("-- messing up the generator...\n");
     randgen_init_from_time();
     randgen_get_state(state);
-    printf("-- reloading state from ex_rand.rand...\n");
-    randgen_load_state(state,"ex_rand.xml","");
+    printf("-- reloading state from ex_rand.seed...\n");
+    randgen_load_state(state,"ex_rand.seed","");
     randgen_set_state(state);
     printf("-- generating a %d steps random sequence...\n",GENTEST_SEQ_LENGTH);
     for (i=0;i<GENTEST_SEQ_LENGTH;i++) 
@@ -101,7 +103,8 @@ int main(void)
     plot_add_plot(dist_plot,plotcmd);
     plot_disp(dist_plot);
     plot_destroy(dist_plot);
-    
+    io_finish();
+
     mat_destroy(rseq);
     mat_destroy(hist_cont);
     mat_destroy(x);

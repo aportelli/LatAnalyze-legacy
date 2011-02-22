@@ -17,8 +17,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-#include <latan/latan_mat_cublas.h>
+#include <latan/latan_includes.h>
 #ifdef HAVE_LIBCUBLAS
+#include <latan/latan_mat_cublas.h>
 #include <cublas.h>
 
 #define INT(X) ((int)(X))
@@ -71,10 +72,7 @@ latan_errno mat_cublas_gpu_alloc(mat *m)
     
     status = cublasAlloc(INT(nrow(m)*ncol(m)),sizeof(double),\
                          (void**)&(m->data_gpu));
-    if (status != CUBLAS_STATUS_SUCCESS)
-    {
-        LATAN_ERROR("GPU memory allocation failed",LATAN_ENOMEM);
-    }
+    mat_cublas_error(status);
     m->mem_flag |= GPU_ALLOCATED;
     
     return LATAN_SUCCESS;
@@ -85,10 +83,7 @@ latan_errno mat_cublas_gpu_free(mat *m)
     cublasStatus status;
     
     status = cublasFree((void*)(m->data_gpu));
-    if (status != CUBLAS_STATUS_SUCCESS)
-    {
-        LATAN_ERROR("GPU memory desallocation failed",LATAN_ENOMEM);
-    }
+    mat_cublas_error(status);
     m->mem_flag -= m->mem_flag&GPU_ALLOCATED;
     
     return LATAN_SUCCESS;
@@ -106,10 +101,7 @@ latan_errno mat_cublas_cp_cpu_to_gpu(mat *m)
         status = cublasSetVector(INT(ncol(m)),sizeof(double),         \
                                  m->data_cpu->data+INT(row*ncol(m)),1,\
                                  m->data_gpu+INT(row),INT(nrow(m)));
-        if (status != CUBLAS_STATUS_SUCCESS)
-        {
-            LATAN_ERROR("CPU->GPU memory copy failed",LATAN_ESYSTEM);
-        }
+        mat_cublas_error(status);
     }
     
     return LATAN_SUCCESS;
@@ -125,10 +117,7 @@ latan_errno mat_cublas_cp_gpu_to_cpu(mat *m)
         status = cublasGetVector(INT(ncol(m)),sizeof(double),        \
                                  m->data_gpu+INT(row),INT(nrow(m)),  \
                                  m->data_cpu->data+INT(row*ncol(m)),1);
-        if (status != CUBLAS_STATUS_SUCCESS)
-        {
-            LATAN_ERROR("GPU->CPU memory copy failed",LATAN_ESYSTEM);
-        }
+        mat_cublas_error(status);
     }
     
     return LATAN_SUCCESS;
@@ -173,7 +162,7 @@ latan_errno mat_cublas_gpu_mul_nn(mat *m, mat *n, mat *o)
                 INT(nrow(m)));
     mat_cublas_error(cublasGetError());
     
-    return EXIT_SUCCESS;
+    return LATAN_SUCCESS;
 }
 
 latan_errno mat_cublas_gpu_mul_nt(mat *m, mat *n, mat *o)
@@ -183,7 +172,7 @@ latan_errno mat_cublas_gpu_mul_nt(mat *m, mat *n, mat *o)
                 INT(nrow(m)));
     mat_cublas_error(cublasGetError());
     
-    return EXIT_SUCCESS;
+    return LATAN_SUCCESS;
 }
 
 latan_errno mat_cublas_gpu_mul_tn(mat *m, mat *n, mat *o)
@@ -193,7 +182,7 @@ latan_errno mat_cublas_gpu_mul_tn(mat *m, mat *n, mat *o)
                 INT(nrow(m)));
     mat_cublas_error(cublasGetError());
 
-    return EXIT_SUCCESS;
+    return LATAN_SUCCESS;
 }
 
 latan_errno mat_cublas_gpu_mul_tt(mat *m, mat *n, mat *o)
@@ -203,7 +192,7 @@ latan_errno mat_cublas_gpu_mul_tt(mat *m, mat *n, mat *o)
                 INT(nrow(m)));
     mat_cublas_error(cublasGetError());
     
-    return EXIT_SUCCESS;
+    return LATAN_SUCCESS;
 }
 
 #endif

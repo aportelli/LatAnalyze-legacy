@@ -3,9 +3,9 @@
 #include <latan/latan_rand.h>
 #include <latan/latan_io.h>
 
-int main(int argc, char *argv[])
+int main(void)
 {
-    mat *a,*b,*c,*d,*e,*f;
+    mat *a,*b,*c,*d,*e;
     const double b_init[] =
     {
         2.5,\
@@ -24,7 +24,6 @@ int main(int argc, char *argv[])
     e = mat_create(3,3);
     
     randgen_init_from_time();
-    
     printf("b =\n");
     mat_print(b,"%f");
     printf("c =\n");

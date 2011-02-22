@@ -40,45 +40,7 @@ static io_xml_env env =
     0    \
 };
 
-static latan_errno xml_new_file_buf(const strbuf fname)
-{
-    latan_errno status;
-    int nthread,thread,i;
-
-#ifdef _OPENMP
-    nthread = omp_get_num_threads();
-    thread  = omp_get_thread_num();
-#else
-    nthread = 1;
-    thread  = 0;
-#endif
-    status  = LATAN_SUCCESS;
-
-#ifdef _OPENMP
-    #pragma omp critical
-#endif
-    {
-        if (nthread > env.nfile)
-        {
-            REALLOC_NOERRET(env.xml_buf,env.xml_buf,xml_file **,env.nfile);
-            REALLOC_NOERRET(env.file_is_loaded,env.file_is_loaded,bool *,env.nfile);
-            for (i=env.nfile;i<nthread;i++)
-            {
-                env.file_is_loaded[i] = false;
-                env.xml_buf[i]        = NULL;
-            }
-            env.nfile = nthread;
-        }
-    }
-    if (env.file_is_loaded[thread])
-    {
-        status = xml_close_file(env.xml_buf[thread]);
-    }
-    env.xml_buf[thread]        = xml_new_file(fname);
-    env.file_is_loaded[thread] = true;
-
-    return status;
-}
+#define FILE_BUF(thread) env.xml_buf[thread] /* type : xml_file * */
 
 static latan_errno xml_open_file_buf(const strbuf fname, const char mode)
 {
@@ -101,26 +63,28 @@ static latan_errno xml_open_file_buf(const strbuf fname, const char mode)
         if (nthread > env.nfile)
         {
             REALLOC_NOERRET(env.xml_buf,env.xml_buf,xml_file **,nthread);
-            REALLOC_NOERRET(env.file_is_loaded,env.file_is_loaded,bool *,nthread);
+            REALLOC_NOERRET(env.file_is_loaded,env.file_is_loaded,bool *,\
+                            nthread);
             for (i=env.nfile;i<nthread;i++)
             {
                 env.file_is_loaded[i] = false;
-                env.xml_buf[i]        = NULL;
+                FILE_BUF(i)        = NULL;
             }
             env.nfile = nthread;
         }
     }
     if (env.file_is_loaded[thread])
     {
-        if (strcmp(env.xml_buf[thread]->fname,fname) != 0)
+        if ((strcmp(FILE_BUF(thread)->fname,fname) != 0)||(mode == 'w')||\
+            (mode != FILE_BUF(thread)->mode))
         {
-            status              = xml_close_file(env.xml_buf[thread]);
-            env.xml_buf[thread] = xml_open_file(fname,mode);
+            status           = xml_close_file(FILE_BUF(thread));
+            FILE_BUF(thread) = xml_open_file(fname,mode);
         }
     }
     else
     {
-        env.xml_buf[thread]        = xml_open_file(fname,mode);
+        FILE_BUF(thread)           = xml_open_file(fname,mode);
         env.file_is_loaded[thread] = true;
     }
 
@@ -166,7 +130,7 @@ void io_finish_xml(void)
         {
             if (env.file_is_loaded[i])
             {
-                xml_close_file(env.xml_buf[i]);
+                xml_close_file(FILE_BUF(i));
                 env.file_is_loaded[i] = false;
             }
         }
@@ -203,7 +167,7 @@ latan_errno prop_load_nt_xml(size_t *nt, const channel_no channel,\
             LATAN_XMLNS_PREF,xml_mark[i_main],\
             LATAN_XMLNS_PREF,xml_mark[i_prop],\
             channel_id,q1_id,q2_id,source_id,sink_id);
-    nodeset = xml_get_nodeset(xpath_expr,env.xml_buf[thread]);
+    nodeset = xml_get_nodeset(xpath_expr,FILE_BUF(thread));
     if (nodeset->nodesetval != NULL)
     {
         status = xml_get_prop_nt(nt,nodeset->nodesetval->nodeTab[0]);
@@ -247,7 +211,7 @@ latan_errno prop_load_xml(mat *prop, const channel_no channel, \
             LATAN_XMLNS_PREF,xml_mark[i_main],\
             LATAN_XMLNS_PREF,xml_mark[i_prop],\
             channel_id,q1_id,q2_id,source_id,sink_id);
-    nodeset = xml_get_nodeset(xpath_expr,env.xml_buf[thread]);
+    nodeset = xml_get_nodeset(xpath_expr,FILE_BUF(thread));
     if (nodeset->nodesetval != NULL)
     {
         status = xml_get_prop(prop,nodeset->nodesetval->nodeTab[0]);
@@ -279,15 +243,8 @@ latan_errno prop_save_xml(strbuf fname, const char mode, mat *prop, \
     thread = 0;
 #endif
 
-    if (mode == 'w')
-    {
-        xml_new_file_buf(fname);
-    }
-    else
-    {
-        xml_open_file_buf(fname,mode);
-    }
-    xml_insert_prop(env.xml_buf[thread]->root,prop,channel,q1,q2,source,sink,\
+    xml_open_file_buf(fname,mode);
+    xml_insert_prop(FILE_BUF(thread)->root,prop,channel,q1,q2,source,sink,\
                     name);
 
     return LATAN_SUCCESS;
@@ -306,15 +263,8 @@ latan_errno randgen_save_state_xml(const strbuf fname, const char mode,\
     thread = 0;
 #endif
 
-    if (mode == 'w')
-    {
-        xml_new_file_buf(fname);
-    }
-    else
-    {
-        xml_open_file_buf(fname,mode);
-    }
-    xml_insert_rgstate(env.xml_buf[thread]->root,state,name);
+    xml_open_file_buf(fname,mode);
+    xml_insert_rgstate(FILE_BUF(thread)->root,state,name);
 
     return LATAN_SUCCESS;
 }
@@ -334,14 +284,13 @@ latan_errno randgen_load_state_xml(rg_state state, const strbuf fname,\
 #endif
 
     xml_open_file_buf(fname,'r');
-
     sprintf(xpath_expr,"/%s:%s/%s:%s",LATAN_XMLNS_PREF,xml_mark[i_main],\
             LATAN_XMLNS_PREF,xml_mark[i_rgstate]);
     if (strlen(name) > 0)
     {
         sprintf(xpath_expr,"%s[@name='%s']",xpath_expr,name);
     }
-    nodeset = xml_get_nodeset(xpath_expr,env.xml_buf[thread]);
+    nodeset = xml_get_nodeset(xpath_expr,FILE_BUF(thread));
     if (nodeset->nodesetval != NULL)
     {
         status = xml_get_rgstate(state,nodeset->nodesetval->nodeTab[0]);
@@ -380,21 +329,13 @@ latan_errno rs_sample_save_xml(const strbuf fname, const char mode,\
     thread = 0;
 #endif
 
-    if (mode == 'w')
-    {
-        xml_new_file_buf(fname);
-    }
-    else
-    {
-        xml_open_file_buf(fname,mode);
-    }
-
+    xml_open_file_buf(fname,mode);
     rs_sample_get_name(name,s);
     if (strlen(name) == 0)
     {
         LATAN_ERROR("cannot save sample with an empty name",LATAN_EINVAL);
     }
-    xml_insert_sample(env.xml_buf[thread]->root,s,name);
+    xml_insert_sample(FILE_BUF(thread)->root,s,name);
 
     return LATAN_SUCCESS;
 }
@@ -414,14 +355,13 @@ latan_errno rs_sample_load_nrow_xml(size_t *nr, const strbuf fname,\
 #endif
 
     xml_open_file_buf(fname,'r');
-
     sprintf(xpath_expr,"/%s:%s/%s:%s",LATAN_XMLNS_PREF,xml_mark[i_main],\
             LATAN_XMLNS_PREF,xml_mark[i_sample]);
     if (strlen(name) > 0)
     {
         sprintf(xpath_expr,"%s[@name='%s']",xpath_expr,name);
     }
-    nodeset = xml_get_nodeset(xpath_expr,env.xml_buf[thread]);
+    nodeset = xml_get_nodeset(xpath_expr,FILE_BUF(thread));
     if (nodeset->nodesetval != NULL)
     {
         status = xml_get_sample_nrow(nr,nodeset->nodesetval->nodeTab[0]);
@@ -461,14 +401,13 @@ latan_errno rs_sample_load_nsample_xml(size_t *nsample, const strbuf fname,\
 #endif
 
     xml_open_file_buf(fname,'r');
-
     sprintf(xpath_expr,"/%s:%s/%s:%s",LATAN_XMLNS_PREF,xml_mark[i_main],\
             LATAN_XMLNS_PREF,xml_mark[i_sample]);
     if (strlen(name) > 0)
     {
         sprintf(xpath_expr,"%s[@name='%s']",xpath_expr,name);
     }
-    nodeset = xml_get_nodeset(xpath_expr,env.xml_buf[thread]);
+    nodeset = xml_get_nodeset(xpath_expr,FILE_BUF(thread));
     if (nodeset->nodesetval != NULL)
     {
         status = xml_get_sample_nsample(nsample,\
@@ -509,14 +448,13 @@ latan_errno rs_sample_load_xml(rs_sample *s, const strbuf fname,\
 #endif
 
     xml_open_file_buf(fname,'r');
-
     sprintf(xpath_expr,"/%s:%s/%s:%s",LATAN_XMLNS_PREF,xml_mark[i_main],\
             LATAN_XMLNS_PREF,xml_mark[i_sample]);
     if (strlen(name) > 0)
     {
         sprintf(xpath_expr,"%s[@name='%s']",xpath_expr,name);
     }
-    nodeset = xml_get_nodeset(xpath_expr,env.xml_buf[thread]);
+    nodeset = xml_get_nodeset(xpath_expr,FILE_BUF(thread));
     if (nodeset->nodesetval != NULL)
     {
         status = xml_get_sample(s,nodeset->nodesetval->nodeTab[0]);

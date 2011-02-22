@@ -30,8 +30,14 @@ static latan_errno ascii_open_file_buf(const strbuf fname, const char mode);
 /****************************************************************************/
 typedef struct
 {
-    FILE **f_buf;
-    strbuf *fname;
+    FILE *f;
+    strbuf fname;
+    char mode;
+} ascii_file;
+
+typedef struct
+{
+    ascii_file *ascii_buf;
     bool *file_is_loaded;
     int nfile;
 } io_ascii_env;
@@ -40,57 +46,17 @@ static io_ascii_env env =
 {
     NULL,\
     NULL,\
-    NULL,\
     0    \
 };
 
-static latan_errno ascii_new_file_buf(const strbuf fname)
-{
-    latan_errno status;
-    int nthread,thread,i;
-
-#ifdef _OPENMP
-    nthread = omp_get_num_threads();
-    thread  = omp_get_thread_num();
-#else
-    nthread = 1;
-    thread  = 0;
-#endif
-
-#ifdef _OPENMP
-    #pragma omp critical
-#endif
-    {
-        if (nthread > env.nfile)
-        {
-            REALLOC_NOERRET(env.f_buf,env.f_buf,FILE **,nthread);
-            REALLOC_NOERRET(env.fname,env.fname,strbuf *,nthread);
-            REALLOC_NOERRET(env.file_is_loaded,env.file_is_loaded,bool *,\
-                            nthread);
-            for (i=env.nfile;i<nthread;i++)
-            {
-                env.file_is_loaded[i] = false;
-                strbufcpy(env.fname[i],"");
-                env.f_buf[i]        = NULL;
-            }
-            env.nfile = nthread;
-        }
-    }
-    if (env.file_is_loaded[thread])
-    {
-        fclose(env.f_buf[thread]);
-    }
-    FOPEN(env.f_buf[thread],fname,"w");
-    strbufcpy(env.fname[thread],fname);
-    env.file_is_loaded[thread] = true;
-
-    return status;
-}
+#define FILE_BUF(thread)  env.ascii_buf[thread].f
+#define FILE_NAME(thread) env.ascii_buf[thread].fname
+#define FILE_MODE(thread) env.ascii_buf[thread].mode
 
 static latan_errno ascii_open_file_buf(const strbuf fname, const char mode)
 {
     latan_errno status;
-    strbuf smode;
+    strbuf smode,errmsg;
     int nthread,thread,i;
 
 #ifdef _OPENMP
@@ -101,8 +67,22 @@ static latan_errno ascii_open_file_buf(const strbuf fname, const char mode)
     thread  = 0;
 #endif
     status   = LATAN_SUCCESS;
-    smode[0] = mode;
-    smode[1] = '\0';
+    switch (mode)
+    {
+        case 'r' :
+            strbufcpy(smode,"r");
+            break;
+        case 'w' :
+            strbufcpy(smode,"w+");
+            break;
+        case 'a' :
+            strbufcpy(smode,"a+");
+            break;
+        default:
+            sprintf(errmsg,"ASCII file mode %c unknown",mode);
+            LATAN_ERROR(errmsg,LATAN_EINVAL);
+            break;
+    }
 
 #ifdef _OPENMP
     #pragma omp critical
@@ -110,31 +90,39 @@ static latan_errno ascii_open_file_buf(const strbuf fname, const char mode)
     {
         if (nthread > env.nfile)
         {
-            REALLOC_NOERRET(env.f_buf,env.f_buf,FILE **,nthread);
-            REALLOC_NOERRET(env.fname,env.fname,strbuf *,nthread);
+            REALLOC_NOERRET(env.ascii_buf,env.ascii_buf,ascii_file *,nthread);
             REALLOC_NOERRET(env.file_is_loaded,env.file_is_loaded,bool *,\
                             nthread);
             for (i=env.nfile;i<nthread;i++)
             {
                 env.file_is_loaded[i] = false;
-                env.f_buf[i]        = NULL;
+                strbufcpy(FILE_NAME(i),"");
+                FILE_BUF(i)           = NULL;
+                FILE_MODE(i)          = '\0';
             }
             env.nfile = nthread;
         }
     }
     if (env.file_is_loaded[thread])
     {
-        if (strcmp(env.fname[thread],fname) != 0)
+        if ((strcmp(FILE_NAME(thread),fname) != 0)||(mode == 'w')||\
+            (mode != FILE_MODE(thread)))
         {
-            fclose(env.f_buf[thread]);
-            FOPEN(env.f_buf[thread],fname,smode);
-            strbufcpy(env.fname[thread],fname);
+            fclose(FILE_BUF(thread));
+            FOPEN(FILE_BUF(thread),fname,smode);
+            strbufcpy(FILE_NAME(thread),fname);
+            FILE_MODE(thread) = mode;
+        }
+        else
+        {
+            rewind(FILE_BUF(thread));
         }
     }
     else
     {
-        FOPEN(env.f_buf[thread],fname,smode);
-        strbufcpy(env.fname[thread],fname);
+        FOPEN(FILE_BUF(thread),fname,smode);
+        strbufcpy(FILE_NAME(thread),fname);
+        FILE_MODE(thread) = mode;
         env.file_is_loaded[thread] = true;
     }
 
@@ -179,8 +167,8 @@ void io_finish_ascii(void)
         {
             if (env.file_is_loaded[i])
             {
-                fclose(env.f_buf[i]);
-                strbufcpy(env.fname[i],"");
+                fclose(FILE_BUF(i));
+                strbufcpy(FILE_NAME(i),"");
                 env.file_is_loaded[i] = false;
             }
         }
@@ -213,7 +201,7 @@ latan_errno prop_load_nt_ascii(size_t *nt, const channel_no channel,\
     quark_id_get(q2_id,q2);
     ss_id_get(source_id,source);
     ss_id_get(sink_id,sink);
-    BEGIN_FOR_LINE_TOK_F(field,env.f_buf[thread]," ",nf,lc)
+    BEGIN_FOR_LINE_TOK_F(field,FILE_BUF(thread)," ",nf,lc)
     {
         if((nf >= 6)&&(strcmp(field[0],"#")==0)&&                          \
            (strcmp(field[1],source_id)==0)&&(strcmp(field[2],sink_id)==0)&&\
@@ -275,7 +263,7 @@ latan_errno prop_load_ascii(mat *prop, const channel_no channel, \
     quark_id_get(q2_id,q2);
     ss_id_get(source_id,source);
     ss_id_get(sink_id,sink);
-    BEGIN_FOR_LINE_TOK_F(field,env.f_buf[thread]," ",nf,lc)
+    BEGIN_FOR_LINE_TOK_F(field,FILE_BUF(thread)," ",nf,lc)
     {
         if(is_in_prop&&(strcmp(field[0],"#") == 0))
         {
@@ -336,7 +324,7 @@ latan_errno prop_save_ascii(strbuf fname, const char mode, mat *prop,\
                             const ss_no source, const ss_no sink,    \
                             const strbuf name)
 {
-    strbuf smode,source_id,sink_id;
+    strbuf source_id,sink_id;
     int thread;
     
 #ifdef _OPENMP
@@ -345,24 +333,15 @@ latan_errno prop_save_ascii(strbuf fname, const char mode, mat *prop,\
     thread = 0;
 #endif
     name     = NULL;
-    smode[0] = mode;
-    smode[1] = '\0';
 
-    if (mode == 'w')
-    {
-        ascii_new_file_buf(fname);
-    }
-    else
-    {
-        ascii_open_file_buf(fname,mode);
-    }
+    ascii_open_file_buf(fname,mode);
     ss_id_get(source_id,source);
     ss_id_get(sink_id,sink);
-    fprintf(env.f_buf[thread],"# %s %s %-8.8s %d %d -1\n",source_id,sink_id,\
+    fprintf(FILE_BUF(thread),"# %s %s %-8.8s %d %d -1\n",source_id,sink_id,\
             channel,q1,q2);
-    fprintf(env.f_buf[thread],"%d\n",(int)nrow(prop));
-    mat_dump(env.f_buf[thread],prop,"%.15e");
-    fprintf(env.f_buf[thread],"\n");
+    fprintf(FILE_BUF(thread),"%d\n",(int)nrow(prop));
+    mat_dump(FILE_BUF(thread),prop,"%.15e");
+    fprintf(FILE_BUF(thread),"\n");
 
     return LATAN_SUCCESS;
 }
@@ -374,31 +353,28 @@ latan_errno randgen_save_state_ascii(const strbuf fname, const char mode,   \
 {
     int thread;
     int i;
-    strbuf smode;
     
 #ifdef _OPENMP
     thread = omp_get_thread_num();
 #else
     thread = 0;
 #endif
-    smode[0] = mode;
-    smode[1] = '\0';
 
     if (mode == 'w')
     {
-        ascii_new_file_buf(fname);
+        ascii_open_file_buf(fname,mode);
     }
     else
     {
         LATAN_ERROR("only 'w' file mode is authorized for saving random generator state in ASCII format",\
                     LATAN_EINVAL);
     }
-    fprintf(env.f_buf[thread],"# latan_randgen_state %s\n",name);
+    fprintf(FILE_BUF(thread),"# latan_randgen_state %s\n",name);
     for (i=0;i<RLXG_STATE_SIZE;i++)
     {
-        fprintf(env.f_buf[thread],"%d\n",state[i]);
+        fprintf(FILE_BUF(thread),"%d\n",state[i]);
     }
-    fprintf(env.f_buf[thread],"\n");
+    fprintf(FILE_BUF(thread),"\n");
     
     return LATAN_SUCCESS;
 }
@@ -421,7 +397,7 @@ latan_errno randgen_load_state_ascii(rg_state state, const strbuf fname,\
     j        = 0;
 
     ascii_open_file_buf(fname,'r');
-    BEGIN_FOR_LINE_TOK_F(field,env.f_buf[thread]," ",nf,lc)
+    BEGIN_FOR_LINE_TOK_F(field,FILE_BUF(thread)," ",nf,lc)
     {
         if (j >= RLXG_STATE_SIZE)
         {
@@ -462,41 +438,39 @@ latan_errno rs_sample_save_ascii(const strbuf fname, const char mode,\
     int thread;
     size_t i,j;
     size_t nsample,nr;
-    strbuf smode,name;
+    strbuf name;
 
 #ifdef _OPENMP
     thread = omp_get_thread_num();
 #else
     thread = 0;
 #endif
-    smode[0] = mode;
-    smode[1] = '\0';
     nsample  = rs_sample_get_nsample(s);
     nr       = rs_sample_get_nrow(s);
 
     if (mode == 'w')
     {
-        ascii_new_file_buf(fname);
+        ascii_open_file_buf(fname,mode);
     }
     else
     {
-        LATAN_ERROR("only 'w' file mode is authorized for saving sample in ASCII format",\
+        LATAN_ERROR("only 'w' file mode is authorized for saving random generator state in ASCII format",\
                     LATAN_EINVAL);
     }
     rs_sample_get_name(name,s);
-    fprintf(env.f_buf[thread],"# latan_resampled_sample %s\n",name);
-    fprintf(env.f_buf[thread],"%lu\n",(long unsigned int)nsample);
+    fprintf(FILE_BUF(thread),"# latan_resampled_sample %s\n",name);
+    fprintf(FILE_BUF(thread),"%lu\n",(long unsigned int)nsample);
     for (i=0;i<nr;i++)
     {
-        fprintf(env.f_buf[thread],"%.15e\n",         \
+        fprintf(FILE_BUF(thread),"%.15e\n",         \
                 mat_get(rs_sample_pt_cent_val(s),i,0));
         for (j=0;j<nsample;j++)
         {
-            fprintf(env.f_buf[thread],"%.15e\n",         \
+            fprintf(FILE_BUF(thread),"%.15e\n",         \
                     mat_get(rs_sample_pt_sample(s,j),i,0));
         }
     }
-    fprintf(env.f_buf[thread],"\n");
+    fprintf(FILE_BUF(thread),"\n");
     
     return LATAN_SUCCESS;
 }
@@ -523,7 +497,7 @@ latan_errno rs_sample_load_nrow_ascii(size_t *nr, const strbuf fname,\
     nsample     = 0;
 
     ascii_open_file_buf(fname,'r');
-    BEGIN_FOR_LINE_TOK_F(field,env.f_buf[thread]," ",nf,lc)
+    BEGIN_FOR_LINE_TOK_F(field,FILE_BUF(thread)," ",nf,lc)
     {
         if (lc == 1)
         {
@@ -591,7 +565,7 @@ latan_errno rs_sample_load_nsample_ascii(size_t *nsample, const strbuf fname,\
     name  = NULL;
 
     ascii_open_file_buf(fname,'r');
-    BEGIN_FOR_LINE_TOK_F(field,env.f_buf[thread]," ",nf,lc)
+    BEGIN_FOR_LINE_TOK_F(field,FILE_BUF(thread)," ",nf,lc)
     {
         if (lc == 1)
         {
@@ -639,7 +613,7 @@ latan_errno rs_sample_load_ascii(rs_sample *s, const strbuf fname,\
     nr          = (int)rs_sample_get_nrow(s);
 
     ascii_open_file_buf(fname,'r');
-    BEGIN_FOR_LINE_TOK_F(field,env.f_buf[thread]," ",nf,lc)
+    BEGIN_FOR_LINE_TOK_F(field,FILE_BUF(thread)," ",nf,lc)
     {
         if (lc == 1)
         {

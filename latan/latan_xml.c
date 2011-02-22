@@ -557,7 +557,12 @@ xml_file * xml_open_file(const strbuf fname, const char mode)
 {
     xml_file *f;
 
-    if (access(fname,F_OK) == 0)
+    if ((mode != 'r')&&(mode != 'a')&&(mode != 'w'))
+    {
+        LATAN_ERROR_NULL("XML file mode unknown (choose 'a','r' or 'w')",\
+                             LATAN_EINVAL);
+    }
+    if ((mode != 'w')&&(access(fname,F_OK) == 0))
     {
         MALLOC_ERRVAL(f,xml_file *,1,NULL);
 
@@ -566,12 +571,6 @@ xml_file * xml_open_file(const strbuf fname, const char mode)
         f->ns   = NULL;
         f->ctxt = NULL;
         strbufcpy(f->fname,fname);
-        if ((mode != 'r')&&(mode != 'a'))
-        {
-            xml_file_destroy(f);
-            LATAN_ERROR_NULL("XML file mode unknown (choose 'a' or 'r')",\
-                             LATAN_EINVAL);
-        }
         f->mode = mode;
 
         LIBXML_TEST_VERSION;
@@ -612,10 +611,10 @@ xml_file * xml_open_file(const strbuf fname, const char mode)
             LATAN_ERROR_NULL(errmsg,LATAN_ELATSYN);
         }
     }
-    else if (mode == 'a')
+    else if ((mode == 'a')||(mode == 'w'))
     {
         f = xml_new_file(fname);
-        f->mode = 'w';
+        f->mode = mode;
     }
     else
     {

@@ -1,6 +1,6 @@
 info_TEXINFOS = latanalyze.texi
 latanalyze_TEXINFOS = error.texi mat.texi
 
-all: pdf info html
+all: pdf info 
 
 ACLOCAL_AMFLAGS = -I .buildutils/m4

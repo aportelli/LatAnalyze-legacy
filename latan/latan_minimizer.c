@@ -20,7 +20,9 @@
 #include <latan/latan_minimizer.h>
 #include <latan/latan_includes.h>
 #include <latan/latan_min_gsl.h>
+#ifdef HAVE_MINUIT2
 #include <latan/latan_min_minuit2.h>
+#endif
 
 /*                      minimizer algorithms                                */
 /****************************************************************************/
@@ -176,7 +178,11 @@ latan_errno minimize(mat *x, double *f_min, min_func *f, void *param)
             status = minimize_gsl(x,f_min,f,param);
             break;
         case MINUIT:
+#ifdef HAVE_MINUIT2
             status = minimize_minuit2(x,f_min,f,param);
+#else
+            LATAN_ERROR("MINUIT support was not compiled",LATAN_EINVAL);
+#endif
             break;
         default:
             LATAN_ERROR("minimizing library flag invalid",LATAN_EINVAL);

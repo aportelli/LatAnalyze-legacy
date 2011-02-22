@@ -19,12 +19,45 @@
 
 #include <latan/latan_mat.h>
 #include <latan/latan_includes.h>
+#ifdef HAVE_LIBCUBLAS
+#include <latan/latan_mat_cublas.h>
+#endif
 #include <latan/latan_math.h>
 #include <latan/latan_rand.h>
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_permutation.h>
 #include <gsl/gsl_linalg.h>
 #include <gsl/gsl_blas.h>
+
+/* setting names of GPU related functions */
+#ifdef HAVE_LIBCUBLAS
+#define DEF_MAT_ON_CPU mat_cublas_on_cpu
+#define DEF_MAT_ON_GPU mat_cublas_on_gpu
+#define mat_gpu_free   mat_cublas_gpu_free
+#define mat_gpu_mul_nn mat_cublas_gpu_mul_nn
+#define mat_gpu_mul_nt mat_cublas_gpu_mul_nt
+#define mat_gpu_mul_tn mat_cublas_gpu_mul_tn
+#define mat_gpu_mul_tt mat_cublas_gpu_mul_tt
+#else
+#define DEF_MAT_ON_CPU mat_nothing
+#define DEF_MAT_ON_GPU mat_nothing
+#define mat_gpu_free(m)
+#define mat_gpu_mul_nn(m,n,o) LATAN_FAILURE
+#define mat_gpu_mul_nt(m,n,o) LATAN_FAILURE
+#define mat_gpu_mul_tn(m,n,o) LATAN_FAILURE
+#define mat_gpu_mul_tt(m,n,o) LATAN_FAILURE
+#endif
+
+static latan_errno mat_nothing(mat *m);
+
+/*                              dummy function                              */
+/****************************************************************************/
+static latan_errno mat_nothing(mat *m)
+{
+    m = NULL;
+
+    return LATAN_SUCCESS;
+}
 
 /*                              allocation                                  */
 /****************************************************************************/
@@ -113,6 +146,11 @@ void mat_ar_destroy(mat **m, const size_t nmat)
     FREE(m);
 }
 
+/*                          CPU/GPU transfer                                */
+/****************************************************************************/
+latan_errno (*mat_on_cpu)(mat *m) = &DEF_MAT_ON_CPU;
+latan_errno (*mat_on_gpu)(mat *m) = &DEF_MAT_ON_GPU;
+
 /*                              access                                      */
 /****************************************************************************/
 size_t nrow(mat *m)
@@ -174,7 +212,7 @@ latan_errno mat_get_subm(mat *m, mat *n, const size_t k1, const size_t l1, \
     mat_on_cpu(m);
     mat_on_cpu(n);
     
-    gsl_matrix_memcpy(m->data_cpu,&(nview.matrix));
+    status = gsl_matrix_memcpy(m->data_cpu,&(nview.matrix));
     
     MAT_CPU_LAST(m);
     

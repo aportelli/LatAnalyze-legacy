@@ -17,8 +17,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-#include <latan/latan_io_xml.h>
+
 #include <latan/latan_includes.h>
+#ifdef HAVE_LIBXML2
+#include <latan/latan_io_xml.h>
 #include <latan/latan_io.h>
 #include <latan/latan_xml.h>
 
@@ -538,3 +540,5 @@ latan_errno rs_sample_load_xml(rs_sample *s, const strbuf fname,\
 
     return LATAN_SUCCESS;
 }
+
+#endif

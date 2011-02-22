@@ -1,7 +1,6 @@
-#include <latan/latan_min_minuit2.h>
 #include <latan/latan_includes.h>
-
 #ifdef HAVE_MINUIT2
+#include <latan/latan_min_minuit2.h>
 #include <iostream>
 #include <vector>
 #include <Minuit2/FCNBase.h>
@@ -73,11 +72,9 @@ double Minuit2MinFunc::Up(void) const
 {
     return 1.0;
 }
-#endif
 
 latan_errno minimize_minuit2(mat *x, double *f_min, min_func *f, void *param)
 {
-#ifdef HAVE_MINUIT2
     latan_errno status;
     size_t x_size;
     size_t i;
@@ -138,11 +135,6 @@ latan_errno minimize_minuit2(mat *x, double *f_min, min_func *f, void *param)
     }
     
     return status;
-#else
-    x = NULL;
-    f_min = NULL;
-    f = NULL;
-    param = NULL;
-    LATAN_ERROR("MINUIT library support was not compiled",LATAN_FAILURE);
-#endif
 }
+
+#endif

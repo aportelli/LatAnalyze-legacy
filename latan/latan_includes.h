@@ -29,6 +29,16 @@
 #endif
 #define acosh gsl_acosh
 #endif
+#ifndef HAVE_STRTOK_R
+#ifdef _OPENMP
+#error "your system does not have strtok_r function which is needed for thread safety, try to compile without OpenMP support"
+#else
+#ifdef strtok_r
+#undef strtok_r
+#endif
+#define strtok_r(str,sep,dumb) strtok(str,sep)
+#endif
+#endif
 
 /* system includes */
 #include <stdlib.h>
@@ -36,12 +46,10 @@
 #include <stdarg.h>
 #include <math.h>
 #include <string.h>
-#include <unistd.h>
-#include <time.h>
-#include <unistd.h>
-#include <stdarg.h>
 #include <limits.h>
+#include <time.h>
 #include <float.h>
+#include <unistd.h>
 #include <gsl/gsl_math.h>
 #ifdef _OPENMP
 #include <omp.h>

@@ -166,23 +166,6 @@ latan_errno mat_cublas_on_gpu(mat *m)
     return status;
 }
 
-latan_errno mat_cublas_sync(mat *m)
-{
-    latan_errno status;
-    
-    status = LATAN_SUCCESS;
-    if (m->mem_flag & CPU_LAST)
-    {
-        status = mat_cublas_on_gpu(m);
-    }
-    else if (m->mem_flag & GPU_LAST)
-    {
-        status = mat_cublas_on_cpu(m);
-    }
-    
-    return status;
-}
-
 latan_errno mat_cublas_gpu_mul_nn(mat *m, mat *n, mat *o)
 {       
     cublasDgemm('n','n',INT(nrow(m)),INT(ncol(m)),INT(ncol(n)),1.0,n->data_gpu,\

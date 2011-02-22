@@ -28,7 +28,9 @@ liblatan_la_SOURCES =			\
 	latan_hadron.c			\
 	latan_includes.h		\
 	latan_io.c			\
+	latan_io_ascii.h		\
 	latan_io_ascii.c		\
+	latan_io_xml.h			\
 	latan_io_xml.c			\
 	latan_mass.c			\
 	latan_mat.c			\
@@ -52,8 +54,6 @@ liblatan_la_HEADERS =			\
 	latan_globals.h			\
 	latan_hadron.h			\
 	latan_io.h			\
-	latan_io_ascii.h		\
-	latan_io_xml.h			\
 	latan_mass.h			\
 	latan_mat.h			\
 	latan_math.h			\
@@ -62,8 +62,7 @@ liblatan_la_HEADERS =			\
 	latan_nunits.h			\
 	latan_plot.h			\
 	latan_statistics.h		\
-	latan_rand.h			\
-	latan_xml.h
+	latan_rand.h			
 liblatan_la_LIBADD = ./liblatancublas.la
 liblatan_la_CFLAGS = $(COM_CFLAGS)
 liblatan_la_CXXFLAGS = $(COM_CXXFLAGS)

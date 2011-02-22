@@ -19,6 +19,10 @@
 
 #include <latan/latan_io.h>
 #include <latan/latan_includes.h>
+#include <latan/latan_io_ascii.h>
+#ifdef HAVE_LIBXML2
+#include <latan/latan_io_xml.h>
+#endif
 #include <latan/latan_math.h>
 
 /*                            default I/O functions                         */
@@ -60,7 +64,11 @@ latan_errno io_set_fmt(const io_fmt_no fmt)
     switch (fmt)
     {
         case IO_XML:
+#ifdef HAVE_LIBXML2
             SET_IO_FUNCS(xml);
+#else
+            LATAN_ERROR("XML support was not compiled",LATAN_EINVAL);
+#endif
             break;
         case IO_ASCII:
             SET_IO_FUNCS(ascii);

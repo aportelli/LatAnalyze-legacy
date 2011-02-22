@@ -17,8 +17,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-#include <latan/latan_xml.h>
+#define _POSIX_SOURCE
+
 #include <latan/latan_includes.h>
+#ifdef HAVE_LIBXML2
+#include <latan/latan_xml.h>
 
 /*                     namespace/mark test macros                           */
 /****************************************************************************/
@@ -703,3 +706,5 @@ xmlXPathObject * xml_get_nodeset(strbuf xpath_expr, xml_file *f)
 
     return nodeset;
 }
+
+#endif

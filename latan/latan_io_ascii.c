@@ -17,9 +17,14 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
+#define _POSIX_SOURCE
+#define _THREAD_SAFE
+
 #include <latan/latan_io_ascii.h>
 #include <latan/latan_includes.h>
 #include <latan/latan_io.h>
+
+static latan_errno ascii_open_file_buf(const strbuf fname, const char mode);
 
 /*                       file buffer management (internal)                  */
 /****************************************************************************/

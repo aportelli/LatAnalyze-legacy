@@ -17,6 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
+#define _POSIX_C_SOURCE 2
+
 #include <latan/latan_plot.h>
 #include <latan/latan_includes.h>
 
@@ -280,8 +282,7 @@ void plot_add_dat(plot *p, mat *x, mat *dat, const strbuf title,\
     strbuf tmpfname, plotcmd, colorcmd;
     size_t i;
     
-    strbufcpy(tmpfname,"latan_plot_tmp_XXXXXX");
-    mkstemp(tmpfname);
+    sprintf(tmpfname,"latan_plot_tmp_%lu",(long unsigned)p->ntmpf);
     FOPEN_NOERRET(tmpf,tmpfname,"w");
     for (i=0;i<nrow(dat);i++)
     {
@@ -308,8 +309,7 @@ void plot_add_dat_yerr(plot *p, mat *x, mat *dat, mat *yerr,\
     strbuf tmpfname, plotcmd, colorcmd;
     size_t i;
     
-    strbufcpy(tmpfname,"latan_plot_tmp_XXXXXX");
-    mkstemp(tmpfname);
+    sprintf(tmpfname,"latan_plot_tmp_%lu",(long unsigned)p->ntmpf);
     FOPEN_NOERRET(tmpf,tmpfname,"w");
     for (i=0;i<nrow(dat);i++)
     {
@@ -339,8 +339,7 @@ void plot_add_dat_xyerr(plot *p, mat *x, mat *dat, mat *xerr,\
     strbuf tmpfname, plotcmd, colorcmd;
     size_t i;
     
-    strbufcpy(tmpfname,"latan_plot_tmp_XXXXXX");
-    mkstemp(tmpfname);
+    sprintf(tmpfname,"latan_plot_tmp_%lu",(long unsigned)p->ntmpf);
     FOPEN_NOERRET(tmpf,tmpfname,"w");
     for (i=0;i<nrow(dat);i++)
     {

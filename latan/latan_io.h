@@ -22,8 +22,6 @@
 
 #include <latan/latan_globals.h>
 #include <latan/latan_hadron.h>
-#include <latan/latan_io_ascii.h>
-#include <latan/latan_io_xml.h>
 #include <latan/latan_rand.h>
 #include <latan/latan_statistics.h>
 

@@ -61,6 +61,10 @@ mat **mat_ar_create(const size_t nmat, const size_t init_nrow,\
 void mat_destroy(mat *m);
 void mat_ar_destroy(mat **m, const size_t nmat);
 
+/** CPU/GPU transfer **/
+extern latan_errno (*mat_on_cpu)(mat *m);
+extern latan_errno (*mat_on_gpu)(mat *m);
+
 /** flag management **/
 #define MAT_CPU_LAST(m)\
 {\
@@ -159,27 +163,5 @@ latan_errno mat_sqrt(mat *m, mat *n);
 latan_errno mat_inv(mat *m, mat *n);
 
 __END_DECLS
-
-/* setting names of GPU related functions */
-#ifdef HAVE_LIBCUBLAS
-#define mat_gpu_free   mat_cublas_gpu_free
-#define mat_on_cpu     mat_cublas_on_cpu
-#define mat_on_gpu     mat_cublas_on_gpu
-#define mat_sync       mat_cublas_sync
-#define mat_gpu_mul_nn mat_cublas_gpu_mul_nn
-#define mat_gpu_mul_nt mat_cublas_gpu_mul_nt
-#define mat_gpu_mul_tn mat_cublas_gpu_mul_tn
-#define mat_gpu_mul_tt mat_cublas_gpu_mul_tt
-#include <latan/latan_mat_cublas.h>
-#else
-#define mat_gpu_free(m)
-#define mat_on_cpu(m)
-#define mat_on_gpu(m)
-#define mat_sync(m)
-#define mat_gpu_mul_nn(m,n,o) LATAN_FAILURE
-#define mat_gpu_mul_nt(m,n,o) LATAN_FAILURE
-#define mat_gpu_mul_tn(m,n,o) LATAN_FAILURE
-#define mat_gpu_mul_tt(m,n,o) LATAN_FAILURE
-#endif
 
 #endif

@@ -22,6 +22,10 @@
 #include <latan/latan_math.h>
 #include <latan/latan_models.h>
 
+#ifdef HAVE_ACOSH
+extern double acosh(double x); /* acosh is not ANSI compliant */
+#endif
+
 #ifndef PLAT_TOL
 #define PLAT_TOL 0.40
 #endif

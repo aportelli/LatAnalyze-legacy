@@ -17,6 +17,7 @@ AC_PROG_CC
 AM_PROG_CC_C_O
 AC_PROG_CXX
 AC_PROG_LIBTOOL
+AC_PROG_RANLIB
 
 LT_INIT
 
@@ -46,8 +47,7 @@ AC_ARG_WITH([cblas],
 AC_ARG_WITH([cblas-name],
     [AS_HELP_STRING([--with-cblas-name=name],
 		[use this to specify the filename (without 'lib') of CBLAS library (default : 'cblas')])],
-    [],
-	[]
+    [],[with_cblas_name="cblas"]
 )
 AC_ARG_WITH([cublas],
     [AS_HELP_STRING([--with-cublas=prefix],
@@ -114,6 +114,9 @@ AC_RUN_IFELSE(
 
 # Check for OpenMP
 AC_OPENMP
+AC_LANG([C++])
+AC_OPENMP
+AC_LANG([C])
 AM_CFLAGS="$AM_CFLAGS $OPENMP_CFLAGS"
 CFLAGS="$AM_CFLAGS $CFLAGS"
 AM_CXXFLAGS="$AM_CXXFLAGS $OPENMP_CXXFLAGS"
@@ -140,7 +143,7 @@ AS_IF([test "x$enable_cublas" = "xyes"],
 		[AC_MSG_ERROR([CUBLAS library not found])])],[])
 		
 AC_CHECK_LIB([gsl],[gsl_blas_dgemm],[],[AC_MSG_ERROR([GSL library not found])])
-AC_CHECK_LIB([xml2],[xmlFree],[],[AC_MSG_ERROR([xml2 library not found])])
+AC_CHECK_LIB([xml2],[xmlFree],[],[])
 AC_LANG([C++])
 SAVED_LDFLAGS=$LDFLAGS
 LDFLAGS="$LDFLAGS -lMinuit2"
@@ -159,7 +162,7 @@ AC_LANG([C])
 
 # Checks for header files.
 AC_HEADER_STDC
-AC_CHECK_HEADERS([float.h limits.h stdlib.h string.h unistd.h])
+AC_CHECK_HEADERS([unistd.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_TYPE_SIZE_T
@@ -170,11 +173,12 @@ AC_FUNC_MALLOC
 AC_FUNC_REALLOC
 AC_CHECK_FUNCS([sqrt],[],[AC_MSG_ERROR([sqrt function not found])])
 AC_CHECK_FUNCS([acosh])
+AC_CHECK_FUNCS([strtok_r])
 
 AC_SUBST([LIBS])
 AC_SUBST([AM_CFLAGS])
 AC_SUBST([AM_LDFLAGS])
 
 AC_CONFIG_FILES([Makefile latan/Makefile utils/Makefile examples/Makefile \
-				doc/Makefile])
+                 doc/Makefile])
 AC_OUTPUT

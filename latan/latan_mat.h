@@ -26,6 +26,12 @@
 __BEGIN_DECLS
 
 /* definition of the matrix type */
+enum
+{
+    MAT_GEN = 0,      /* general matrix   */
+    MAT_SYM = 1 << 0  /* symmetric matrix */
+};
+
 typedef struct 
 {
     gsl_matrix *data_cpu;
@@ -68,6 +74,8 @@ latan_errno mat_set_from_ar(mat *m, const double *ar);
 #define mat_pp(m,i,j) mat_inc(m,i,j,1.0)
 double mat_get_min(const mat *m);
 double mat_get_max(const mat *m);
+void mat_reset_assump(mat *m);
+void mat_assume_sym(mat *m, const bool is_sym);
 
 /** tests **/
 bool mat_is_samedim(const mat *m, const mat *n);
@@ -75,6 +83,7 @@ bool mat_is_square(const mat *m);
 bool mat_is_row_vector(const mat *m);
 bool mat_is_col_vector(const mat *m);
 bool mat_is_vector(const mat *m);
+bool mat_is_assumed_sym(const mat *m);
 
 /** operations **/
 void mat_zero(mat *m);

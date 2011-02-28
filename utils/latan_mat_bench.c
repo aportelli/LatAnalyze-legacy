@@ -17,48 +17,49 @@ static latan_errno mat_mul_nn(mat *a, const mat *b, const mat *c)
 #define NFLOP_MAT_MUL_NN(row_b,col_c,col_b)\
 (2.0*(double)(row_b)*(double)(col_c)*(double)(col_b))
 
-#define FUNC_BENCH_2ARG(perf,func,func_flop,a,b)\
+#define FUNC_BENCH_2ARG(perf,nops,func,func_flop,a,b)\
 {\
     clock_t end_clk,timer;\
     double nflop;\
     \
     nflop   = 0;\
+    nops    = 0;\
     \
     end_clk = clock() + TEST_TIME*CLOCKS_PER_SEC;\
     timer   = clock();\
     while (clock() < end_clk)\
     {\
         (func)(a,b);\
-        nflop += (func_flop);\
+        nops++;\
     }\
-    timer  = clock() - timer;\
-    perf   = nflop/((double)(timer)/(double)(CLOCKS_PER_SEC))/(1.0e9);\
+    nops  /= (double)(timer)/(double)(CLOCKS_PER_SEC);\
+    perf   = func_flop*nops/(1.0e9);\
 }
-#define FUNC_BENCH_3ARG(perf,func,func_flop,a,b,c)\
+#define FUNC_BENCH_3ARG(perf,nops,func,func_flop,a,b,c)\
 {\
     clock_t end_clk,timer;\
     double nflop;\
     \
     nflop   = 0;\
+    nops    = 0;\
     \
     end_clk = clock() + TEST_TIME*CLOCKS_PER_SEC;\
     timer   = clock();\
     while (clock() < end_clk)\
     {\
         (func)(a,b,c);\
-        nflop += func_flop;\
+        nops++;\
     }\
     timer  = clock() - timer;\
-    perf   = nflop/((double)(timer)/(double)(CLOCKS_PER_SEC))/(1.0e9);\
+    nops  /= (double)(timer)/(double)(CLOCKS_PER_SEC);\
+    perf   = func_flop*nops/(1.0e9);\
 }
-
 
 int main(void)
 {
     strbuf name,version;
-    
     size_t mat_size;
-    double func_flop,perf;
+    double func_flop,perf,nops;
     mat *a,*b,*c;
     
     latan_get_name(name);
@@ -71,7 +72,8 @@ int main(void)
     
     printf("mat_mul_nn test :\n");
     printf("-----------------\n");
-    printf("%6s %10s\n","size","Gflop/s");
+    printf("general matrix\n");
+    printf("%6s %10s %10s\n","size","Gflop/s","Nop/s");
     for (mat_size=MAT_SIZE_STEP;mat_size<=MAX_MAT_SIZE;mat_size+=MAT_SIZE_STEP)
     {
         func_flop = NFLOP_MAT_MUL_NN(mat_size,mat_size,mat_size);
@@ -83,8 +85,8 @@ int main(void)
         mat_rand_u(b,0.0,1.0);
         mat_rand_u(c,0.0,1.0);
         
-        FUNC_BENCH_3ARG(perf,mat_mul_nn,func_flop,a,b,c);
-        printf("%6d %10f\n",(int)mat_size,perf);
+        FUNC_BENCH_3ARG(perf,nops,mat_mul_nn,func_flop,a,b,c);
+        printf("%6d %10f %10.1f\n",(int)mat_size,perf,nops);
         
         mat_destroy(a);
         mat_destroy(b);
@@ -105,8 +107,8 @@ int main(void)
         mat_rand_u(a,0.0,1.0);
         mat_rand_u(b,0.0,1.0);
         
-        FUNC_BENCH_2ARG(perf,mat_eqadd,func_flop,a,b);
-        printf("%6d %10f\n",(int)mat_size,perf);
+        FUNC_BENCH_2ARG(perf,nops,mat_eqadd,func_flop,a,b);
+        printf("%6d %10f %10.1f\n",(int)mat_size,perf,nops);
         
         mat_destroy(a);
         mat_destroy(b);

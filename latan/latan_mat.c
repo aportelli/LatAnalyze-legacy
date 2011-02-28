@@ -351,6 +351,7 @@ latan_errno mat_cp(mat *m, const mat *n)
     }
     
     LATAN_UPDATE_STATUS(status,gsl_matrix_memcpy(m->data_cpu,n->data_cpu));
+    m->prop_flag = n->prop_flag;
    
     return status;
 }

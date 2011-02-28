@@ -49,14 +49,6 @@ AC_ARG_WITH([cblas-name],
 		[use this to specify the filename (without 'lib') of CBLAS library (default : 'cblas')])],
     [],[with_cblas_name="cblas"]
 )
-AC_ARG_WITH([cublas],
-    [AS_HELP_STRING([--with-cublas=prefix],
-		[try this for a non-standard install prefix of the CUBLAS library])],
-    [AM_CFLAGS="$AM_CFLAGS -I$with_cublas/include"]
-	[AM_LDFLAGS="$AM_LDFLAGS -L$with_cublas/lib"]
-	[enable_cublas="yes"],
-	[]
-)
 AC_ARG_WITH([Minuit2],
     [AS_HELP_STRING([--with-Minuit2=prefix],
 		[try this for a non-standard install prefix of the Minuit2 library])],
@@ -136,11 +128,6 @@ AS_IF([test "x$enable_Accelerate" = "xyes"],
 		[LIBS="-l$with_cblas_name $LIBS"],
 		[AC_CHECK_LIB([gslcblas],[cblas_dgemm],[],
 				[AC_MSG_ERROR([CBLAS library not found])])])])
-AS_IF([test "x$enable_cublas" = "xyes"],
-	[AC_CHECK_LIB([cublas],[cublasInit],
-	[AC_DEFINE_UNQUOTED([HAVE_LIBCUBLAS],[1],[Define to 1 if you have the `cublas' library (-lcublas).])]
-	[LIBS="-lcublas -Xlinker -rpath -Xlinker $with_cublas/lib $LIBS"],
-		[AC_MSG_ERROR([CUBLAS library not found])])],[])
 		
 AC_CHECK_LIB([gsl],[gsl_blas_dgemm],[],[AC_MSG_ERROR([GSL library not found])])
 AC_CHECK_LIB([xml2],[xmlFree],[],[])

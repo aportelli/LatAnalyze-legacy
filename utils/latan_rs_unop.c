@@ -11,7 +11,7 @@
 #error UNOP macro must be defined to compile this program (use -DUNOP=<op> option)
 #endif
 
-typedef latan_errno mat_unop_f(mat *, mat *);
+typedef latan_errno mat_unop_f(mat *, const mat *);
 
 mat_unop_f *mat_unop = &UNOP;
 

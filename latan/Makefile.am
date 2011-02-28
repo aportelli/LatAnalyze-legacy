@@ -7,21 +7,11 @@ COM_CXXFLAGS = -Wall -Wconversion -Wshadow -Wpointer-arith -Wcast-qual		\
 	-Wcast-align -Wwrite-strings -W -fPIC -fno-common -O2 -g		\
 	-pedantic
 
-noinst_LTLIBRARIES = liblatancublas.la
 lib_LTLIBRARIES = liblatan.la
-
-liblatancublas_la_SOURCES =		\
-	latan_mat_cublas.h		\
-	latan_mat_cublas.c		\
-	latan_globals.h			\
-	latan_mat.h			\
-	latan_error.h
-liblatancublas_la_CFLAGS = -Wall -Wmissing-prototypes -Wstrict-prototypes	\
-	-Wshadow -Wpointer-arith -Wcast-qual -Wcast-align			\
-	-Wwrite-strings -Wnested-externs -W -fPIC -fno-common -O2		\
-	-g
 	
 liblatan_la_SOURCES =			\
+	latan_blas.h			\
+	latan_blas.c			\
 	latan_error.c			\
 	latan_fit.c			\
 	latan_globals.c			\
@@ -63,7 +53,6 @@ liblatan_la_HEADERS =			\
 	latan_plot.h			\
 	latan_statistics.h		\
 	latan_rand.h			
-liblatan_la_LIBADD = ./liblatancublas.la
 liblatan_la_CFLAGS = $(COM_CFLAGS)
 liblatan_la_CXXFLAGS = $(COM_CXXFLAGS)
 

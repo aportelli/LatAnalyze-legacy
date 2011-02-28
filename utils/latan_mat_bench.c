@@ -3,9 +3,14 @@
 #include <time.h>
 #include <latan/latan_math.h>
 
-#define MAX_MAT_SIZE 2000
-#define MAT_SIZE_STEP 100
+#define MAX_MAT_SIZE 200
+#define MAT_SIZE_STEP 10
 #define TEST_TIME 2
+
+static latan_errno mat_mul_nn(mat *a, const mat *b, const mat *c)
+{
+    return mat_mul(a,b,'n',c,'n');
+}
 
 #define NFLOP_MAT_EQADD(row_b,col_b)\
 (2.0*(double)(row_b)*(double)(col_b))
@@ -96,8 +101,9 @@ int main(void)
         
         a = mat_create(mat_size,mat_size);
         b = mat_create_from_dim(a);
-        
-        mat_rand_u(b,0.0,0.5);
+
+        mat_rand_u(a,0.0,1.0);
+        mat_rand_u(b,0.0,1.0);
         
         FUNC_BENCH_2ARG(perf,mat_eqadd,func_flop,a,b);
         printf("%6d %10f\n",(int)mat_size,perf);

@@ -26,24 +26,23 @@
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_permutation.h>
 #include <gsl/gsl_linalg.h>
+#include <latan/latan_io.h>
 
 /*                              allocation                                  */
 /****************************************************************************/
 mat *mat_create(const size_t init_nrow, const size_t init_ncol)
 {
-    gsl_error_handler_t *error_handler;
     mat *m;
     
     MALLOC_ERRVAL(m,mat *,1,NULL);
     if ((init_nrow > 0)&&(init_ncol > 0))
     {
-        error_handler = gsl_set_error_handler_off();
-        m->data_cpu   = gsl_matrix_alloc(init_nrow,init_ncol);
+        m->data_cpu  = gsl_matrix_alloc(init_nrow,init_ncol);
         if (m == NULL)
         {
             LATAN_ERROR_VAL("memory allocation failed",LATAN_ENOMEM,NULL);
         }
-        gsl_set_error_handler(error_handler);
+        m->prop_flag = MAT_GEN;
     }
     
     return m;
@@ -90,6 +89,7 @@ mat **mat_ar_create(const size_t nmat, const size_t init_nrow,\
 void mat_destroy(mat *m)
 {
     gsl_matrix_free(m->data_cpu);
+    m->prop_flag = MAT_GEN;
     FREE(m);
 }
 
@@ -263,6 +263,23 @@ double mat_get_max(const mat *m)
     return gsl_matrix_max(m->data_cpu);
 }
 
+void mat_reset_assump(mat *m)
+{
+    m->prop_flag = MAT_GEN;
+}
+
+void mat_assume_sym(mat *m, const bool is_sym)
+{
+    if (is_sym)
+    {
+        m->prop_flag |= MAT_SYM;
+    }
+    else if (m->prop_flag & MAT_SYM)
+    {
+        m->prop_flag -= MAT_SYM;
+    }
+}
+
 /*                              tests                                       */
 /****************************************************************************/
 bool mat_is_samedim(const mat *m, const mat *n)
@@ -288,6 +305,11 @@ bool mat_is_col_vector(const mat *m)
 bool mat_is_vector(const mat *m)
 {
     return ((nrow(m) == 1)||(ncol(m) == 1));
+}
+
+bool mat_is_assumed_sym(const mat *m)
+{
+    return ((m->prop_flag & MAT_SYM) != 0);
 }
 
 /*                              operations                                  */
@@ -438,16 +460,29 @@ latan_errno mat_mul(mat *m, const mat *n, const char opn, const mat *o,\
                     const char opo)
 {
     latan_errno status;
-    bool have_duplicate_arg;
+    bool have_duplicate_arg,need_tbuf;
     mat *pt,*buf;
     double dbuf;
     
     status             = LATAN_SUCCESS;
     have_duplicate_arg = ((m == n)||(m == o));
+    need_tbuf          = (mat_is_assumed_sym(n)&&((opo != 'n')&&(opo != 'N'))\
+                         &&(!mat_is_vector(o)));
+    need_tbuf          = need_tbuf||(mat_is_assumed_sym(o)\
+                         &&((opn != 'n')&&(opn != 'N'))&&(!mat_is_vector(n)));
+    need_tbuf          = need_tbuf&&(!mat_is_square(m));
     buf                = NULL;
-    
-    if (have_duplicate_arg)
+
+    if (need_tbuf)
     {
+        LATAN_WARNING("transposed buffer created for symmetric matrix product",
+                      LATAN_EINVAL);
+        buf = mat_create_from_trdim(m);
+        pt  = buf;
+    }
+    else if (have_duplicate_arg)
+    {
+        LATAN_WARNING("buffer created",LATAN_EINVAL);
         buf = mat_create_from_dim(m);
         pt  = buf;
     }
@@ -456,17 +491,70 @@ latan_errno mat_mul(mat *m, const mat *n, const char opn, const mat *o,\
         pt = m;
     }
 
-    if ((nrow(m) == 1)&&(ncol(m) == 1))
+    if ((nrow(pt) == 1)&&(ncol(pt) == 1))
     {
         LATAN_UPDATE_STATUS(status,latan_blas_ddot(n,o,&dbuf));
-        mat_set(m,0,0,dbuf);
+        mat_set(pt,0,0,dbuf);
+    }
+    else if (mat_is_vector(pt))
+    {
+        if (mat_is_assumed_sym(n))
+        {
+            LATAN_UPDATE_STATUS(status,latan_blas_dsymv('u',1.0,n,o,0.0,pt));
+        }
+        else
+        {
+            LATAN_UPDATE_STATUS(status,latan_blas_dgemv(opn,1.0,n,o,0.0,pt));
+        }
     }
     else
     {
-        LATAN_UPDATE_STATUS(status,latan_blas_dgemm(opn,opo,1.0,n,o,0.0,pt));
+        if (mat_is_assumed_sym(n))
+        {
+            if ((opo != 'n')&&(opo != 'N'))
+            {
+                LATAN_UPDATE_STATUS(status,latan_blas_dsymm('r','u',1.0,n,o,\
+                                                            0.0,pt));
+                if (mat_is_square(pt))
+                {
+                    mat_eqtranspose(pt);
+                }
+            }
+            else
+            {
+                LATAN_UPDATE_STATUS(status,latan_blas_dsymm('l','u',1.0,n,o,\
+                                                            0.0,pt));
+            }
+        }
+        else if (mat_is_assumed_sym(o))
+        {
+            if ((opn != 'n')&&(opn != 'N'))
+            {
+                LATAN_UPDATE_STATUS(status,latan_blas_dsymm('l','u',1.0,o,n,\
+                                                            0.0,pt));
+                if (mat_is_square(pt))
+                {
+                    mat_eqtranspose(pt);
+                }
+            }
+            else
+            {
+                LATAN_UPDATE_STATUS(status,latan_blas_dsymm('r','u',1.0,o,n,\
+                                                            0.0,pt));
+            }
+        }
+        else
+        {
+            LATAN_UPDATE_STATUS(status,latan_blas_dgemm(opn,opo,1.0,n,o,0.0,\
+                                                        pt));
+        }
     }
-    
-    if (have_duplicate_arg)
+    if (need_tbuf)
+    {
+        LATAN_UPDATE_STATUS(status,mat_transpose(m,buf));
+        mat_destroy(buf);
+    }
+    else if (have_duplicate_arg)
     {
         LATAN_UPDATE_STATUS(status,mat_cp(m,buf));
         mat_destroy(buf);

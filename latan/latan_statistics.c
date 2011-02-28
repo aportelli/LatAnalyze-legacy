@@ -118,14 +118,14 @@ latan_errno mat_cov_m(mat *cov, mat **m, mat **n, const size_t size,\
     dsubdim = (double)(subdim);
     
     mctnc = mat_ar_create_from_dim(size,cov);
-    mc = mat_ar_create_from_dim(size,m[0]);
-    nc = mat_ar_create_from_dim(size,n[0]);
+    mc    = mat_ar_create_from_dim(size,m[0]);
+    nc    = mat_ar_create_from_dim(size,n[0]);
     
     for (i=0;i<size;i++) 
     {
         LATAN_UPDATE_STATUS(status,mat_sub(mc[i],m[i],m_mean));
         LATAN_UPDATE_STATUS(status,mat_sub(nc[i],n[i],n_mean));
-        LATAN_UPDATE_STATUS(status,mat_mul_nt(mctnc[i],mc[i],nc[i]));
+        LATAN_UPDATE_STATUS(status,mat_mul(mctnc[i],mc[i],'n',nc[i],'t'));
         LATAN_UPDATE_STATUS(status,mat_eqmuls(mctnc[i],1.0/dsubdim));
     }
     LATAN_UPDATE_STATUS(status,mat_mean(cov,mctnc,size));

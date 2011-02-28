@@ -29,7 +29,7 @@ int main(void)
     printf("c =\n");
     mat_print(c,"%f");
     printf("a <- b*c\n");
-    mat_mul(a,b,c);
+    mat_mul(a,b,'n',c,'n');
     printf("a =\n");
     mat_print(a,"%f");
     printf("d <- a(1:2,0:1)\n");
@@ -49,10 +49,19 @@ int main(void)
     printf("e =\n");
     mat_print(e,"%f");
     printf("e <- e*a\n");
-    mat_eqmul_r(e,a);
+    mat_mul(e,e,'n',a,'n');
     printf("e =\n");
     mat_print(e,"%f");
     
+    printf("a : ncol= %d tda= %d\n",(int)ncol(a),(int)a->data_cpu->tda);
+    mat_print(a,"%f");
+    mat_rand_u(e,-6.0,6.0);
+    printf("e: ncol= %d tda= %d\n",(int)ncol(e),(int)e->data_cpu->tda);
+    mat_print(e,"%f");
+    mat_eqadd(e,a);
+    printf("e <- e + a\n");
+    mat_print(e,"%f");
+
     mat_destroy(a);
     mat_destroy(b);
     mat_destroy(c);

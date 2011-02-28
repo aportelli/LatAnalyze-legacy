@@ -11,7 +11,7 @@
 #error BINOPS macro must be defined to compile this program (use -DBINOPS=<op> option)
 #endif
 
-typedef latan_errno mat_binops_f(mat *, mat *, const double);
+typedef latan_errno mat_binops_f(mat *, const mat *, const double);
 
 mat_binops_f *mat_binops = &BINOPS;
 

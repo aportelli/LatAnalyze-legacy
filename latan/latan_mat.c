@@ -19,42 +19,13 @@
 
 #include <latan/latan_mat.h>
 #include <latan/latan_includes.h>
-#ifdef HAVE_LIBCUBLAS
-#include <latan/latan_mat_cublas.h>
-#endif
+#include <latan/latan_blas.h>
 #include <latan/latan_math.h>
 #include <latan/latan_rand.h>
+#include <gsl/gsl_cblas.h>
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_permutation.h>
 #include <gsl/gsl_linalg.h>
-#include <gsl/gsl_blas.h>
-
-/* setting names of GPU related functions */
-#ifdef HAVE_LIBCUBLAS
-#define DEF_MAT_ON_CPU mat_cublas_on_cpu
-#define DEF_MAT_ON_GPU mat_cublas_on_gpu
-#define mat_gpu_free   mat_cublas_gpu_free
-#define mat_gpu_mul_nn mat_cublas_gpu_mul_nn
-#define mat_gpu_mul_nt mat_cublas_gpu_mul_nt
-#define mat_gpu_mul_tn mat_cublas_gpu_mul_tn
-#define mat_gpu_mul_tt mat_cublas_gpu_mul_tt
-#else
-#define DEF_MAT_ON_CPU mat_nothing
-#define DEF_MAT_ON_GPU mat_nothing
-#define mat_gpu_free(m)
-#define mat_gpu_mul_nn(m,n,o) LATAN_FAILURE
-#define mat_gpu_mul_nt(m,n,o) LATAN_FAILURE
-#define mat_gpu_mul_tn(m,n,o) LATAN_FAILURE
-#define mat_gpu_mul_tt(m,n,o) LATAN_FAILURE
-static latan_errno mat_nothing(mat *m);
-
-static latan_errno mat_nothing(mat *m)
-{
-    m = NULL;
-
-    return LATAN_SUCCESS;
-}
-#endif
 
 /*                              allocation                                  */
 /****************************************************************************/
@@ -64,23 +35,21 @@ mat *mat_create(const size_t init_nrow, const size_t init_ncol)
     mat *m;
     
     MALLOC_ERRVAL(m,mat *,1,NULL);
-    m->mem_flag = 0x00;
     if ((init_nrow > 0)&&(init_ncol > 0))
     {
         error_handler = gsl_set_error_handler_off();
-        m->data_cpu = gsl_matrix_alloc(init_nrow,init_ncol);
+        m->data_cpu   = gsl_matrix_alloc(init_nrow,init_ncol);
         if (m == NULL)
         {
             LATAN_ERROR_VAL("memory allocation failed",LATAN_ENOMEM,NULL);
         }
         gsl_set_error_handler(error_handler);
-        m->mem_flag |= CPU_ALLOCATED|CPU_LAST;
     }
     
     return m;
 }
 
-mat *mat_create_from_mat(mat *n)
+mat *mat_create_from_mat(const mat *n)
 {
     mat *m;
     
@@ -92,7 +61,7 @@ mat *mat_create_from_mat(mat *n)
 }
 
 mat *mat_create_from_ar(const double *ar, const size_t init_nrow,\
-                       const size_t init_ncol)
+                        const size_t init_ncol)
 {
     mat *m;
     
@@ -104,7 +73,7 @@ mat *mat_create_from_ar(const double *ar, const size_t init_nrow,\
 }
 
 mat **mat_ar_create(const size_t nmat, const size_t init_nrow,\
-                   const size_t init_ncol)
+                    const size_t init_ncol)
 {
     size_t i;
     mat **m;
@@ -120,15 +89,7 @@ mat **mat_ar_create(const size_t nmat, const size_t init_nrow,\
 
 void mat_destroy(mat *m)
 {
-    if (m->mem_flag & CPU_ALLOCATED)
-    {
-        gsl_matrix_free(m->data_cpu);
-    }
-    if (m->mem_flag & GPU_ALLOCATED)
-    {
-        mat_gpu_free(m);
-    }
-    m->mem_flag = 0x00;
+    gsl_matrix_free(m->data_cpu);
     FREE(m);
 }
 
@@ -143,32 +104,25 @@ void mat_ar_destroy(mat **m, const size_t nmat)
     FREE(m);
 }
 
-/*                          CPU/GPU transfer                                */
-/****************************************************************************/
-latan_errno (*mat_on_cpu)(mat *m) = &DEF_MAT_ON_CPU;
-latan_errno (*mat_on_gpu)(mat *m) = &DEF_MAT_ON_GPU;
-
 /*                              access                                      */
 /****************************************************************************/
-size_t nrow(mat *m)
+size_t nrow(const mat *m)
 {
     return m->data_cpu->size1;
 }
 
-size_t ncol(mat *m)
+size_t ncol(const mat *m)
 {
     return m->data_cpu->size2;
 }
 
-double mat_get(mat *m, const size_t i, const size_t j)
+double mat_get(const mat *m, const size_t i, const size_t j)
 {
     if ((i>=nrow(m))||(j>=ncol(m)))
     {
         LATAN_ERROR_NORET("index out of range",LATAN_EBADLEN);
     }
 
-    mat_on_cpu(m);
-    
     return gsl_matrix_get(m->data_cpu,i,j);
 }
 
@@ -178,16 +132,12 @@ void mat_set(mat *m, const size_t i, const size_t j, const double val)
     {
         LATAN_ERROR_VOID("index out of range",LATAN_EBADLEN);
     }
-
-    mat_on_cpu(m);
     
     gsl_matrix_set(m->data_cpu,i,j,val);
-    
-    MAT_CPU_LAST(m);
 }
 
-latan_errno mat_get_subm(mat *m, mat *n, const size_t k1, const size_t l1, \
-                         const size_t k2, const size_t l2)
+latan_errno mat_get_subm(mat *m, const mat *n, const size_t k1,           \
+                         const size_t l1, const size_t k2, const size_t l2)
 {
     latan_errno status;
     gsl_matrix_const_view nview = gsl_matrix_const_submatrix(n->data_cpu,      \
@@ -206,17 +156,12 @@ latan_errno mat_get_subm(mat *m, mat *n, const size_t k1, const size_t l1, \
                     ,LATAN_EBADLEN);
     }
     
-    mat_on_cpu(m);
-    mat_on_cpu(n);
-    
     status = gsl_matrix_memcpy(m->data_cpu,&(nview.matrix));
-    
-    MAT_CPU_LAST(m);
     
     return status;
 }
 
-latan_errno mat_set_subm(mat *m, mat *n, const size_t k1,          \
+latan_errno mat_set_subm(mat *m, const mat *n, const size_t k1,          \
                          const size_t l1,const size_t k2, const size_t l2)
 {
     latan_errno status;
@@ -232,19 +177,14 @@ latan_errno mat_set_subm(mat *m, mat *n, const size_t k1,          \
                     ,LATAN_EBADLEN);
     }
     
-    mat_on_cpu(m);
-    mat_on_cpu(n);
-    
     mview  = gsl_matrix_submatrix(m->data_cpu,(size_t)(k1),(size_t)(l1),\
                                   (size_t)(k2-k1+1),(size_t)(l2-l1+1));
     status = gsl_matrix_memcpy(&(mview.matrix),n->data_cpu);
     
-    MAT_CPU_LAST(m);
-    
     return status;
 }
 
-latan_errno mat_get_diag(mat *diag, mat *m)
+latan_errno mat_get_diag(mat *diag, const mat *m)
 {
     size_t min_dim;
     size_t i;
@@ -255,21 +195,16 @@ latan_errno mat_get_diag(mat *diag, mat *m)
         LATAN_ERROR("trying to set the diagonal of a matrix with invalid dimensions",\
                     LATAN_EBADLEN);
     }
-    
-    mat_on_cpu(diag);
-    mat_on_cpu(m);
     
     for (i=0;i<min_dim;i++)
     {
         mat_set(diag,i,0,mat_get(m,i,i));
     }
     
-    MAT_CPU_LAST(diag);
-    
     return LATAN_SUCCESS;
 }
 
-latan_errno mat_set_diag(mat *m, mat *diag)
+latan_errno mat_set_diag(mat *m, const mat *diag)
 {
     size_t min_dim;
     size_t i;
@@ -281,16 +216,11 @@ latan_errno mat_set_diag(mat *m, mat *diag)
                     LATAN_EBADLEN);
     }
     
-    mat_on_cpu(m);
-    mat_on_cpu(diag);
-    
     for (i=0;i<min_dim;i++)
     {
         mat_set(m,i,i,mat_get(diag,i,0));
     }
-    
-    MAT_CPU_LAST(m);
-    
+
     return LATAN_SUCCESS;
 }
 
@@ -303,14 +233,10 @@ latan_errno mat_set_step(mat *m, const double x0, const double step)
         LATAN_ERROR("step matrix output is not a column vector",LATAN_EBADLEN);
     }
     
-    mat_on_cpu(m);
-    
     for (i=0;i<nrow(m);i++)
     {
         mat_set(m,i,0,x0+((double)(i))*step);
     }
-    
-    MAT_CPU_LAST(m);
     
     return LATAN_SUCCESS;
 }
@@ -322,52 +248,44 @@ latan_errno mat_set_from_ar(mat *m, const double *ar)
                                                                 ncol(m));
     latan_errno status;
     
-    mat_on_cpu(m);
-    
     status = gsl_matrix_memcpy(m->data_cpu,&(ar_view.matrix));
-    
-    MAT_CPU_LAST(m);
     
     return status;
 }
 
-double mat_get_min(mat *m)
+double mat_get_min(const mat *m)
 {
-    mat_on_cpu(m);
-    
     return gsl_matrix_min(m->data_cpu);
 }
 
-double mat_get_max(mat *m)
+double mat_get_max(const mat *m)
 {
-    mat_on_cpu(m);
-    
     return gsl_matrix_max(m->data_cpu);
 }
 
 /*                              tests                                       */
 /****************************************************************************/
-bool mat_is_samedim(mat *m, mat *n)
+bool mat_is_samedim(const mat *m, const mat *n)
 {
     return ((nrow(m) == nrow(n))&&(ncol(m) == ncol(n)));
 }
 
-bool mat_is_square(mat *m)
+bool mat_is_square(const mat *m)
 {
     return (nrow(m) == ncol(m));
 }
 
-bool mat_is_row_vector(mat *m)
-{
-    return (ncol(m) == 1);
-}
-
-bool mat_is_col_vector(mat *m)
+bool mat_is_row_vector(const mat *m)
 {
     return (nrow(m) == 1);
 }
 
-bool mat_is_vector(mat *m)
+bool mat_is_col_vector(const mat *m)
+{
+    return (ncol(m) == 1);
+}
+
+bool mat_is_vector(const mat *m)
 {
     return ((nrow(m) == 1)||(ncol(m) == 1));
 }
@@ -376,46 +294,30 @@ bool mat_is_vector(mat *m)
 /****************************************************************************/
 void mat_zero(mat *m)
 {
-    mat_on_cpu(m);
-    
     gsl_matrix_set_zero(m->data_cpu);
-    
-    MAT_CPU_LAST(m);
 }
 
 void mat_cst(mat *m, const double x)
 {
-    mat_on_cpu(m);
-    
     gsl_matrix_set_all(m->data_cpu,x);
-    
-    MAT_CPU_LAST(m);
 }
 
 void mat_rand_u(mat *m, const double a, const double b)
 {
     size_t i,j;
-    
-    mat_on_cpu(m);
-    
+
     FOR_VAL(m,i,j)
     {
         mat_set(m,i,j,rand_u(a,b));
     }
-    
-    MAT_CPU_LAST(m);
 }
 
 void mat_id(mat *m)
 {
-    mat_on_cpu(m);
-    
     gsl_matrix_set_identity(m->data_cpu);
-    
-    MAT_CPU_LAST(m);
 }
 
-latan_errno mat_cp(mat *m, mat *n)
+latan_errno mat_cp(mat *m, const mat *n)
 {
     latan_errno status;
     
@@ -426,17 +328,12 @@ latan_errno mat_cp(mat *m, mat *n)
         LATAN_ERROR("matrix copy with dimension mismatch",LATAN_EBADLEN);
     }
     
-    mat_on_cpu(m);
-    mat_on_cpu(n);
-    
     LATAN_UPDATE_STATUS(status,gsl_matrix_memcpy(m->data_cpu,n->data_cpu));
-    
-    MAT_CPU_LAST(m);
-    
+   
     return status;
 }
 
-latan_errno mat_eqadd(mat *m, mat *n)
+latan_errno mat_eqadd(mat *m, const mat *n)
 {
     latan_errno status;
     size_t i;
@@ -448,23 +345,26 @@ latan_errno mat_eqadd(mat *m, mat *n)
         LATAN_ERROR("operation between matrices with dimension mismatch",\
                     LATAN_EBADLEN);
     }
-    
-    mat_on_cpu(m);
-    mat_on_cpu(n);
-    
-    for (i=0;i<ncol(m);i++)
+
+    if ((m->data_cpu->tda == ncol(m))&&(n->data_cpu->tda == ncol(n)))
     {
-        gsl_vector_view m_i_vview = gsl_matrix_column(m->data_cpu,i);
-        gsl_vector_const_view n_i_vview = gsl_matrix_const_column(n->data_cpu,i);
-        status = gsl_blas_daxpy(1.0,&(n_i_vview.vector),&(m_i_vview.vector));
+        cblas_daxpy((int)(ncol(m)*nrow(m)),1.0,n->data_cpu->data,1,\
+                    m->data_cpu->data,1);
     }
-    
-    MAT_CPU_LAST(m);
+    else
+    {
+        for (i=0;i<nrow(m);i++)
+        {
+            cblas_daxpy((int)(ncol(m)),1.0,                    \
+                        n->data_cpu->data+i*n->data_cpu->tda,1,\
+                        m->data_cpu->data+i*m->data_cpu->tda,1);
+        }
+    }
     
     return status;
 }
 
-latan_errno mat_add(mat *m, mat *n, mat *o)
+latan_errno mat_add(mat *m, const mat *n, const mat *o)
 {
     latan_errno status;
     
@@ -476,7 +376,7 @@ latan_errno mat_add(mat *m, mat *n, mat *o)
     return status;
 }
 
-latan_errno mat_adds(mat *m, mat *n, const double s)
+latan_errno mat_adds(mat *m, const mat *n, const double s)
 {
     latan_errno status;
     mat *cst;
@@ -491,35 +391,38 @@ latan_errno mat_adds(mat *m, mat *n, const double s)
     return status;
 }
 
-latan_errno mat_eqsub(mat *m, mat *n)
+latan_errno mat_eqsub(mat *m, const mat *n)
 {
     latan_errno status;
     size_t i;
-    
+
     status = LATAN_SUCCESS;
-    
+
     if (!mat_is_samedim(m,n))
     {
         LATAN_ERROR("operation between matrices with dimension mismatch",\
                     LATAN_EBADLEN);
     }
-    
-    mat_on_cpu(m);
-    mat_on_cpu(n);
-    
-    for (i=0;i<ncol(m);i++)
+
+    if ((m->data_cpu->tda == ncol(m))&&(n->data_cpu->tda == ncol(n)))
     {
-        gsl_vector_view m_i_vview = gsl_matrix_column(m->data_cpu,i);
-        gsl_vector_const_view n_i_vview = gsl_matrix_const_column(n->data_cpu,i);
-        status = gsl_blas_daxpy(-1.0,&(n_i_vview.vector),&(m_i_vview.vector));
+        cblas_daxpy((int)(ncol(m)*nrow(m)),-1.0,n->data_cpu->data,1,\
+                    m->data_cpu->data,1);
     }
-    
-    MAT_CPU_LAST(m);
-    
+    else
+    {
+        for (i=0;i<nrow(m);i++)
+        {
+            cblas_daxpy((int)(ncol(m)),-1.0,                    \
+                        n->data_cpu->data+i*n->data_cpu->tda,1, \
+                        m->data_cpu->data+i*m->data_cpu->tda,1);
+        }
+    }
+
     return status;
 }
 
-latan_errno mat_sub(mat *m, mat *n, mat *o)
+latan_errno mat_sub(mat *m, const mat *n, const mat *o)
 {
     latan_errno status;
     
@@ -531,21 +434,17 @@ latan_errno mat_sub(mat *m, mat *n, mat *o)
     return status;
 }
 
-latan_errno mat_mul_nn(mat *m, mat *n, mat *o)
+latan_errno mat_mul(mat *m, const mat *n, const char opn, const mat *o,\
+                    const char opo)
 {
     latan_errno status;
     bool have_duplicate_arg;
     mat *pt,*buf;
+    double dbuf;
     
     status             = LATAN_SUCCESS;
     have_duplicate_arg = ((m == n)||(m == o));
     buf                = NULL;
-    
-    if ((nrow(m) != nrow(n))||(ncol(m) != ncol(o))||(ncol(n) != nrow(o)))
-    {
-        LATAN_ERROR("operation between matrices with dimension mismatch",\
-                    LATAN_EBADLEN);
-    }
     
     if (have_duplicate_arg)
     {
@@ -556,86 +455,15 @@ latan_errno mat_mul_nn(mat *m, mat *n, mat *o)
     {
         pt = m;
     }
-    
-    switch (latan_get_mat_op()) 
-    {
-        case CPU_MAT_OP:
-            mat_on_cpu(pt);
-            mat_on_cpu(n);
-            mat_on_cpu(o);
-            LATAN_UPDATE_STATUS(status,gsl_blas_dgemm(CblasNoTrans,CblasNoTrans,  \
-                                                      1.0,n->data_cpu,o->data_cpu,\
-                                                      0.0,pt->data_cpu));
-            MAT_CPU_LAST(pt);
-            break;
-        case GPU_MAT_OP:
-            mat_on_gpu(pt);
-            mat_on_gpu(n);
-            mat_on_gpu(o);
-            LATAN_UPDATE_STATUS(status,mat_gpu_mul_nn(pt,n,o));
-            MAT_GPU_LAST(pt);
-            break;
-        default:
-            LATAN_ERROR("matrix operator flag invalid",LATAN_EINVAL);
-            break;
-    }
 
-    if (have_duplicate_arg)
+    if ((nrow(m) == 1)&&(ncol(m) == 1))
     {
-        LATAN_UPDATE_STATUS(status,mat_cp(m,buf));
-        mat_destroy(buf);
-    }
-    
-    return status;
-}
-
-latan_errno mat_mul_nt(mat *m, mat *n, mat *o)
-{
-    latan_errno status;
-    bool have_duplicate_arg;
-    mat *pt,*buf;
-    
-    status             = LATAN_SUCCESS;
-    have_duplicate_arg = ((m == n)||(m == o));
-    buf                = NULL;
-    
-    if ((nrow(m) != nrow(n))||(ncol(m) != nrow(o))||(ncol(n) != ncol(o)))
-    {
-        LATAN_ERROR("operation between matrices with dimension mismatch",\
-                    LATAN_EBADLEN);
-    }
-    
-    if (have_duplicate_arg)
-    {
-        buf = mat_create_from_dim(m);
-        pt  = buf;
+        LATAN_UPDATE_STATUS(status,latan_blas_ddot(n,o,&dbuf));
+        mat_set(m,0,0,dbuf);
     }
     else
     {
-        pt = m;
-    }
-    
-    switch (latan_get_mat_op()) 
-    {
-        case CPU_MAT_OP:
-            mat_on_cpu(pt);
-            mat_on_cpu(n);
-            mat_on_cpu(o);
-            LATAN_UPDATE_STATUS(status,gsl_blas_dgemm(CblasNoTrans,CblasTrans,    \
-                                                      1.0,n->data_cpu,o->data_cpu,\
-                                                      0.0,pt->data_cpu));
-            MAT_CPU_LAST(pt);
-            break;
-        case GPU_MAT_OP:
-            mat_on_gpu(pt);
-            mat_on_gpu(n);
-            mat_on_gpu(o);
-            LATAN_UPDATE_STATUS(status,mat_gpu_mul_nt(pt,n,o));
-            MAT_GPU_LAST(pt);
-            break;
-        default:
-            LATAN_ERROR("matrix operator flag invalid",LATAN_EINVAL);
-            break;
+        LATAN_UPDATE_STATUS(status,latan_blas_dgemm(opn,opo,1.0,n,o,0.0,pt));
     }
     
     if (have_duplicate_arg)
@@ -643,132 +471,6 @@ latan_errno mat_mul_nt(mat *m, mat *n, mat *o)
         LATAN_UPDATE_STATUS(status,mat_cp(m,buf));
         mat_destroy(buf);
     }
-    
-    return status;
-}
-
-latan_errno mat_mul_tn(mat *m, mat *n, mat *o)
-{
-    latan_errno status;
-    bool have_duplicate_arg;
-    mat *pt,*buf;
-    
-    status             = LATAN_SUCCESS;
-    have_duplicate_arg = ((m == n)||(m == o));
-    buf                = NULL;
-    
-    if ((nrow(m) != ncol(n))||(ncol(m) != ncol(o))||(nrow(n) != nrow(o)))
-    {
-        LATAN_ERROR("operation between matrices with dimension mismatch",\
-                    LATAN_EBADLEN);
-    }
-    
-    if (have_duplicate_arg)
-    {
-        buf = mat_create_from_dim(m);
-        pt  = buf;
-    }
-    else
-    {
-        pt = m;
-    }
-    
-    switch (latan_get_mat_op()) 
-    {
-        case CPU_MAT_OP:
-            mat_on_cpu(pt);
-            mat_on_cpu(n);
-            mat_on_cpu(o);
-            LATAN_UPDATE_STATUS(status,gsl_blas_dgemm(CblasTrans,CblasNoTrans,    \
-                                                      1.0,n->data_cpu,o->data_cpu,\
-                                                      0.0,pt->data_cpu));
-            MAT_CPU_LAST(pt);
-            break;
-        case GPU_MAT_OP:
-            mat_on_gpu(pt);
-            mat_on_gpu(n);
-            mat_on_gpu(o);
-            LATAN_UPDATE_STATUS(status,mat_gpu_mul_tn(pt,n,o));
-            MAT_GPU_LAST(pt);
-            break;
-        default:
-            LATAN_ERROR("matrix operator flag invalid",LATAN_EINVAL);
-            break;
-    }
-    
-    if (have_duplicate_arg)
-    {
-        LATAN_UPDATE_STATUS(status,mat_cp(m,buf));
-        mat_destroy(buf);
-    }
-    
-    return status;
-}
-
-latan_errno mat_mul_tt(mat *m, mat *n, mat *o)
-{
-    latan_errno status;
-    bool have_duplicate_arg;
-    mat *pt,*buf;
-    
-    status             = LATAN_SUCCESS;
-    have_duplicate_arg = ((m == n)||(m == o));
-    buf                = NULL;
-    
-    if ((nrow(m) != ncol(n))||(ncol(m) != nrow(o))||(nrow(n) != ncol(o)))
-    {
-        LATAN_ERROR("operation between matrices with dimension mismatch",\
-                    LATAN_EBADLEN);
-    }
-    
-    if (have_duplicate_arg)
-    {
-        buf = mat_create_from_dim(m);
-        pt  = buf;
-    }
-    else
-    {
-        pt = m;
-    }
-    
-    switch (latan_get_mat_op()) 
-    {
-        case CPU_MAT_OP:
-            mat_on_cpu(pt);
-            mat_on_cpu(n);
-            mat_on_cpu(o);
-            LATAN_UPDATE_STATUS(status,gsl_blas_dgemm(CblasTrans,CblasTrans,      \
-                                                      1.0,n->data_cpu,o->data_cpu,\
-                                                      0.0,pt->data_cpu));
-            MAT_CPU_LAST(pt);
-            break;
-        case GPU_MAT_OP:
-            mat_on_gpu(pt);
-            mat_on_gpu(n);
-            mat_on_gpu(o);
-            LATAN_UPDATE_STATUS(status,mat_gpu_mul_tt(pt,n,o));
-            MAT_GPU_LAST(pt);
-            break;
-        default:
-            LATAN_ERROR("matrix operator flag invalid",LATAN_EINVAL);
-            break;
-    }
-
-    return status;
-}
-
-latan_errno mat_dvmul(double *res, mat *m, mat *n)
-{
-    latan_errno status;
-    gsl_vector_view m_vview,n_vview;
-    
-    mat_on_cpu(m);
-    mat_on_cpu(n);
-    
-    m_vview = gsl_matrix_column(m->data_cpu,0);
-    n_vview = gsl_matrix_column(n->data_cpu,0);
-    
-    status = gsl_blas_ddot(&(m_vview.vector),&(n_vview.vector),res);
     
     return status;
 }
@@ -782,16 +484,12 @@ latan_errno mat_eqtranspose(mat *m)
         LATAN_ERROR("cannot auto-transpose a non-square matrix",LATAN_ENOTSQR);
     }
     
-    mat_on_cpu(m);
-    
     status = gsl_matrix_transpose(m->data_cpu);
-    
-    MAT_CPU_LAST(m);
     
     return status;
 }
 
-latan_errno mat_transpose(mat *m, mat *n)
+latan_errno mat_transpose(mat *m, const mat *n)
 {
     latan_errno status;
     
@@ -801,17 +499,12 @@ latan_errno mat_transpose(mat *m, mat *n)
                     LATAN_EBADLEN);
     }
     
-    mat_on_cpu(m);
-    mat_on_cpu(n);
-    
     status = gsl_matrix_transpose_memcpy(m->data_cpu,n->data_cpu);
-    
-    MAT_CPU_LAST(m);
     
     return status;
 }
 
-latan_errno mat_inv(mat *m, mat *n)
+latan_errno mat_inv(mat *m, const mat *n)
 {
     latan_errno status;
     int signum;
@@ -826,9 +519,6 @@ latan_errno mat_inv(mat *m, mat *n)
     {
         LATAN_ERROR("cannot invert a non-square matrix",LATAN_ENOTSQR);
     }
-    
-    mat_on_cpu(m);
-    mat_on_cpu(n);
     
     LU = mat_create_from_mat(n);
     error_handler = gsl_set_error_handler(&latan_error);
@@ -846,15 +536,13 @@ latan_errno mat_inv(mat *m, mat *n)
     LATAN_UPDATE_STATUS(status,gsl_linalg_LU_invert(LU->data_cpu,perm,\
                                                     m->data_cpu));
     
-    MAT_CPU_LAST(m);
-    
     mat_destroy(LU);
     gsl_permutation_free(perm);
     
     return status;
 }
 
-latan_errno mat_eqmulp(mat *m, mat *n)
+latan_errno mat_eqmulp(mat *m, const mat *n)
 {
     latan_errno status;
     
@@ -866,30 +554,19 @@ latan_errno mat_eqmulp(mat *m, mat *n)
                     LATAN_EBADLEN);
     }
     
-    mat_on_cpu(m);
-    mat_on_cpu(n);
-    
     LATAN_UPDATE_STATUS(status,gsl_matrix_mul_elements(m->data_cpu,n->data_cpu));
-    
-    MAT_CPU_LAST(m);
     
     return status;
 }
 
-latan_errno mat_mulp(mat *m, mat *n, mat *o)
+latan_errno mat_mulp(mat *m, const mat *n, const mat *o)
 {
     latan_errno status;
     
     status = LATAN_SUCCESS;
     
-    mat_on_cpu(m);
-    mat_on_cpu(n);
-    mat_on_cpu(o);
-    
     LATAN_UPDATE_STATUS(status,mat_cp(m,n));
     LATAN_UPDATE_STATUS(status,mat_eqmulp(m,o));
-    
-    MAT_CPU_LAST(m);
     
     return status;
 }
@@ -900,33 +577,24 @@ latan_errno mat_eqmuls(mat *m, const double s)
     
     status = LATAN_SUCCESS;
     
-    mat_on_cpu(m);
-    
     LATAN_UPDATE_STATUS(status,gsl_matrix_scale(m->data_cpu,s));
-    
-    MAT_CPU_LAST(m);
     
     return status;
 }
 
-latan_errno mat_muls(mat *m, mat *n, const double s)
+latan_errno mat_muls(mat *m, const mat *n, const double s)
 {
     latan_errno status;
     
     status = LATAN_SUCCESS;
     
-    mat_on_cpu(m);
-    mat_on_cpu(n);
-    
     LATAN_UPDATE_STATUS(status,mat_cp(m,n));
     LATAN_UPDATE_STATUS(status,mat_eqmuls(m,s));
-    
-    MAT_CPU_LAST(m);
     
     return status;
 }
 
-latan_errno mat_eqdivp(mat *m, mat *n)
+latan_errno mat_eqdivp(mat *m, const mat *n)
 {
     latan_errno status;
     
@@ -938,35 +606,24 @@ latan_errno mat_eqdivp(mat *m, mat *n)
                     LATAN_EBADLEN);
     }
     
-    mat_on_cpu(m);
-    mat_on_cpu(n);
-    
     LATAN_UPDATE_STATUS(status,gsl_matrix_div_elements(m->data_cpu,n->data_cpu));
-    
-    MAT_CPU_LAST(m);
     
     return status;
 }
 
-latan_errno mat_divp(mat *m, mat *n, mat *o)
+latan_errno mat_divp(mat *m, const mat *n, const mat *o)
 {
     latan_errno status;
     
     status = LATAN_SUCCESS;
-    
-    mat_on_cpu(m);
-    mat_on_cpu(n);
-    mat_on_cpu(o);
-    
+
     LATAN_UPDATE_STATUS(status,mat_cp(m,n));
     LATAN_UPDATE_STATUS(status,mat_eqdivp(m,o));
-    
-    MAT_CPU_LAST(m);
-    
+
     return status;
 }
 
-latan_errno mat_abs(mat *m, mat *n)
+latan_errno mat_abs(mat *m, const mat *n)
 {
     size_t i,j;
     
@@ -975,21 +632,16 @@ latan_errno mat_abs(mat *m, mat *n)
         LATAN_ERROR("operation between matrices with dimension mismatch",\
                     LATAN_EBADLEN);
     }
-    
-    mat_on_cpu(m);
-    mat_on_cpu(n);
-    
+     
     FOR_VAL(m,i,j)
     {
         mat_set(m,i,j,fabs(mat_get(n,i,j)));
     }
-    
-    MAT_CPU_LAST(m);
-    
+
     return LATAN_SUCCESS;
 }
 
-latan_errno mat_sqrt(mat *m, mat *n)
+latan_errno mat_sqrt(mat *m, const mat *n)
 {
     size_t i,j;
     
@@ -998,16 +650,11 @@ latan_errno mat_sqrt(mat *m, mat *n)
         LATAN_ERROR("operation between matrices with dimension mismatch",\
                     LATAN_EBADLEN);
     }
-    
-    mat_on_cpu(m);
-    mat_on_cpu(n);
-    
+      
     FOR_VAL(m,i,j)
     {
         mat_set(m,i,j,sqrt(fabs(mat_get(n,i,j))));
     }
-    
-    MAT_CPU_LAST(m);
-    
+
     return LATAN_SUCCESS;
 }

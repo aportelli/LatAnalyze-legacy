@@ -59,8 +59,6 @@ double gsl_f(const gsl_vector *v, void *v_gf_param)
     gsl_matrix_view x_mview;
     double f_val;
     
-    x.mem_flag = CPU_LAST;
-    
     gf_param = (gsl_f_eval_param*)v_gf_param;
     gsl_vector_memcpy(gf_param->buf_gsl_f,v);
     gsl_vector_mul(gf_param->buf_gsl_f,gf_param->scale);
@@ -151,8 +149,6 @@ latan_errno minimize_gsl(mat *x, double *f_min, min_func *f, void *param)
     minimizer_fdf           = NULL;
     minimizer_f_t           = NULL;
     minimizer_f             = NULL;
-
-    mat_on_cpu(x);
     
     switch (minimizer_get_alg())
     {
@@ -247,8 +243,6 @@ latan_errno minimize_gsl(mat *x, double *f_min, min_func *f, void *param)
     }
     *f_min = need_df ? minimizer_fdf->f : minimizer_f->fval;
     gsl_matrix_set_col(x->data_cpu,0,gsl_x);
-    
-    MAT_CPU_LAST(x);
     
     gsl_vector_free(gf_param.scale);
     gsl_vector_free(gf_param.buf_gsl_f);

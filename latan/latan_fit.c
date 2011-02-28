@@ -19,9 +19,9 @@
 
 #include <latan/latan_fit.h>
 #include <latan/latan_includes.h>
+#include <latan/latan_blas.h>
 #include <latan/latan_math.h>
 #include <latan/latan_minimizer.h>
-#include <gsl/gsl_blas.h>
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_vector.h>
 
@@ -60,20 +60,21 @@ double fit_model_eval(const fit_model *model, mat *x, mat *p,    \
 {
     unsigned int i;
     double res;
+    gsl_matrix_view p_view;
     mat subp;
     size_t ind_i,ind_f;
     
     res           = 0.0;
     ind_i         = 0;
     ind_f         = 0;
-    subp.mem_flag = CPU_LAST;
     
     for (i=0;i<MAX_STAGE;i++)
     {
         ind_f = ind_i + model->npar(STAGE(i),model_param) - 1;
         if (stage_flag & STAGE(i))
         {
-            MAT_PT_SUBM(&subp,p,ind_i,0,ind_f,0);
+            p_view = gsl_matrix_submatrix(p->data_cpu,ind_i,0,ind_f-ind_i+1,1);
+            subp.data_cpu = &(p_view.matrix);
             res += model->func[i](x,&subp,model_param);   
         }
         ind_i = ind_f + 1;
@@ -179,7 +180,7 @@ latan_errno fit_data_set_x_var(fit_data *d, mat *var)
     status = LATAN_SUCCESS;
     d->have_x_var      = true;
     d->is_x_correlated = mat_is_square(var);
-    if (d->is_data_correlated)
+    if (d->is_x_correlated)
     {
         LATAN_UPDATE_STATUS(status,mat_inv(d->x_varinv,var));
     }
@@ -188,7 +189,7 @@ latan_errno fit_data_set_x_var(fit_data *d, mat *var)
         mat_zero(d->data_varinv);
         for (i=0;i<nrow(var);i++)
         {
-            if (mat_get(var,i,0) == 0)
+            if (mat_get(var,i,0) == 0.0)
             {
                 sprintf(warnmsg,"singular point %lu eliminated from fit",\
                         (long unsigned)i);
@@ -312,7 +313,7 @@ latan_errno fit_data_set_data_var(fit_data *d, mat *var)
         mat_zero(d->data_varinv);
         for (i=0;i<nrow(var);i++)
         {
-            if (mat_get(var,i,0) == 0)
+            if (mat_get(var,i,0) == 0.0)
             {
                 sprintf(warnmsg,"singular point %lu eliminated from fit",\
                         (long unsigned)i);
@@ -366,10 +367,10 @@ double fit_data_model_eval(const fit_data *d, const size_t i,\
                            mat *p)
 {
     mat x_i;
+    gsl_matrix_view x_view;
     
-    x_i.mem_flag = CPU_LAST;
-    
-    MAT_PT_SUBM(&x_i,d->x,i*d->ndim,0,i*d->ndim+d->ndim-1,0);
+    x_view       = gsl_matrix_submatrix(d->x->data_cpu,i*d->ndim,0,d->ndim,1);
+    x_i.data_cpu = &(x_view.matrix);
     
     return fit_model_eval(d->model,&x_i,p,d->stage_flag,d->model_param);
 }
@@ -455,8 +456,8 @@ double chi2(mat *p, void *d)
                 mat_set(X,i,0,0.0);
             }
         }
-        mat_mul_nn(sigX,dt->data_varinv,X);
-        mat_dvmul(&res,sigX,X);
+        mat_mul(sigX,dt->data_varinv,'n',X,'n');
+        latan_blas_ddot(sigX,X,&res);
     }
     
     return res;

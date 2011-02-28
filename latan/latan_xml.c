@@ -22,6 +22,7 @@
 #include <latan/latan_includes.h>
 #ifdef HAVE_LIBXML2
 #include <latan/latan_xml.h>
+#include <gsl/gsl_matrix.h>
 
 /*                     namespace/mark test macros                           */
 /****************************************************************************/
@@ -158,18 +159,19 @@ latan_errno xml_get_mat(mat *m, xmlNode *node)
 {
     xmlNode *ccur;
     size_t j;
+    gsl_matrix_view m_view;
     mat mcol;
     latan_errno status;
 
     j             = 0;
     status        = LATAN_SUCCESS;
-    mcol.mem_flag = CPU_LAST;
 
     IF_GOT_LATAN_MARK_ELSE_ERROR(node,i_mat)
     {
         for (ccur=node->children;ccur!=NULL;ccur=ccur->next)
         {
-            MAT_PT_SUBM(&mcol,m,0,j,nrow(m)-1,j);
+            m_view        = gsl_matrix_submatrix(m->data_cpu,0,j,nrow(m),1);
+            mcol.data_cpu = &(m_view.matrix);
             LATAN_UPDATE_STATUS(status,xml_get_vect(&mcol,ccur));
             j++;
         }
@@ -396,17 +398,17 @@ xmlNode * xml_insert_vect(xmlNode *parent, mat *v, const strbuf name)
 xmlNode * xml_insert_mat(xmlNode *parent, mat *m, const strbuf name)
 {
     xmlNode *node_new;
+    gsl_matrix_view m_view;
     mat mcol;
     strbuf buf;
     size_t j;
-
-    mcol.mem_flag = CPU_LAST;
     
     node_new = xmlNewChild(parent,NULL,(const xmlChar *)xml_mark[i_mat],\
                            (const xmlChar *)"");
     for (j=0;j<ncol(m);j++)
     {
-        MAT_PT_SUBM(&mcol,m,0,j,nrow(m)-1,j);
+        m_view        = gsl_matrix_submatrix(m->data_cpu,0,j,nrow(m),1);
+        mcol.data_cpu = &(m_view.matrix);
         sprintf(buf,"col%lu",(unsigned long)j);
         xml_insert_vect(node_new,&mcol,buf);
     }

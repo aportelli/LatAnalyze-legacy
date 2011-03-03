@@ -20,11 +20,12 @@
 #include <latan/latan_fit.h>
 #include <latan/latan_includes.h>
 #include <latan/latan_blas.h>
+#include <latan/latan_io.h>
 #include <latan/latan_math.h>
 #include <latan/latan_minimizer.h>
 #include <gsl/gsl_matrix.h>
+#include <gsl/gsl_math.h>
 #include <gsl/gsl_vector.h>
-#include <latan/latan_io.h>
 
 /*                          fit model structure                             */
 /****************************************************************************/
@@ -167,6 +168,7 @@ void fit_data_destroy(fit_data *d)
     mat_destroy(d->x_var);
     mat_destroy(d->data);
     mat_destroy(d->data_var);
+    mat_destroy(d->xdata_covar);
     for(i=0;i<NCHI2BUF;i++)
     {
         mat_destroy(d->buf_chi2[i]);
@@ -466,6 +468,7 @@ static void invert_var(fit_data *d)
 {
     mat *lC,*txdata_covar;
     size_t i;
+    double inv;
 
     lC           = d->buf_chi2[i_lC];
     txdata_covar = NULL;
@@ -480,6 +483,11 @@ static void invert_var(fit_data *d)
         mat_transpose(txdata_covar,d->xdata_covar);
         mat_set_subm(lC,txdata_covar,d->ndata,0,nrow(lC)-1,d->ndata-1);
         mat_eqinv(lC);
+        latan_printf(DEBUG,"C^-1 = \n");
+        if (latan_get_verb() == DEBUG)
+        {
+            mat_print(lC,"%6.1e");
+        }
 
         mat_destroy(txdata_covar);
     }
@@ -496,8 +504,21 @@ static void invert_var(fit_data *d)
                 mat_zero(d->buf_chi2[i_Cx]);
                 for (i=0;i<d->ndata*d->ndim;i++)
                 {
-                    mat_set(d->buf_chi2[i_Cx],i,i,1.0/mat_get(d->x_var,i,i));
+                    inv = 1.0/mat_get(d->x_var,i,i);
+                    if (gsl_isinf(inv))
+                    {
+                        mat_set(d->buf_chi2[i_Cx],i,i,0.0);
+                    }
+                    else
+                    {
+                        mat_set(d->buf_chi2[i_Cx],i,i,inv);
+                    }
                 }
+            }
+            latan_printf(DEBUG,"Cx^-1 = \n");
+            if (latan_get_verb() == DEBUG)
+            {
+                mat_print(d->buf_chi2[i_Cx],"%6.1e");
             }
         }
         if (d->is_data_correlated)
@@ -509,8 +530,21 @@ static void invert_var(fit_data *d)
             mat_zero(d->buf_chi2[i_Cd]);
             for (i=0;i<d->ndata;i++)
             {
-                mat_set(d->buf_chi2[i_Cd],i,i,1.0/mat_get(d->data_var,i,i));
+                inv = 1.0/mat_get(d->data_var,i,i);
+                if (gsl_isinf(inv))
+                {
+                    mat_set(d->buf_chi2[i_Cd],i,i,0.0);
+                }
+                else
+                {
+                    mat_set(d->buf_chi2[i_Cd],i,i,inv);
+                }
             }
+        }
+        latan_printf(DEBUG,"Cd^-1 = \n");
+        if (latan_get_verb() >= DEBUG)
+        {
+            mat_print(d->buf_chi2[i_Cd],"%6.1e");
         }
     }
     d->is_inverted = true;
@@ -628,8 +662,23 @@ latan_errno data_fit(mat *p, fit_data *d)
     strbuf cor_status;
     double chi2_min;
     
-    fit_data_is_data_correlated(d) ? \
-    (strbufcpy(cor_status,"correlated")) : (strbufcpy(cor_status,"uncorrelated"));
+    strbufcpy(cor_status,"correlations :");
+    if (fit_data_is_data_correlated(d))
+    {
+        strcat(cor_status," data/data");
+    }
+    if (fit_data_is_x_correlated(d))
+    {
+        strcat(cor_status," x/x");
+    }
+    if (fit_data_have_xdata_covar(d))
+    {
+        strcat(cor_status," data/x");
+    }
+    if (strcmp(cor_status,"correlations :") == 0)
+    {
+        strcat(cor_status," no");
+    }
     latan_printf(VERB,"fitting (%s) %u data points with %s model...\n",
                  cor_status,(unsigned int)fit_data_fit_point_num(d),\
                  d->model->name);
@@ -642,20 +691,32 @@ latan_errno data_fit(mat *p, fit_data *d)
     return status;
 }
 
-latan_errno rs_data_fit(rs_sample *p, rs_sample *data, fit_data *d)
+latan_errno rs_data_fit(rs_sample *p, const rs_sample *data, fit_data *d,\
+                        const cor_flag flag)
 {
     latan_errno status;
     mat *datavar;
+    size_t ndata;
     size_t i;
+    bool is_data_cor;
     int verb_backup;
     double chi2pdof_backup;
         
     verb_backup = latan_get_verb();
-    status = LATAN_SUCCESS;
+    status      = LATAN_SUCCESS;
+    ndata       = fit_data_get_ndata(d);
+    is_data_cor = ((flag & DATA_COR) != 0);
     
-    datavar = mat_create(nrow(rs_sample_pt_cent_val(data)),nrow(rs_sample_pt_cent_val(data)));
+    datavar     = mat_create(ndata,is_data_cor ? ndata : 1);
     
-    LATAN_UPDATE_STATUS(status,rs_sample_varp(datavar,data));
+    if (is_data_cor)
+    {
+        LATAN_UPDATE_STATUS(status,rs_sample_var(datavar,data));
+    }
+    else
+    {
+        LATAN_UPDATE_STATUS(status,rs_sample_varp(datavar,data));
+    }
     LATAN_UPDATE_STATUS(status,fit_data_set_data_var(d,datavar));
     mat_cp(fit_data_pt_data(d),rs_sample_pt_cent_val(data));
     LATAN_UPDATE_STATUS(status,data_fit(rs_sample_pt_cent_val(p),d));
@@ -682,25 +743,85 @@ latan_errno rs_data_fit(rs_sample *p, rs_sample *data, fit_data *d)
     return status;
 }
 
-latan_errno rs_x_data_fit(rs_sample *p, rs_sample *x, rs_sample *data,\
-                          fit_data *d)
+latan_errno rs_x_data_fit(rs_sample *p, const rs_sample *x,  \
+                          const rs_sample *data, fit_data *d,\
+                          const cor_flag flag)
 {
     latan_errno status;
-    mat *datavar;
-    size_t i;
+    mat *datavar,*xvar,*xdatacovar,*pbuf;
+    size_t ndata,ndim,npar;
+    size_t i,j,k;
+    bool is_data_cor,is_x_cor,is_xdata_cor;
     int verb_backup;
     double chi2pdof_backup;
     
-    verb_backup = latan_get_verb();
-    status = LATAN_SUCCESS;
+    verb_backup  = latan_get_verb();
+    status       = LATAN_SUCCESS;
+    ndata        = fit_data_get_ndata(d);
+    ndim         = fit_data_get_ndim(d);
+    npar         = fit_data_get_npar(d);
+    is_data_cor  = ((flag & DATA_COR) != 0);
+    is_x_cor     = ((flag & X_COR) != 0);
+    is_xdata_cor = ((flag & XDATA_COR) != 0);
     
-    datavar = mat_create(nrow(rs_sample_pt_cent_val(data)),1);
-    
-    LATAN_UPDATE_STATUS(status,rs_sample_varp(datavar,data));
+    datavar      = mat_create(ndata,is_data_cor ? ndata : 1);
+    xvar         = mat_create(ndata*ndim,is_x_cor ? ndata*ndim : 1);
+    xdatacovar   = mat_create(ndata,ndata*ndim);
+    pbuf         = mat_create(npar + ndata*ndim,1);
+
+    if (is_data_cor)
+    {
+        LATAN_UPDATE_STATUS(status,rs_sample_var(datavar,data));
+    }
+    else
+    {
+        LATAN_UPDATE_STATUS(status,rs_sample_varp(datavar,data));
+    }
     LATAN_UPDATE_STATUS(status,fit_data_set_data_var(d,datavar));
+    if (is_x_cor)
+    {
+        LATAN_UPDATE_STATUS(status,rs_sample_var(xvar,x));
+        if (!is_data_cor)
+        {
+            for (i=0;i<ndata;i++)
+            {
+                for (j=0;j<ndim;j++)
+                {
+                    for (k=0;k<(ndata-1)*ndim;k++)
+                    {
+                        mat_set(xvar,((i+1)*ndim+k)%(ndim*ndata),i*ndim+j,0.0);
+                    }
+                }
+            }
+        }
+    }
+    else
+    {
+        LATAN_UPDATE_STATUS(status,rs_sample_varp(xvar,x));
+    }
+    LATAN_UPDATE_STATUS(status,fit_data_set_x_var(d,xvar));
+    if (is_xdata_cor)
+    {
+        LATAN_UPDATE_STATUS(status,rs_sample_cov(xdatacovar,data,x));
+        if (!is_data_cor)
+        {
+            for (i=0;i<ndata;i++)
+            {
+                for (k=0;k<(ndata-1)*ndim;k++)
+                {
+                    mat_set(xdatacovar,i,((i+1)*ndim+k)%(ndim*ndata),0.0);
+                }
+            }
+        }
+        LATAN_UPDATE_STATUS(status,fit_data_set_xdata_covar(d,xdatacovar));
+    }
     mat_cp(fit_data_pt_data(d),rs_sample_pt_cent_val(data));
     mat_cp(fit_data_pt_x(d),rs_sample_pt_cent_val(x));
-    LATAN_UPDATE_STATUS(status,data_fit(rs_sample_pt_cent_val(p),d));
+    mat_set_subm(pbuf,rs_sample_pt_cent_val(p),0,0,npar-1,0);
+    mat_set_subm(pbuf,fit_data_pt_x(d),npar,0,nrow(pbuf)-1,0);
+    printf("chi2_i = %f\n",chi2(pbuf,d));
+    LATAN_UPDATE_STATUS(status,data_fit(pbuf,d));
+    mat_get_subm(rs_sample_pt_cent_val(p),pbuf,0,0,npar-1,0);
     chi2pdof_backup = fit_data_get_chi2pdof(d);
     latan_printf(DEBUG,"central value chi^2/dof = %e\n",chi2pdof_backup);
     if (verb_backup != DEBUG)
@@ -709,11 +830,11 @@ latan_errno rs_x_data_fit(rs_sample *p, rs_sample *x, rs_sample *data,\
     }
     for (i=0;i<rs_sample_get_nsample(data);i++)
     {
-        mat_cp(rs_sample_pt_sample(p,i),\
-               rs_sample_pt_cent_val(p));
         mat_cp(fit_data_pt_data(d),rs_sample_pt_sample(data,i));
         mat_cp(fit_data_pt_x(d),rs_sample_pt_sample(x,i));
-        LATAN_UPDATE_STATUS(status,data_fit(rs_sample_pt_sample(p,i),d));
+        mat_set_subm(pbuf,fit_data_pt_x(d),npar,0,nrow(pbuf)-1,0);
+        LATAN_UPDATE_STATUS(status,data_fit(pbuf,d));
+        mat_get_subm(rs_sample_pt_sample(p,i),pbuf,0,0,npar-1,0);
         latan_printf(DEBUG,"sample %lu chi^2/dof = %e\n",(long unsigned)i,\
                      fit_data_get_chi2pdof(d));
     }
@@ -721,6 +842,9 @@ latan_errno rs_x_data_fit(rs_sample *p, rs_sample *x, rs_sample *data,\
     latan_set_verb(verb_backup);
     
     mat_destroy(datavar);
+    mat_destroy(xvar);
+    mat_destroy(xdatacovar);
+    mat_destroy(pbuf);
     
     return status;
 }

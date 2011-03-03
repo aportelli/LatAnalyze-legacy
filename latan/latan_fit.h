@@ -141,10 +141,20 @@ int fit_data_get_dof(const fit_data *d);
 double chi2(mat *var, void *d);
 
 /* fit functions */
+typedef enum
+{
+    NO_COR    = 0,
+    DATA_COR  = 1 << 0,
+    X_COR     = 1 << 1,
+    XDATA_COR = 1 << 2
+} cor_flag;
+
 latan_errno data_fit(mat *p, fit_data *d);
-latan_errno rs_data_fit(rs_sample *p, rs_sample *data, fit_data *d);
-latan_errno rs_x_data_fit(rs_sample *p, rs_sample *x, rs_sample *data,\
-                          fit_data *d);
+latan_errno rs_data_fit(rs_sample *p, const rs_sample *data, fit_data *d,\
+                        const cor_flag flag);
+latan_errno rs_x_data_fit(rs_sample *p, const rs_sample *x,  \
+                          const rs_sample *data, fit_data *d,\
+                          const cor_flag flag);
 void fit_residual(mat *res, mat *p, fit_data *d);
 void rs_fit_residual(rs_sample *res, rs_sample *p, rs_sample *data,\
                      fit_data *d);

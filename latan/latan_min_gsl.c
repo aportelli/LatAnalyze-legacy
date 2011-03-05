@@ -227,12 +227,15 @@ latan_errno minimize_gsl(mat *x, double *f_min, min_func *f, void *param)
             gsl_vector_memcpy(gsl_x,minimizer_f->x);
         }
         gsl_vector_mul(gsl_x,gf_param.scale);
-        strbufcpy(x_dump,"");
-        for (i=0;i<n;i++)
+        if (latan_get_verb() == DEBUG)
         {
-            sprintf(buf,"x_%lu= %10.6f ",(long unsigned)i,\
-                    gsl_vector_get(gsl_x,i));
-            strcat(x_dump,buf);
+            strbufcpy(x_dump,"");
+            for (i=0;i<n;i++)
+            {
+                sprintf(buf,"x_%lu= %10.6f ",(long unsigned)i,\
+                gsl_vector_get(gsl_x,i));
+                strcat(x_dump,buf);
+            }
         }
         latan_printf(DEBUG,"%s\n",x_dump);
     } while ((status == (latan_errno)GSL_CONTINUE) && (iter <= max_iteration));

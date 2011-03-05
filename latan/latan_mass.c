@@ -223,7 +223,7 @@ latan_errno fit_data_mass_fit_tune(fit_data *d, mat *fit_init, mat *prop,\
             LATAN_ERROR("wrong parity flag",LATAN_EINVAL);
             break;
     }
-    fit_data_set_model(d,model);
+    fit_data_set_model(d,model,NULL);
     
     /* setting datas */
     switch (parity)

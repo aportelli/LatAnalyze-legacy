@@ -29,15 +29,16 @@
 __BEGIN_DECLS
 
 /* fit model structure */
-typedef double (*model_func)(mat *x, mat *p, void *model_param);
-typedef size_t npar_func(const unsigned int stage_flag, void *model_param);
+typedef double model_func(const mat *x, const mat *p, void *model_param);
+typedef size_t npar_func(void *model_param);
 
 typedef struct
 {
     strbuf name;
-    model_func func[MAX_STAGE];
-    npar_func *npar;
+    model_func *func[MAX_STAGE];
+    npar_func *npar[MAX_STAGE];
     size_t ndim;
+    size_t nstage;
 } fit_model;
 
 /** some useful constant npar_func **/
@@ -60,28 +61,61 @@ double fit_model_eval(const fit_model *model, mat *x, mat *p,         \
                       const unsigned int stage_flag, void *model_param);
 
 /* fit data structure */
+/** chi^2 buffer **/
 typedef struct
 {
+    mat *X;
+    mat *CdX;
+    mat *Y;
+    mat *CxY;
+    mat *lX;
+    mat *ClX;
+} chi2_buf;
+
+/** boolean array for stages **/
+typedef bool stage_ar[MAX_STAGE];
+
+/** the main structure **/
+typedef struct
+{
+    /* sizes */
     size_t ndata;
     size_t ndim;
+    size_t npar;
+    /* point matrices */
     mat *x;
     mat *x_var;
-    mat *data;
-    mat *data_var;
-    mat *xdata_covar;
-    bool is_data_correlated;
+    mat *x_var_inv;
     bool is_x_correlated;
     bool have_x_var;
-    bool have_xdata_covar;
-    bool save_chi2pdof;
     bool *to_fit;
+    /* data matrices */
+    mat *data;
+    mat *data_var;
+    mat *data_var_inv;
+    bool is_data_correlated;
+    /* data/point covariance matrix */
+    mat *xdata_covar;
+    bool have_xdata_covar;
+    /* inverse variance matrix */
+    mat *var_inv;
+    /* is everything ready to perform a fit ? */
+    bool is_init;
+    /* fit model */
     const fit_model *model;
     void *model_param;
+    /* stages */
     unsigned int stage_flag;
+    stage_ar do_stage;
+    size_t stage_npar[MAX_STAGE];
+    /* buffers for chi^2 computation */
     double chi2pdof;
-    mat *buf_chi2[9];
-    bool is_inverted;
+    bool save_chi2pdof;
+    chi2_buf *buf;
+    int nbuf;
 } fit_data;
+
+
 
 /** allocation **/
 fit_data *fit_data_create(const size_t ndata, const size_t ndim);
@@ -120,14 +154,12 @@ latan_errno fit_data_set_xdata_covar(fit_data *d, mat *covar);
 bool fit_data_have_xdata_covar(const fit_data *d);
 
 /*** fit model ***/
-latan_errno fit_data_set_model(fit_data *d, const fit_model *model);
-const fit_model *fit_data_pt_model(fit_data *d);
+latan_errno fit_data_set_model(fit_data *d, const fit_model *model,\
+                               void *model_param);
 void fit_data_set_model_param(fit_data *d, void *model_param);
 double fit_data_model_eval(const fit_data *d, const size_t i, mat *p);
 
 /*** stages ***/
-typedef bool stage_ar[MAX_STAGE];
-
 void fit_data_set_stage_flag(fit_data *d, const unsigned int stage_flag);
 unsigned int fit_data_get_stage_flag(const fit_data *d);
 size_t fit_data_get_npar(const fit_data *d);

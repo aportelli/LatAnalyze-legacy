@@ -652,13 +652,12 @@ double chi2(mat *p, void *vd)
         {
             if (fit_data_is_fit_point(d,i))
             {
-                x_view       = gsl_matrix_submatrix(p->data_cpu,    \
+                x_view       = gsl_matrix_submatrix(p->data_cpu,   \
                                                     i*d->ndim+npar,\
                                                     0,d->ndim,1);
                 x_i.data_cpu = &(x_view.matrix);
-                eval         = fit_model_eval(d->model,&x_i,p,     \
-                                              d->stage_flag,       \
-                                              d->model_param);
+                eval         = fit_model_eval_ker(d->model,&x_i,p,d->do_stage,\
+                                                  d->stage_npar,d->model_param);
                 mat_set(X,i,0,eval - fit_data_get_data(d,i));
                 for (j=0;j<d->ndim;j++)
                 {

@@ -42,7 +42,7 @@ typedef int bool;
 
 /* string buffers */
 #ifndef STRING_LENGTH
-#define STRING_LENGTH 512
+#define STRING_LENGTH 1024
 #endif
 
 typedef char strbuf[STRING_LENGTH];

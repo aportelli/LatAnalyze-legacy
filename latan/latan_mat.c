@@ -34,18 +34,23 @@ mat *mat_create(const size_t init_nrow, const size_t init_ncol)
 {
     mat *m;
     
-    MALLOC_ERRVAL(m,mat *,1,NULL);
     if ((init_nrow > 0)&&(init_ncol > 0))
     {
+        MALLOC_ERRVAL(m,mat *,1,NULL);
         m->data_cpu  = gsl_matrix_alloc(init_nrow,init_ncol);
         if (m == NULL)
         {
             LATAN_ERROR_VAL("memory allocation failed",LATAN_ENOMEM,NULL);
         }
         m->prop_flag = MAT_GEN;
+
+        return m;
     }
-    
-    return m;
+    else
+    {
+        LATAN_ERROR_NULL("trying to allocate a matrix with zero dimension",\
+                         LATAN_EBADLEN);
+    }
 }
 
 mat *mat_create_from_mat(const mat *n)

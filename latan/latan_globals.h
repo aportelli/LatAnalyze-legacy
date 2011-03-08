@@ -54,10 +54,6 @@ __END_DECLS
 #define VERB 1
 #define DEBUG 2
 
-/* matrix operation flags */
-#define CPU_MAT_OP 0
-#define GPU_MAT_OP 1
-
 /* parity flags */
 #define EVEN 0
 #define ODD 1
@@ -168,10 +164,8 @@ __BEGIN_DECLS
 void latan_get_name(strbuf name);
 void latan_get_version(strbuf version);
 int latan_get_verb(void);
-int latan_get_mat_op(void);
 #ifdef LATAN_ERRNO_DEF
 latan_errno latan_set_verb(const int verb);
-latan_errno latan_set_mat_op(const int mat_op);
 #endif
 
 /* LatAnalyze message function */

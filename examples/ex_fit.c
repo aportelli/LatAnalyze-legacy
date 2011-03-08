@@ -18,7 +18,7 @@
 int main(void)
 {
     plot *p;
-    mat *var,*real_param,*fit_param;
+    mat *var,*x,*real_param,*fit_param;
     size_t i;
     minalg_no alg;
     double step;
@@ -28,6 +28,7 @@ int main(void)
     step = DRATIO(XMAX,NDATA);
     
     var = mat_create(NDATA,1);
+    x   = mat_create(NDATA,1);
     real_param = mat_create(NPAR,1);
     fit_param = mat_create(NPAR,1);
     d = fit_data_create(NDATA,fm_expdec.ndim);
@@ -65,12 +66,14 @@ int main(void)
         plot_add_plot(p,plotcmd);
     }
     mat_eqsqrt(var);
-    plot_add_dat_yerr(p,fit_data_pt_x(d),fit_data_pt_data(d),var,"","");
+    mat_transpose(x,fit_data_pt_x(d));
+    plot_add_dat_yerr(p,x,fit_data_pt_data(d),var,"","");
     plot_disp(p);
     plot_destroy(p);
     
     fit_data_destroy(d);
     mat_destroy(var);
+    mat_destroy(x);
     mat_destroy(real_param);
     mat_destroy(fit_param);
     

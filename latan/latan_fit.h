@@ -64,12 +64,14 @@ double fit_model_eval(const fit_model *model, mat *x, mat *p,         \
 /** chi^2 buffer **/
 typedef struct
 {
+    mat *x;
     mat *X;
     mat *CdX;
     mat *Y;
     mat *CxY;
     mat *lX;
     mat *ClX;
+    bool is_xpart_alloc;
 } chi2_buf;
 
 /** boolean array for stages **/
@@ -84,10 +86,10 @@ typedef struct
     size_t npar;
     /* point matrices */
     mat *x;
-    mat *x_var;
+    mat **x_covar;
     mat *x_var_inv;
     bool is_x_correlated;
-    bool have_x_var;
+    bool *have_x_covar;
     bool *to_fit;
     /* data matrices */
     mat *data;
@@ -95,12 +97,12 @@ typedef struct
     mat *data_var_inv;
     bool is_data_correlated;
     /* data/point covariance matrix */
-    mat *xdata_covar;
-    bool have_xdata_covar;
+    mat **xdata_covar;
+    bool *have_xdata_covar;
     /* inverse variance matrix */
     mat *var_inv;
     /* is everything ready to perform a fit ? */
-    bool is_init;
+    bool is_inverted;
     /* fit model */
     const fit_model *model;
     void *model_param;
@@ -133,9 +135,12 @@ double fit_data_get_chi2pdof(const fit_data *d);
 /*** fit points ***/
 void fit_data_set_x(fit_data *d, const size_t i, const size_t j,\
                     const double x_i);
-double fit_data_get_x(fit_data *d, const size_t i, const size_t j);
+latan_errno fit_data_set_x_from_mat(fit_data *d, const size_t j, const mat *m);
+double fit_data_get_x(const fit_data *d, const size_t i, const size_t j);
 mat *fit_data_pt_x(const fit_data *d);
-latan_errno fit_data_set_x_var(fit_data *d, mat *var);
+latan_errno fit_data_set_x_covar(fit_data *d, const size_t i1,  \
+                                 const size_t i2, const mat *var);
+bool fit_data_have_x_covar(const fit_data *d, const size_t j);
 bool fit_data_have_x_var(const fit_data *d);
 bool fit_data_is_x_correlated(const fit_data *d);
 void fit_data_fit_all_points(fit_data *d, bool fit);
@@ -146,18 +151,19 @@ size_t fit_data_fit_point_num(const fit_data *d);
 
 /*** data ***/
 void fit_data_set_data(fit_data *d, const size_t i, const double data_i);
-double fit_data_get_data(fit_data *d, const size_t i);
+double fit_data_get_data(const fit_data *d, const size_t i);
 mat *fit_data_pt_data(const fit_data *d);
-latan_errno fit_data_set_data_var(fit_data *d, mat *var);
+latan_errno fit_data_set_data_var(fit_data *d, const mat *var);
 bool fit_data_is_data_correlated(const fit_data *d);
-latan_errno fit_data_set_xdata_covar(fit_data *d, mat *covar);
+latan_errno fit_data_set_xdata_covar(fit_data *d, const size_t j,\
+                                     const mat *covar);
 bool fit_data_have_xdata_covar(const fit_data *d);
 
 /*** fit model ***/
 latan_errno fit_data_set_model(fit_data *d, const fit_model *model,\
                                void *model_param);
 void fit_data_set_model_param(fit_data *d, void *model_param);
-double fit_data_model_eval(const fit_data *d, const size_t i, mat *p);
+double fit_data_model_eval(const fit_data *d, const size_t i, const mat *p);
 
 /*** stages ***/
 void fit_data_set_stage_flag(fit_data *d, const unsigned int stage_flag);
@@ -184,14 +190,15 @@ typedef enum
 latan_errno data_fit(mat *p, fit_data *d);
 latan_errno rs_data_fit(rs_sample *p, const rs_sample *data, fit_data *d,\
                         const cor_flag flag);
-latan_errno rs_x_data_fit(rs_sample *p, const rs_sample *x,  \
-                          const rs_sample *data, fit_data *d,\
-                          const cor_flag flag);
-void fit_residual(mat *res, mat *p, fit_data *d);
-void rs_fit_residual(rs_sample *res, rs_sample *p, rs_sample *data,\
+latan_errno rs_x_data_fit(rs_sample *p, rs_sample * const *x,         \
+                          const rs_sample *data, fit_data *d,         \
+                          const cor_flag flag, const bool *use_x_var);
+void fit_residual(mat *res, const mat *p, const fit_data *d);
+void rs_fit_residual(rs_sample *res, const rs_sample *p, const rs_sample *data,\
                      fit_data *d);
-void rs_x_fit_residual(rs_sample *res, rs_sample *p, rs_sample *x,\
-                       rs_sample *data, fit_data *d);
+void rs_x_fit_residual(rs_sample *res, const rs_sample *p,         \
+                       rs_sample * const *x, const rs_sample *data,\
+                       fit_data *d);
 __END_DECLS
 
 #endif

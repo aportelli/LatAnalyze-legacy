@@ -93,7 +93,7 @@ void mat_id(mat *m);
 latan_errno mat_cp(mat *m, const mat *n);
 latan_errno mat_eqadd(mat *m, const mat *n);
 latan_errno mat_add(mat *m, const mat *n, const mat *o);
-#define mat_eqadds(m,s) mat_adds(m,m,s);
+#define mat_eqadds(m,s) mat_adds(m,m,s)
 latan_errno mat_adds(mat *m, const mat *n, const double s);
 latan_errno mat_eqsub(mat *m, const mat *n);
 latan_errno mat_sub(mat *m, const mat *n, const mat *o);
@@ -113,7 +113,7 @@ latan_errno mat_abs(mat *m, const mat *n);
 latan_errno mat_sqrt(mat *m, const mat *n);
 
 /** linear algebra **/
-#define mat_eqinv(m) mat_inv(m,m);
+#define mat_eqinv(m) mat_inv(m,m)
 latan_errno mat_inv(mat *m, const mat *n);
 
 __END_DECLS

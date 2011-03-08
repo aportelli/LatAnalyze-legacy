@@ -55,4 +55,7 @@
 #include <omp.h>
 #endif
 
+/* alias for status update */
+#define USTAT(inst) LATAN_UPDATE_STATUS(status,inst)
+
 #endif

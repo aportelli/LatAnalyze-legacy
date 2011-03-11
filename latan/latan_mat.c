@@ -519,8 +519,7 @@ latan_errno mat_mul(mat *m, const mat *n, const char opn, const mat *o,\
         {
             if ((opo != 'n')&&(opo != 'N'))
             {
-                USTAT(latan_blas_dsymm('r','u',1.0,n,o,\
-                                                            0.0,pt));
+                USTAT(latan_blas_dsymm('r','u',1.0,n,o,0.0,pt));
                 if (mat_is_square(pt))
                 {
                     mat_eqtranspose(pt);
@@ -528,16 +527,14 @@ latan_errno mat_mul(mat *m, const mat *n, const char opn, const mat *o,\
             }
             else
             {
-                USTAT(latan_blas_dsymm('l','u',1.0,n,o,\
-                                                            0.0,pt));
+                USTAT(latan_blas_dsymm('l','u',1.0,n,o,0.0,pt));
             }
         }
         else if (mat_is_assumed_sym(o))
         {
             if ((opn != 'n')&&(opn != 'N'))
             {
-                USTAT(latan_blas_dsymm('l','u',1.0,o,n,\
-                                                            0.0,pt));
+                USTAT(latan_blas_dsymm('l','u',1.0,o,n,0.0,pt));
                 if (mat_is_square(pt))
                 {
                     mat_eqtranspose(pt);
@@ -545,14 +542,12 @@ latan_errno mat_mul(mat *m, const mat *n, const char opn, const mat *o,\
             }
             else
             {
-                USTAT(latan_blas_dsymm('r','u',1.0,o,n,\
-                                                            0.0,pt));
+                USTAT(latan_blas_dsymm('r','u',1.0,o,n,0.0,pt));
             }
         }
         else
         {
-            USTAT(latan_blas_dgemm(opn,opo,1.0,n,o,0.0,\
-                                                        pt));
+            USTAT(latan_blas_dgemm(opn,opo,1.0,n,o,0.0,pt));
         }
     }
     if (need_tbuf)
@@ -627,8 +622,7 @@ latan_errno mat_inv(mat *m, const mat *n)
             LATAN_ERROR("trying to invert a singular matrix",LATAN_EDOM);
         }
     }
-    USTAT(gsl_linalg_LU_invert(LU->data_cpu,perm,\
-                                                    m->data_cpu));
+    USTAT(gsl_linalg_LU_invert(LU->data_cpu,perm,m->data_cpu));
     
     mat_destroy(LU);
     gsl_permutation_free(perm);

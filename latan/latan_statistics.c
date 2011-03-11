@@ -75,9 +75,9 @@ latan_errno mat_mean(mat *mean, mat **m, const size_t size)
     
     for (i=0;i<size;i++)
     {
-        LATAN_UPDATE_STATUS(status,mat_eqadd(mean,m[i]));
+        USTAT(mat_eqadd(mean,m[i]));
     }
-    LATAN_UPDATE_STATUS(status,mat_eqmuls(mean,1.0/dsize));
+    USTAT(mat_eqmuls(mean,1.0/dsize));
     
     return status;
 }
@@ -92,9 +92,9 @@ latan_errno mat_cov(mat *cov, mat **m, mat **n, const size_t size)
     m_mean = mat_create_from_dim(m[0]);
     n_mean = mat_create_from_dim(n[0]);
     
-    LATAN_UPDATE_STATUS(status,mat_mean(m_mean,m,size));
-    LATAN_UPDATE_STATUS(status,mat_mean(n_mean,n,size));
-    LATAN_UPDATE_STATUS(status,mat_cov_m(cov,m,n,size,m_mean,n_mean));
+    USTAT(mat_mean(m_mean,m,size));
+    USTAT(mat_mean(n_mean,n,size));
+    USTAT(mat_cov_m(cov,m,n,size,m_mean,n_mean));
     
     mat_destroy(m_mean);
     mat_destroy(n_mean);
@@ -123,12 +123,12 @@ latan_errno mat_cov_m(mat *cov, mat **m, mat **n, const size_t size,\
     
     for (i=0;i<size;i++) 
     {
-        LATAN_UPDATE_STATUS(status,mat_sub(mc[i],m[i],m_mean));
-        LATAN_UPDATE_STATUS(status,mat_sub(nc[i],n[i],n_mean));
-        LATAN_UPDATE_STATUS(status,mat_mul(mctnc[i],mc[i],'n',nc[i],'t'));
-        LATAN_UPDATE_STATUS(status,mat_eqmuls(mctnc[i],1.0/dsubdim));
+        USTAT(mat_sub(mc[i],m[i],m_mean));
+        USTAT(mat_sub(nc[i],n[i],n_mean));
+        USTAT(mat_mul(mctnc[i],mc[i],'n',nc[i],'t'));
+        USTAT(mat_eqmuls(mctnc[i],1.0/dsubdim));
     }
-    LATAN_UPDATE_STATUS(status,mat_mean(cov,mctnc,size));
+    USTAT(mat_mean(cov,mctnc,size));
     
     mat_ar_destroy(mctnc,size);
     mat_ar_destroy(mc,size);
@@ -147,9 +147,9 @@ latan_errno mat_covp(mat *cov, mat **m, mat **n, const size_t size)
     m_mean = mat_create_from_dim(m[0]);
     n_mean = mat_create_from_dim(n[0]);
     
-    LATAN_UPDATE_STATUS(status,mat_mean(m_mean,m,size));
-    LATAN_UPDATE_STATUS(status,mat_mean(n_mean,n,size));
-    LATAN_UPDATE_STATUS(status,mat_covp_m(cov,m,n,size,m_mean,n_mean));
+    USTAT(mat_mean(m_mean,m,size));
+    USTAT(mat_mean(n_mean,n,size));
+    USTAT(mat_covp_m(cov,m,n,size,m_mean,n_mean));
     
     mat_destroy(m_mean);
     mat_destroy(n_mean);
@@ -172,11 +172,11 @@ latan_errno mat_covp_m(mat *cov, mat **m, mat **n, const size_t size,\
     
     for (i=0;i<size;i++)
     {
-        LATAN_UPDATE_STATUS(status,mat_sub(mcnc[i],m[i],m_mean));
-        LATAN_UPDATE_STATUS(status,mat_sub(nc[i],n[i],n_mean));
-        LATAN_UPDATE_STATUS(status,mat_eqmulp(mcnc[i],nc[i]));
+        USTAT(mat_sub(mcnc[i],m[i],m_mean));
+        USTAT(mat_sub(nc[i],n[i],n_mean));
+        USTAT(mat_eqmulp(mcnc[i],nc[i]));
     }
-    LATAN_UPDATE_STATUS(status,mat_mean(cov,mcnc,size));
+    USTAT(mat_mean(cov,mcnc,size));
     
     mat_ar_destroy(mcnc,size);
     mat_ar_destroy(nc,size);
@@ -203,7 +203,7 @@ latan_errno mat_ar_bin(mat **bindat, mat **dat, const size_t ndat,\
     
     for (i=0;i<nbindat;i++)
     {
-        LATAN_UPDATE_STATUS(status,mat_mean(bindat[i],dat+i*binsize,binsize));
+        USTAT(mat_mean(bindat[i],dat+i*binsize,binsize));
     }
     
     return status;
@@ -362,7 +362,7 @@ static latan_errno resample_bootstrap(mat *cent_val, mat **sample,         \
     
     MALLOC(fakedat,mat**,ndat*nobs);
     
-    LATAN_UPDATE_STATUS(status,f(cent_val,dat,ndat,0,param));
+    USTAT(f(cent_val,dat,ndat,0,param));
     for (i=0;i<nboot;i++)
     {
         
@@ -374,7 +374,7 @@ static latan_errno resample_bootstrap(mat *cent_val, mat **sample,         \
                 fakedat[j+k*ndat] = dat[rj+k*ndat];
             }
         }
-        LATAN_UPDATE_STATUS(status,f(sample[i],fakedat,ndat,i+1,param));
+        USTAT(f(sample[i],fakedat,ndat,i+1,param));
     }
     
     FREE(fakedat);
@@ -437,8 +437,8 @@ latan_errno rs_finite_diff(mat *res, mat **dat, const size_t ndat,\
     
     mean = mat_create_from_dim(dat[0]);
     
-    LATAN_UPDATE_STATUS(status,mat_mean(mean,dat,ndat));
-    LATAN_UPDATE_STATUS(status,finite_diff(res,mean));
+    USTAT(mat_mean(mean,dat,ndat));
+    USTAT(finite_diff(res,mean));
     
     mat_destroy(mean);
     
@@ -459,8 +459,8 @@ latan_errno rs_effmass(mat *res, mat **dat, const size_t ndat,\
 
     mean = mat_create_from_dim(dat[0]);
     
-    LATAN_UPDATE_STATUS(status,mat_mean(mean,dat,ndat));
-    LATAN_UPDATE_STATUS(status,effmass(res,mean,parityt));
+    USTAT(mat_mean(mean,dat,ndat));
+    USTAT(effmass(res,mean,parityt));
     
     mat_destroy(mean);
     
@@ -485,9 +485,9 @@ latan_errno rs_effmass_PCAC(mat *res, mat **dat, const size_t ndat,\
     mprop_AP = mat_create_from_dim(prop_AP[0]);
     mprop_PP = mat_create_from_dim(prop_PP[0]);
     
-    LATAN_UPDATE_STATUS(status,mat_mean(mprop_AP,prop_AP,ndat));
-    LATAN_UPDATE_STATUS(status,mat_mean(mprop_PP,prop_PP,ndat));
-    LATAN_UPDATE_STATUS(status,effmass_PCAC(res,mprop_AP,mprop_PP));
+    USTAT(mat_mean(mprop_AP,prop_AP,ndat));
+    USTAT(mat_mean(mprop_PP,prop_PP,ndat));
+    USTAT(effmass_PCAC(res,mprop_AP,mprop_PP));
     
     mat_destroy(mprop_AP);
     mat_destroy(mprop_PP);

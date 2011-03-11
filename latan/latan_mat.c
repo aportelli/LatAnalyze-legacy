@@ -355,7 +355,7 @@ latan_errno mat_cp(mat *m, const mat *n)
         LATAN_ERROR("matrix copy with dimension mismatch",LATAN_EBADLEN);
     }
     
-    LATAN_UPDATE_STATUS(status,gsl_matrix_memcpy(m->data_cpu,n->data_cpu));
+    USTAT(gsl_matrix_memcpy(m->data_cpu,n->data_cpu));
     m->prop_flag = n->prop_flag;
    
     return status;
@@ -398,8 +398,8 @@ latan_errno mat_add(mat *m, const mat *n, const mat *o)
     
     status = LATAN_SUCCESS;
     
-    LATAN_UPDATE_STATUS(status,mat_cp(m,n));
-    LATAN_UPDATE_STATUS(status,mat_eqadd(m,o));
+    USTAT(mat_cp(m,n));
+    USTAT(mat_eqadd(m,o));
     
     return status;
 }
@@ -456,8 +456,8 @@ latan_errno mat_sub(mat *m, const mat *n, const mat *o)
     
     status = LATAN_SUCCESS;
     
-    LATAN_UPDATE_STATUS(status,mat_cp(m,n));
-    LATAN_UPDATE_STATUS(status,mat_eqsub(m,o));
+    USTAT(mat_cp(m,n));
+    USTAT(mat_eqsub(m,o));
     
     return status;
 }
@@ -499,18 +499,18 @@ latan_errno mat_mul(mat *m, const mat *n, const char opn, const mat *o,\
 
     if ((nrow(pt) == 1)&&(ncol(pt) == 1))
     {
-        LATAN_UPDATE_STATUS(status,latan_blas_ddot(n,o,&dbuf));
+        USTAT(latan_blas_ddot(n,o,&dbuf));
         mat_set(pt,0,0,dbuf);
     }
     else if (mat_is_vector(pt))
     {
         if (mat_is_assumed_sym(n))
         {
-            LATAN_UPDATE_STATUS(status,latan_blas_dsymv('u',1.0,n,o,0.0,pt));
+            USTAT(latan_blas_dsymv('u',1.0,n,o,0.0,pt));
         }
         else
         {
-            LATAN_UPDATE_STATUS(status,latan_blas_dgemv(opn,1.0,n,o,0.0,pt));
+            USTAT(latan_blas_dgemv(opn,1.0,n,o,0.0,pt));
         }
     }
     else
@@ -519,7 +519,7 @@ latan_errno mat_mul(mat *m, const mat *n, const char opn, const mat *o,\
         {
             if ((opo != 'n')&&(opo != 'N'))
             {
-                LATAN_UPDATE_STATUS(status,latan_blas_dsymm('r','u',1.0,n,o,\
+                USTAT(latan_blas_dsymm('r','u',1.0,n,o,\
                                                             0.0,pt));
                 if (mat_is_square(pt))
                 {
@@ -528,7 +528,7 @@ latan_errno mat_mul(mat *m, const mat *n, const char opn, const mat *o,\
             }
             else
             {
-                LATAN_UPDATE_STATUS(status,latan_blas_dsymm('l','u',1.0,n,o,\
+                USTAT(latan_blas_dsymm('l','u',1.0,n,o,\
                                                             0.0,pt));
             }
         }
@@ -536,7 +536,7 @@ latan_errno mat_mul(mat *m, const mat *n, const char opn, const mat *o,\
         {
             if ((opn != 'n')&&(opn != 'N'))
             {
-                LATAN_UPDATE_STATUS(status,latan_blas_dsymm('l','u',1.0,o,n,\
+                USTAT(latan_blas_dsymm('l','u',1.0,o,n,\
                                                             0.0,pt));
                 if (mat_is_square(pt))
                 {
@@ -545,24 +545,24 @@ latan_errno mat_mul(mat *m, const mat *n, const char opn, const mat *o,\
             }
             else
             {
-                LATAN_UPDATE_STATUS(status,latan_blas_dsymm('r','u',1.0,o,n,\
+                USTAT(latan_blas_dsymm('r','u',1.0,o,n,\
                                                             0.0,pt));
             }
         }
         else
         {
-            LATAN_UPDATE_STATUS(status,latan_blas_dgemm(opn,opo,1.0,n,o,0.0,\
+            USTAT(latan_blas_dgemm(opn,opo,1.0,n,o,0.0,\
                                                         pt));
         }
     }
     if (need_tbuf)
     {
-        LATAN_UPDATE_STATUS(status,mat_transpose(m,buf));
+        USTAT(mat_transpose(m,buf));
         mat_destroy(buf);
     }
     else if (have_duplicate_arg)
     {
-        LATAN_UPDATE_STATUS(status,mat_cp(m,buf));
+        USTAT(mat_cp(m,buf));
         mat_destroy(buf);
     }
     
@@ -619,7 +619,7 @@ latan_errno mat_inv(mat *m, const mat *n)
     perm = gsl_permutation_alloc(nrow(n));
     gsl_set_error_handler(error_handler);
     
-    LATAN_UPDATE_STATUS(status,gsl_linalg_LU_decomp(LU->data_cpu,perm,&signum));
+    USTAT(gsl_linalg_LU_decomp(LU->data_cpu,perm,&signum));
     for (i=0;i<nrow(LU);i++)
     {
         if (mat_get(LU,i,i) == 0.0)
@@ -627,7 +627,7 @@ latan_errno mat_inv(mat *m, const mat *n)
             LATAN_ERROR("trying to invert a singular matrix",LATAN_EDOM);
         }
     }
-    LATAN_UPDATE_STATUS(status,gsl_linalg_LU_invert(LU->data_cpu,perm,\
+    USTAT(gsl_linalg_LU_invert(LU->data_cpu,perm,\
                                                     m->data_cpu));
     
     mat_destroy(LU);
@@ -648,7 +648,7 @@ latan_errno mat_eqmulp(mat *m, const mat *n)
                     LATAN_EBADLEN);
     }
     
-    LATAN_UPDATE_STATUS(status,gsl_matrix_mul_elements(m->data_cpu,n->data_cpu));
+    USTAT(gsl_matrix_mul_elements(m->data_cpu,n->data_cpu));
     
     return status;
 }
@@ -659,8 +659,8 @@ latan_errno mat_mulp(mat *m, const mat *n, const mat *o)
     
     status = LATAN_SUCCESS;
     
-    LATAN_UPDATE_STATUS(status,mat_cp(m,n));
-    LATAN_UPDATE_STATUS(status,mat_eqmulp(m,o));
+    USTAT(mat_cp(m,n));
+    USTAT(mat_eqmulp(m,o));
     
     return status;
 }
@@ -671,7 +671,7 @@ latan_errno mat_eqmuls(mat *m, const double s)
     
     status = LATAN_SUCCESS;
     
-    LATAN_UPDATE_STATUS(status,gsl_matrix_scale(m->data_cpu,s));
+    USTAT(gsl_matrix_scale(m->data_cpu,s));
     
     return status;
 }
@@ -682,8 +682,8 @@ latan_errno mat_muls(mat *m, const mat *n, const double s)
     
     status = LATAN_SUCCESS;
     
-    LATAN_UPDATE_STATUS(status,mat_cp(m,n));
-    LATAN_UPDATE_STATUS(status,mat_eqmuls(m,s));
+    USTAT(mat_cp(m,n));
+    USTAT(mat_eqmuls(m,s));
     
     return status;
 }
@@ -700,7 +700,7 @@ latan_errno mat_eqdivp(mat *m, const mat *n)
                     LATAN_EBADLEN);
     }
     
-    LATAN_UPDATE_STATUS(status,gsl_matrix_div_elements(m->data_cpu,n->data_cpu));
+    USTAT(gsl_matrix_div_elements(m->data_cpu,n->data_cpu));
     
     return status;
 }
@@ -711,8 +711,8 @@ latan_errno mat_divp(mat *m, const mat *n, const mat *o)
     
     status = LATAN_SUCCESS;
 
-    LATAN_UPDATE_STATUS(status,mat_cp(m,n));
-    LATAN_UPDATE_STATUS(status,mat_eqdivp(m,o));
+    USTAT(mat_cp(m,n));
+    USTAT(mat_eqdivp(m,o));
 
     return status;
 }

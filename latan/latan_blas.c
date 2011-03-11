@@ -159,8 +159,8 @@ latan_errno latan_blas_dgemv(const char opA, const double alpha,            \
         LATAN_ERROR("operation between matrix and vector with dimension mismatch",\
                     LATAN_EBADLEN);
     }
-    LATAN_UPDATE_STATUS(status,parse_op(&opA_no,opA));
-    LATAN_UPDATE_STATUS(status,gsl_blas_dgemv(opA_no,alpha,A->data_cpu,\
+    USTAT(parse_op(&opA_no,opA));
+    USTAT(gsl_blas_dgemv(opA_no,alpha,A->data_cpu,\
                         &(x_vview.vector),beta,&(y_vview.vector)));
 
     return status;
@@ -219,8 +219,8 @@ latan_errno latan_blas_dsymv(const char uploA, const double alpha,          \
     {
         LATAN_WARNING("matrix is not declared symmetric",LATAN_EINVAL);
     }
-    LATAN_UPDATE_STATUS(status,parse_uplo(&uploA_no,uploA));
-    LATAN_UPDATE_STATUS(status,gsl_blas_dsymv(uploA_no,alpha,A->data_cpu,\
+    USTAT(parse_uplo(&uploA_no,uploA));
+    USTAT(gsl_blas_dsymv(uploA_no,alpha,A->data_cpu,\
                         &(x_vview.vector),beta,&(y_vview.vector)));
 
     return status;
@@ -240,8 +240,8 @@ latan_errno latan_blas_dgemm(const char opA, const char opB,                \
     opA_no = CblasNoTrans;
     opB_no = CblasNoTrans;
 
-    LATAN_UPDATE_STATUS(status,parse_op(&opA_no,opA));
-    LATAN_UPDATE_STATUS(status,parse_op(&opB_no,opB));
+    USTAT(parse_op(&opA_no,opA));
+    USTAT(parse_op(&opB_no,opB));
     nropA = (opA_no == CblasNoTrans) ? nrow(A) : ncol(A);
     ncopA = (opA_no == CblasNoTrans) ? ncol(A) : nrow(A);
     nropB = (opB_no == CblasNoTrans) ? nrow(B) : ncol(B);
@@ -251,7 +251,7 @@ latan_errno latan_blas_dgemm(const char opA, const char opB,                \
         LATAN_ERROR("operation between matrices with dimension mismatch",\
                     LATAN_EBADLEN);
     }
-    LATAN_UPDATE_STATUS(status,gsl_blas_dgemm(opA_no,opB_no,alpha,A->data_cpu,\
+    USTAT(gsl_blas_dgemm(opA_no,opB_no,alpha,A->data_cpu,\
                         B->data_cpu,beta,C->data_cpu));
 
     return status;
@@ -270,8 +270,8 @@ latan_errno latan_blas_dsymm(const char side, const char uploA,             \
     side_no  = CblasLeft;
     uploA_no = CblasUpper;
 
-    LATAN_UPDATE_STATUS(status,parse_side(&side_no,side));
-    LATAN_UPDATE_STATUS(status,parse_uplo(&uploA_no,uploA));
+    USTAT(parse_side(&side_no,side));
+    USTAT(parse_uplo(&uploA_no,uploA));
     L = (side_no == CblasLeft) ? A : B;
     R = (side_no == CblasLeft) ? B : A;
     if ((nrow(C) != nrow(L))||(ncol(C) != ncol(R))||(ncol(L) != nrow(R)))
@@ -287,7 +287,7 @@ latan_errno latan_blas_dsymm(const char side, const char uploA,             \
     {
         LATAN_WARNING("matrix is not declared symmetric",LATAN_EINVAL);
     }
-    LATAN_UPDATE_STATUS(status,gsl_blas_dsymm(side_no,uploA_no,alpha,\
+    USTAT(gsl_blas_dsymm(side_no,uploA_no,alpha,\
                         A->data_cpu,B->data_cpu,beta,C->data_cpu));
 
     return status;

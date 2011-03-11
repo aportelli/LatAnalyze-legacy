@@ -126,7 +126,7 @@ latan_errno xml_get_vect(mat *v, xmlNode *node)
     {
         for (vcur=node->children;vcur!=NULL;vcur=vcur->next)
         {
-            LATAN_UPDATE_STATUS(status,xml_get_double(&buf,vcur));
+            USTAT(xml_get_double(&buf,vcur));
             mat_set(v,row,0,buf);
             row++;
         }
@@ -172,7 +172,7 @@ latan_errno xml_get_mat(mat *m, xmlNode *node)
         {
             m_view        = gsl_matrix_submatrix(m->data_cpu,0,j,nrow(m),1);
             mcol.data_cpu = &(m_view.matrix);
-            LATAN_UPDATE_STATUS(status,xml_get_vect(&mcol,ccur));
+            USTAT(xml_get_vect(&mcol,ccur));
             j++;
         }
     }
@@ -194,7 +194,7 @@ latan_errno xml_get_mat_size(size_t s[2], xmlNode *node)
     {
         for (ccur=node->children;ccur!=NULL;ccur=ccur->next)
         {
-            LATAN_UPDATE_STATUS(status,xml_get_vect_size(&buf,ccur));
+            USTAT(xml_get_vect_size(&buf,ccur));
             if ((s[0] != 0)&&(buf != s[0]))
             {
                 strbuf errmsg;
@@ -247,7 +247,7 @@ latan_errno xml_get_rgstate(rg_state state, xmlNode *node)
     {
         for (vcur=node->children;vcur!=NULL;vcur=vcur->next)
         {
-            LATAN_UPDATE_STATUS(status,xml_get_int(state+i,vcur));
+            USTAT(xml_get_int(state+i,vcur));
             i++;
         }
     }
@@ -269,11 +269,11 @@ latan_errno xml_get_sample(rs_sample *s, xmlNode *node)
     {
         scur = node->children;
         pt   = rs_sample_pt_cent_val(s);
-        LATAN_UPDATE_STATUS(status,xml_get_vect(pt,scur));
+        USTAT(xml_get_vect(pt,scur));
         for (scur=scur->next;scur!=NULL;scur=scur->next)
         {
             pt = rs_sample_pt_sample(s,i);
-            LATAN_UPDATE_STATUS(status,xml_get_vect(pt,scur));
+            USTAT(xml_get_vect(pt,scur));
             i++;
         }
     }

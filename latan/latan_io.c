@@ -262,9 +262,8 @@ latan_errno hadron_prop_load_bin(mat **prop, const hadron *h,              \
 #endif
             for (i=0;i<ndat;i++)
             {
-                USTAT(prop_load(dat[p][s][i], \
-                                    h->channel[p],h->quarkst[s][0],\
-                                    h->quarkst[s][1],source,sink,fname[i]));
+                USTAT(prop_load(dat[p][s][i],h->channel[p],h->quarkst[s][0],\
+                                h->quarkst[s][1],source,sink,fname[i]));
             }
         }
     }
@@ -275,19 +274,16 @@ latan_errno hadron_prop_load_bin(mat **prop, const hadron *h,              \
         {
             for (s=0;s<stmix;s++)
             {
-                USTAT(mat_eqadd(prop_prebin[i],\
-                                                     dat[p][s][i]));
+                USTAT(mat_eqadd(prop_prebin[i],dat[p][s][i]));
             }
         }
         if ((h->chmix) == MEAN)
         {
-            USTAT(mat_eqmuls(prop_prebin[i],\
-                                                  DRATIO(1,MAXPROP)));
+            USTAT(mat_eqmuls(prop_prebin[i],DRATIO(1,MAXPROP)));
         }
         if ((h->stmix) == MEAN)
         {
-            USTAT(mat_eqmuls(prop_prebin[i],\
-                                                  DRATIO(1,MAXQUARKST)));
+            USTAT(mat_eqmuls(prop_prebin[i],DRATIO(1,MAXQUARKST)));
         }
     }
     if ((h->parity) == ODD)

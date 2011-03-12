@@ -173,7 +173,7 @@ void fit_data_set_stages(fit_data *d, const stage_ar s);
 void fit_data_get_stages(stage_ar s, const fit_data *d);
 
 /*** dof ***/
-int fit_data_get_dof(const fit_data *d);
+size_t fit_data_get_dof(const fit_data *d);
 
 /* chi2 functions, have min_func type */
 double chi2(mat *var, void *d);

@@ -609,10 +609,13 @@ void fit_data_get_stages(stage_ar s, const fit_data *d)
 }
 
 /*** dof ***/
-int fit_data_get_dof(const fit_data *d)
+size_t fit_data_get_dof(const fit_data *d)
 {
-    return fit_data_fit_point_num(d)                                 \
-           - fit_model_get_npar(d->model,d->stage_flag,d->model_param);
+    size_t dof;
+    
+    dof = fit_data_fit_point_num(d) - fit_data_get_npar(d);
+    
+    return dof;
 }
 
 /*                          chi2 function                                   */

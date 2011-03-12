@@ -87,7 +87,7 @@ void rowmaj_to_coord(size_t *x, const size_t *dim, const size_t ndim,\
     j = ind;
     dimprod = 1;
     
-    for (d=ndim-1;d>=0;d--)
+    for (d=(int)(ndim)-1;d>=0;d--)
     {
         x[d] = (j/dimprod)%dim[d];
         j -= dimprod*x[d];

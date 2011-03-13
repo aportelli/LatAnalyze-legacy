@@ -632,7 +632,7 @@ latan_errno xml_save_file(xml_file *f)
 {
     xmlDoc *doc;
     int blank_bak,size;
-    char *buf;
+    xmlChar **buf;
 
     if (strlen(f->fname) == 0)
     {
@@ -641,8 +641,9 @@ latan_errno xml_save_file(xml_file *f)
 
     xmlReconciliateNs(f->doc,f->root);
     blank_bak = xmlKeepBlanksDefault(0);
-    xmlDocDumpFormatMemoryEnc(f->doc,(xmlChar **)(&buf),&size,LATAN_XML_ENC,0);
-    doc = xmlReadMemory(buf,size,NULL,LATAN_XML_ENC,XML_PARSE_NOBLANKS);
+    xmlDocDumpFormatMemoryEnc(f->doc,buf,&size,LATAN_XML_ENC,0);
+    doc = xmlReadMemory((char *)(*buf),size,NULL,LATAN_XML_ENC,\
+                        XML_PARSE_NOBLANKS);
     xmlSaveFormatFileEnc(f->fname,doc,LATAN_XML_ENC,1);
     xmlKeepBlanksDefault(blank_bak);
 

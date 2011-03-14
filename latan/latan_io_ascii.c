@@ -152,8 +152,6 @@ void io_finish_ascii(void)
 {
     int i;
 
-    i = 0;
-
     if (io_is_init)
     {
 #ifdef _OPENMP
@@ -254,7 +252,6 @@ latan_errno prop_load_ascii(mat *prop, const channel_no channel, \
     field                 = NULL;
     is_in_prop            = false;
     is_first_line_in_prop = false;
-    i                     = 0;
     t                     = 0;
 
     ascii_open_file_buf(fname,'r');
@@ -393,7 +390,6 @@ latan_errno randgen_load_state_ascii(rg_state state, const strbuf fname,\
 #endif
     field    = NULL;
     name     = NULL;
-    i        = 0;
     j        = 0;
 
     ascii_open_file_buf(fname,'r');
@@ -492,7 +488,6 @@ latan_errno rs_sample_load_nrow_ascii(size_t *nr, const strbuf fname,\
     field       = NULL;
     name        = NULL;
     sec         = 0;
-    i           = 0;
     got_nsample = false;
     nsample     = 0;
 
@@ -592,7 +587,7 @@ latan_errno rs_sample_load_nsample_ascii(size_t *nsample, const strbuf fname,\
 latan_errno rs_sample_load_ascii(rs_sample *s, const strbuf fname,\
                                  const strbuf name)
 {
-    int thread,nf,lc,j,jmod,nsample,nr;
+    int thread,nf,lc,j,jmod,nsample;
     int i;
     strbuf *field;
     double buf;
@@ -605,12 +600,9 @@ latan_errno rs_sample_load_ascii(rs_sample *s, const strbuf fname,\
 #endif
     field       = NULL;
     name        = NULL;
-    i           = 0;
     j           = 0;
-    jmod        = 0;
     got_nsample = false;
     nsample     = 0;
-    nr          = (int)rs_sample_get_nrow(s);
 
     ascii_open_file_buf(fname,'r');
     BEGIN_FOR_LINE_TOK_F(field,FILE_BUF(thread)," ",nf,lc)

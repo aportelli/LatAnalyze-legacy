@@ -104,7 +104,6 @@ plat *search_plat(size_t *nplat, mat *data, mat *sigdata,\
     in        = false;
     toend     = false;
     j         = 0;
-    length    = 0;
     maxlength = 0;
     *nplat    = 0;
     cplat     = 0;

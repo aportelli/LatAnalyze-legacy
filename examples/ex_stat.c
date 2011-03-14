@@ -27,7 +27,7 @@ int main(void)
     for (j=0;j<NDIM;j++)
     {
         sigma = DRATIO(j+1,5);
-        printf("dimension %d variance\t: %f\n",j,SQ(sigma));
+        printf("dimension %d variance\t: %f\n",(int)j,SQ(sigma));
         for (i=0;i<SEQ_LENGTH;i++)
         {
             mat_set(gvec[i],j,0,rand_n(0.0,sigma));

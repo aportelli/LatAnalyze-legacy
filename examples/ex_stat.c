@@ -60,4 +60,6 @@ int main(void)
     rs_sample_destroy(s_mean);
     mat_destroy(var);
     mat_ar_destroy(gvec,SEQ_LENGTH);
+    
+    return EXIT_SUCCESS;
 }

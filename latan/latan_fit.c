@@ -96,7 +96,6 @@ static double fit_model_eval_ker(const fit_model *model, const mat *x, \
 
     res   = 0.0;
     ind_i = 0;
-    ind_f = 0;
     
     for (i=0;i<model->nstage;i++)
     {
@@ -148,9 +147,9 @@ static size_t sym_rowmaj(const size_t i, const size_t j, const size_t dim)
 
     si  = (i > j) ? j : i;
     sj  = (i > j) ? i : j;
-    ind = j - i;
+    ind = sj - si;
 
-    for (k=0;k<=((int)i)-1;k++)
+    for (k=0;k<=((int)si)-1;k++)
     {
         ind += dim - ((size_t)k);
     }
@@ -1232,8 +1231,9 @@ latan_errno rs_x_data_fit(rs_sample *p, rs_sample * const *x,         \
         USTAT(fit_data_set_x_from_mat(d,k,rs_sample_pt_cent_val(x[k])));
         if (use_x_var[k])
         {
-            USTAT(mat_set_subm(pbuf,rs_sample_pt_cent_val(x[k]),   \
-                               npar+k*ndata,0,npar+(k+1)*ndata-1,0));
+            USTAT(mat_set_subm(pbuf,rs_sample_pt_cent_val(x[k]),             \
+                               npar+px_ind*ndata,0,npar+(px_ind+1)*ndata-1,0));
+            px_ind++;
         }
     }
     /** looking at starting chi^2/dof **/
@@ -1253,13 +1253,16 @@ latan_errno rs_x_data_fit(rs_sample *p, rs_sample * const *x,         \
     {
         /** setting data and initial parameters **/
         USTAT(mat_cp(fit_data_pt_data(d),rs_sample_pt_sample(data,i)));
+        px_ind = 0;
         for (k=0;k<ndim;k++)
         {
             USTAT(fit_data_set_x_from_mat(d,k,rs_sample_pt_sample(x[k],i)));
             if (use_x_var[k])
             {
-                USTAT(mat_set_subm(pbuf,rs_sample_pt_sample(x[k],i),   \
-                                   npar+k*ndata,0,npar+(k+1)*ndata-1,0));
+                USTAT(mat_set_subm(pbuf,rs_sample_pt_sample(x[k],i),\
+                                   npar+px_ind*ndata,0,             \
+                                   npar+(px_ind+1)*ndata-1,0));
+                px_ind++;
             }
         }
         /** fit **/

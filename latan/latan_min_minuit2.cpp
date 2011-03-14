@@ -2,27 +2,31 @@
 #ifdef HAVE_MINUIT2
 #include <latan/latan_min_minuit2.h>
 #include <iostream>
+#include <string>
+#include <utility>
 #include <vector>
 #include <Minuit2/FCNBase.h>
-#include <Minuit2/CombinedMinimizer.h>
+#include <Minuit2/VariableMetricMinimizer.h>
+#include <Minuit2/SimplexMinimizer.h>
+#include <Minuit2/ScanMinimizer.h>
 #include <Minuit2/FunctionMinimum.h>
+#include <Minuit2/MnMigrad.h>
 #include <Minuit2/MnPrint.h>
+#include <Minuit2/MnPlot.h>
+#include <Minuit2/MnScan.h>
+#include <Minuit2/MnSimplex.h>
 
 #ifndef INIT_RERROR
-#define INIT_RERROR 1.0e-2
+#define INIT_RERROR 0.5
 #endif
 #ifndef STRATEGY
 #define STRATEGY 2
 #endif
 #ifndef FIT_TOL
 #define FIT_TOL 1.0e-2
-#endif
+#endif 
 
-using namespace std;
-using namespace ROOT;
-using namespace Minuit2;
-
-class Minuit2MinFunc: public FCNBase
+class Minuit2MinFunc: public ROOT::Minuit2::FCNBase
 {
 public:
     Minuit2MinFunc(min_func *init_f, void *init_param);
@@ -38,7 +42,7 @@ private:
 
 Minuit2MinFunc::Minuit2MinFunc(min_func *init_f, void *init_param)
 {
-    f = init_f;
+    f     = init_f;
     param = init_param;
 }
 
@@ -48,22 +52,19 @@ Minuit2MinFunc::~Minuit2MinFunc(void)
 
 double Minuit2MinFunc::operator()(const std::vector<double>& v_x) const
 {
-    mat *x;
-    size_t x_size;
     size_t i;
     double res;
+    mat *x_buf;
+   
+    x_buf = mat_create(v_x.size(),1);
     
-    x_size = v_x.size();
-    
-    x = mat_create(x_size,1);
-    
-    for (i=0;i<x_size;i++)
+    for (i=0;i<nrow(x_buf);i++)
     {
-        mat_set(x,i,0,v_x[i]);
+        mat_set(x_buf,i,0,v_x[i]);
     }
-    res = f(x,param);
-    
-    mat_destroy(x);
+    res = f(x_buf,param);
+
+    mat_destroy(x_buf);
     
     return res;
 }
@@ -76,60 +77,78 @@ double Minuit2MinFunc::Up(void) const
 latan_errno minimize_minuit2(mat *x, double *f_min, min_func *f, void *param)
 {
     latan_errno status;
-    size_t x_size;
+    strbuf buf;
+    std::string name;
+    size_t ndim;
     size_t i;
-    double init_x_i,x_i;
-    unsigned int max_iteration;
-    std::vector<double> v_init_x;
-    std::vector<double> v_init_err;
-    Minuit2MinFunc minuit2_f(f,param);
-    VariableMetricMinimizer minimizer_migrad;
-    SimplexMinimizer minimizer_simplex;
-    ModularFunctionMinimizer *minimizer;
+    double x_i;
+    ROOT::Minuit2::MnUserParameters Init_x;
+    ROOT::Minuit2::MnApplication *Minimizer;
+  
+    status        = LATAN_SUCCESS;
+    ndim          = nrow(x);
     
-    status = LATAN_SUCCESS;
-    x_size = nrow(x);
-    max_iteration = minimizer_get_max_iteration();
-    
-    for (i=0;i<x_size;i++)
+    for (i=0;i<ndim;i++)
     {
-        init_x_i = mat_get(x,i,0);
-        v_init_x.push_back(init_x_i);
-        v_init_err.push_back(init_x_i*INIT_RERROR);
+        sprintf(buf,"p%lu",(long unsigned)i);
+        name = buf;
+        Init_x.Add(name,mat_get(x,i,0),fabs(mat_get(x,i,0))*INIT_RERROR);
     }
+
+    Minuit2MinFunc F(f,param);
+    ROOT::Minuit2::MnMigrad  Migrad(F,Init_x,STRATEGY);
+    ROOT::Minuit2::MnSimplex Simplex(F,Init_x,STRATEGY);
     switch (minimizer_get_alg())
     {
         case MIN_MIGRAD:
-            minimizer = &minimizer_migrad;
+            Minimizer = &Migrad;
             break;
         case MIN_SIMPLEX:
-            minimizer = &minimizer_simplex;
+            Minimizer = &Simplex;
             break;
         default:
-            LATAN_ERROR("invalid MINUIT minimization algorithm flag",\
+            LATAN_ERROR("invalid MINUIT minimization algorithm flag",
                         LATAN_EINVAL);
+            break;
     }
-    FunctionMinimum minuit2_min = minimizer->Minimize(minuit2_f,v_init_x,
-                                                      v_init_err,STRATEGY,\
-                                                      max_iteration,FIT_TOL);
-    if (!minuit2_min.IsValid())
+    latan_printf(DEBUG,"(MINUIT) Minimizing...\n");
+    ROOT::Minuit2::FunctionMinimum Min = (*Minimizer)();
+    if (!Min.IsValid())
     {
         LATAN_WARNING("MINUIT library reported that minimization result is not valid",\
                       LATAN_FAILURE);
         status = LATAN_FAILURE;
     }
-    for (i=0;i<x_size;i++)
+    for (i=0;i<ndim;i++)
     {
-        x_i = minuit2_min.UserParameters().Parameter((unsigned int)i).Value();
+        x_i = Min.UserParameters().Parameter((unsigned int)i).Value();
         mat_set(x,i,0,x_i);
     }
-    *f_min = minuit2_min.Fval();
+    *f_min = Min.Fval();
+          
+    latan_printf(DEBUG,"(MINUIT) Scan around last position :\n");
+    if (latan_get_verb() == DEBUG)
+    {
+        std::vector<std::pair<double, double> > ScanRes;
+        ROOT::Minuit2::MnPlot Plot;
 
-    latan_printf(DEBUG,"MINUIT minimizer call :\n");
+        ROOT::Minuit2::MnScan DScanner(F,Min.UserParameters(),STRATEGY);
+        std::cout << "--------------------------------------------------------";
+        std::cout << std::endl;
+        for (i=0;i<ndim;i++)
+        {
+            std::cout << "Parameter p" << (int)i << std::endl;
+            ScanRes = DScanner.Scan((unsigned int)i);
+            Plot(ScanRes);
+        }
+        std::cout << "--------------------------------------------------------";
+        std::cout << std::endl;
+    }
+    latan_printf(DEBUG,"(MINUIT) Minimizer call :\n");
     if (latan_get_verb() == DEBUG)
     {
         std::cout << "--------------------------------------------------------";
-        std::cout << minuit2_min;
+        std::cout << Min;
         std::cout << "--------------------------------------------------------";
         std::cout << std::endl;
     }

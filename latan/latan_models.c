@@ -207,10 +207,9 @@ const fit_model fm_polyn_2d_00 =
 
 double fm_polyn_2d_01_func(const mat *X, const mat *p, void *nothing)
 {
-    double res,x,y;
+    double res,y;
     
     nothing = NULL;
-    x = mat_get(X,0,0);
     y = mat_get(X,1,0);
     
     res = mat_get(p,0,0)             \
@@ -230,10 +229,9 @@ const fit_model fm_polyn_2d_01 =
 
 double fm_polyn_2d_02_func(const mat *X, const mat *p, void *nothing)
 {
-    double res,x,y;
+    double res,y;
     
     nothing = NULL;
-    x = mat_get(X,0,0);
     y = mat_get(X,1,0);
     
     res = mat_get(p,0,0)             \
@@ -254,11 +252,10 @@ const fit_model fm_polyn_2d_02 =
 
 double fm_polyn_2d_10_func(const mat *X, const mat *p, void *nothing)
 {
-    double res,x,y;
+    double res,x;
     
     nothing = NULL;
     x = mat_get(X,0,0);
-    y = mat_get(X,1,0);
     
     res = mat_get(p,0,0)             \
           + mat_get(p,1,0)*x;
@@ -328,11 +325,10 @@ const fit_model fm_polyn_2d_12 =
 
 double fm_polyn_2d_20_func(const mat *X, const mat *p, void *nothing)
 {
-    double res,x,y;
+    double res,x;
     
     nothing = NULL;
     x = mat_get(X,0,0);
-    y = mat_get(X,1,0);
     
     res = mat_get(p,0,0)             \
           + mat_get(p,1,0)*x         \

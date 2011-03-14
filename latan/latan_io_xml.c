@@ -114,9 +114,7 @@ void io_init_xml(void)
 void io_finish_xml(void)
 {
     int i;
-
-    i = 0;
-
+    
     if (io_is_init)
     {
 #ifdef _OPENMP
@@ -277,13 +275,15 @@ latan_errno randgen_load_state_xml(rg_state state, const strbuf fname,\
     latan_errno status;
     int thread;
 
+    status = LATAN_SUCCESS;
+    
 #ifdef _OPENMP
     thread = omp_get_thread_num();
 #else
     thread = 0;
 #endif
 
-    xml_open_file_buf(fname,'r');
+    USTAT(xml_open_file_buf(fname,'r'));
     sprintf(xpath_expr,"/%s:%s/%s:%s",LATAN_XMLNS_PREF,xml_mark[i_main],\
             LATAN_XMLNS_PREF,xml_mark[i_rgstate]);
     if (strlen(name) > 0)
@@ -293,7 +293,7 @@ latan_errno randgen_load_state_xml(rg_state state, const strbuf fname,\
     nodeset = xml_get_nodeset(xpath_expr,FILE_BUF(thread));
     if (nodeset->nodesetval != NULL)
     {
-        status = xml_get_rgstate(state,nodeset->nodesetval->nodeTab[0]);
+        USTAT(xml_get_rgstate(state,nodeset->nodesetval->nodeTab[0]));
     }
     else
     {
@@ -312,7 +312,7 @@ latan_errno randgen_load_state_xml(rg_state state, const strbuf fname,\
 
     xmlXPathFreeObject(nodeset);
 
-    return LATAN_SUCCESS;
+    return status;
 }
 
 /*                          resampled sample I/O                            */
@@ -347,6 +347,8 @@ latan_errno rs_sample_load_nrow_xml(size_t *nr, const strbuf fname,\
     strbuf xpath_expr;
     latan_errno status;
     int thread;
+    
+    status = LATAN_SUCCESS;
 
 #ifdef _OPENMP
     thread = omp_get_thread_num();
@@ -354,7 +356,7 @@ latan_errno rs_sample_load_nrow_xml(size_t *nr, const strbuf fname,\
     thread = 0;
 #endif
 
-    xml_open_file_buf(fname,'r');
+    USTAT(xml_open_file_buf(fname,'r'));
     sprintf(xpath_expr,"/%s:%s/%s:%s",LATAN_XMLNS_PREF,xml_mark[i_main],\
             LATAN_XMLNS_PREF,xml_mark[i_sample]);
     if (strlen(name) > 0)
@@ -364,7 +366,7 @@ latan_errno rs_sample_load_nrow_xml(size_t *nr, const strbuf fname,\
     nodeset = xml_get_nodeset(xpath_expr,FILE_BUF(thread));
     if (nodeset->nodesetval != NULL)
     {
-        status = xml_get_sample_nrow(nr,nodeset->nodesetval->nodeTab[0]);
+        USTAT(xml_get_sample_nrow(nr,nodeset->nodesetval->nodeTab[0]));
     }
     else
     {
@@ -383,7 +385,7 @@ latan_errno rs_sample_load_nrow_xml(size_t *nr, const strbuf fname,\
 
     xmlXPathFreeObject(nodeset);
 
-    return LATAN_SUCCESS;
+    return status;
 }
 
 latan_errno rs_sample_load_nsample_xml(size_t *nsample, const strbuf fname,\
@@ -393,6 +395,8 @@ latan_errno rs_sample_load_nsample_xml(size_t *nsample, const strbuf fname,\
     strbuf xpath_expr;
     latan_errno status;
     int thread;
+    
+    status = LATAN_SUCCESS;
 
 #ifdef _OPENMP
     thread = omp_get_thread_num();
@@ -400,7 +404,7 @@ latan_errno rs_sample_load_nsample_xml(size_t *nsample, const strbuf fname,\
     thread = 0;
 #endif
 
-    xml_open_file_buf(fname,'r');
+    USTAT(xml_open_file_buf(fname,'r'));
     sprintf(xpath_expr,"/%s:%s/%s:%s",LATAN_XMLNS_PREF,xml_mark[i_main],\
             LATAN_XMLNS_PREF,xml_mark[i_sample]);
     if (strlen(name) > 0)
@@ -410,8 +414,7 @@ latan_errno rs_sample_load_nsample_xml(size_t *nsample, const strbuf fname,\
     nodeset = xml_get_nodeset(xpath_expr,FILE_BUF(thread));
     if (nodeset->nodesetval != NULL)
     {
-        status = xml_get_sample_nsample(nsample,\
-                                        nodeset->nodesetval->nodeTab[0]);
+        USTAT(xml_get_sample_nsample(nsample,nodeset->nodesetval->nodeTab[0]));
     }
     else
     {
@@ -430,7 +433,7 @@ latan_errno rs_sample_load_nsample_xml(size_t *nsample, const strbuf fname,\
 
     xmlXPathFreeObject(nodeset);
 
-    return LATAN_SUCCESS;
+    return status;
 }
 
 latan_errno rs_sample_load_xml(rs_sample *s, const strbuf fname,\
@@ -441,13 +444,15 @@ latan_errno rs_sample_load_xml(rs_sample *s, const strbuf fname,\
     latan_errno status;
     int thread;
 
+    status = LATAN_SUCCESS;
+    
 #ifdef _OPENMP
     thread = omp_get_thread_num();
 #else
     thread = 0;
 #endif
 
-    xml_open_file_buf(fname,'r');
+    USTAT(xml_open_file_buf(fname,'r'));
     sprintf(xpath_expr,"/%s:%s/%s:%s",LATAN_XMLNS_PREF,xml_mark[i_main],\
             LATAN_XMLNS_PREF,xml_mark[i_sample]);
     if (strlen(name) > 0)
@@ -457,7 +462,7 @@ latan_errno rs_sample_load_xml(rs_sample *s, const strbuf fname,\
     nodeset = xml_get_nodeset(xpath_expr,FILE_BUF(thread));
     if (nodeset->nodesetval != NULL)
     {
-        status = xml_get_sample(s,nodeset->nodesetval->nodeTab[0]);
+        USTAT(xml_get_sample(s,nodeset->nodesetval->nodeTab[0]));
     }
     else
     {

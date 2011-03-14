@@ -634,6 +634,8 @@ latan_errno xml_save_file(xml_file *f)
     int blank_bak,size;
     xmlChar **buf;
 
+    buf = NULL;
+    
     if (strlen(f->fname) == 0)
     {
         LATAN_ERROR("XML file name empty",LATAN_EINVAL);

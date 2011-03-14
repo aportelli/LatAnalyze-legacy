@@ -1,5 +1,7 @@
 #include <latan/latan_minimizer.h>
 
+double polynom(mat *var, void *param);
+
 double polynom(mat *var, void *param)
 {
     double x;
@@ -12,11 +14,10 @@ double polynom(mat *var, void *param)
 
 int main(void)
 {
-    mat *res,*init_var;
+    mat *res;
     double fval;
     
     res = mat_create(1,1);
-    init_var = mat_create_from_dim(res);
     
     mat_set(res,0,0,2.5);
     

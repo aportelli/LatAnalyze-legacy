@@ -4,64 +4,106 @@
 #include <latan/latan_statistics.h>
 #include <latan/latan_io.h>
 
-#define INF1_NAME argv[1]
-#define INF2_NAME argv[2]
-#define OUTF_NAME argv[3]
-
 #ifndef BINOP
 #error BINOP macro must be defined to compile this program (use -DBINOP=<op> option)
 #endif
 
-typedef latan_errno mat_binop_f(mat *, const mat *, const mat *);
-
-mat_binop_f *mat_binop = &BINOP;
-
 int main(int argc, char *argv[])
 {
+    int i,j;
     rs_sample *s1,*s2,*res;
     size_t s1_nrow,s2_nrow,s1_nsample,s2_nsample;
-    size_t i;
     mat *sig;
-    bool do_save_res;
-    strbuf res_name;
-
-    /* I/O init */
-    io_init();
+    bool do_save_res, show_usage;
+    strbuf res_name,inf_name[2],outf_name;
+    io_fmt_no fmt;
     
     /* argument parsing */
-    switch (argc)
+    i           = 1;
+    j           = 0;
+    show_usage  = false;
+    do_save_res = false;
+    fmt         = io_get_fmt();
+    
+    if (argc <= 1)
     {
-        case 3:
-            do_save_res = false;
-            strbufcpy(res_name,"");
-            break;
-        case 4:
-            do_save_res = true;
-            strbufcpy(res_name,OUTF_NAME);
-            break;
-        default:
-            fprintf(stderr,"usage: %s <sample 1> <sample 2> [<output sample>]\n",\
-                    argv[0]);
-            return EXIT_FAILURE;
-            break;
+        show_usage = true;
     }
-    
-    /* getting sizes */
-    rs_sample_load_nrow(&s1_nrow,INF1_NAME,"");
-    rs_sample_load_nsample(&s1_nsample,INF1_NAME,"");
-    rs_sample_load_nrow(&s2_nrow,INF2_NAME,"");
-    rs_sample_load_nsample(&s2_nsample,INF2_NAME,"");
-    
-    /* error checking */
-    if (s1_nsample != s2_nsample)
+    else
     {
-        fprintf(stderr,"error: number of sample mismatch\n");
+        while (i < argc)
+        {
+            if (strcmp(argv[i],"-o") == 0)
+            {
+                if (i == argc - 1)
+                {
+                    show_usage = true;
+                    break;
+                }
+                else
+                {
+                    strbufcpy(outf_name,argv[i+1]);
+                    do_save_res = true;
+                    i += 2;
+                }
+            }
+            else if (strcmp(argv[i],"-f") == 0)
+            {
+                if (i == argc - 1)
+                {
+                    show_usage = true;
+                    break;
+                }
+                else
+                {
+                    if (strcmp(argv[i+1],"xml") == 0)
+                    {
+                        fmt = IO_XML;
+                    }
+                    else if (strcmp(argv[i+1],"ascii") == 0)
+                    {
+                        fmt = IO_ASCII;
+                    }
+                    else
+                    {
+                        fprintf(stderr,"error: format %s unknown\n",argv[i+1]);
+                        return EXIT_FAILURE;
+                    }
+                    i += 2;
+                }
+            }
+            else
+            {
+                if (j < 2)
+                {
+                    strbufcpy(inf_name[j],argv[i]);
+                    j++;
+                    i++;
+                }
+                else
+                {
+                    show_usage = true;
+                    break;
+                }
+            }
+        }
+    }
+    if (show_usage)
+    {
+        fprintf(stderr,"usage: %s <in sample 1> <in sample 2> [-o <out sample>] [-f {ascii|xml}]\n",\
+                argv[0]);
         return EXIT_FAILURE;
     }
-    if (s1_nrow != s2_nrow)
-    {
-        fprintf(stderr,"error: sample dimensions mismatch\n");
-    }
+    
+    /* I/O init */
+    io_set_fmt(fmt);
+    io_init();
+    
+    /* getting sizes */
+    rs_sample_load_nrow(&s1_nrow,inf_name[0],"");
+    rs_sample_load_nsample(&s1_nsample,inf_name[0],"");
+    rs_sample_load_nrow(&s2_nrow,inf_name[1],"");
+    rs_sample_load_nsample(&s2_nsample,inf_name[1],"");
     
     /* allocation */
     s1 = rs_sample_create(s1_nrow,s1_nsample);
@@ -70,20 +112,14 @@ int main(int argc, char *argv[])
     sig = mat_create(s1_nrow,1);
     
     /* loading samples */
-    printf("-- loading resampled sample from %s...\n",INF1_NAME);
-    rs_sample_load(s1,INF1_NAME,"");
-    printf("-- loading resampled sample from %s...\n",INF2_NAME);
-    rs_sample_load(s2,INF2_NAME,"");
+    printf("-- loading sample from %s...\n",inf_name[0]);
+    rs_sample_load(s1,inf_name[0],"");
+    printf("-- loading sample from %s...\n",inf_name[1]);
+    rs_sample_load(s2,inf_name[1],"");
     
     /* multiplying samples */
     printf("-- executing operation on samples...\n");
-    mat_binop(rs_sample_pt_cent_val(res),rs_sample_pt_cent_val(s1),\
-              rs_sample_pt_cent_val(s2));
-    for (i=0;i<rs_sample_get_nsample(res);i++)
-    {
-        mat_binop(rs_sample_pt_sample(res,i),rs_sample_pt_sample(s1,i),\
-                  rs_sample_pt_sample(s2,i));
-    }
+    rs_sample_binop(res,s1,s2,&BINOP);
     
     /* result output */
     rs_sample_varp(sig,res);
@@ -95,7 +131,7 @@ int main(int argc, char *argv[])
     if (do_save_res)
     {
         rs_sample_set_name(res,res_name);
-        rs_sample_save(OUTF_NAME,'w',res);
+        rs_sample_save(outf_name,'w',res);
     }
     
     /* desallocation */

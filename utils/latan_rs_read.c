@@ -4,27 +4,20 @@
 #include <latan/latan_statistics.h>
 #include <latan/latan_io.h>
 
-#ifndef BINOPS
-#error BINOPS macro must be defined to compile this program (use -DBINOPS=<op> option)
-#endif
-
 int main(int argc, char *argv[])
 {
-    rs_sample *s1,*res;
-    int i,j;
-    io_fmt_no fmt;
-    double d;
+    rs_sample *s1;
     size_t s1_nrow,s1_nsample;
+    int i,j;
     mat *sig;
-    bool do_save_res,show_usage;
-    strbuf res_name,inf_name,outf_name;
-
+    bool show_usage;
+    strbuf inf_name;
+    io_fmt_no fmt;
+    
     /* argument parsing */
     i           = 1;
     j           = 0;
-    d           = 1.0;
     show_usage  = false;
-    do_save_res = false;
     fmt         = io_get_fmt();
     
     if (argc <= 1)
@@ -35,21 +28,7 @@ int main(int argc, char *argv[])
     {
         while (i < argc)
         {
-            if (strcmp(argv[i],"-o") == 0)
-            {
-                if (i == argc - 1)
-                {
-                    show_usage = true;
-                    break;
-                }
-                else
-                {
-                    strbufcpy(outf_name,argv[i+1]);
-                    do_save_res = true;
-                    i += 2;
-                }
-            }
-            else if (strcmp(argv[i],"-f") == 0)
+            if (strcmp(argv[i],"-f") == 0)
             {
                 if (i == argc - 1)
                 {
@@ -82,12 +61,6 @@ int main(int argc, char *argv[])
                     j++;
                     i++;
                 }
-                else if (j == 1)
-                {
-                    d = atof(argv[i]);
-                    j++;
-                    i++;
-                }
                 else
                 {
                     show_usage = true;
@@ -98,52 +71,40 @@ int main(int argc, char *argv[])
     }
     if (show_usage)
     {
-        fprintf(stderr,"usage: %s <in sample> <double> [-o <out sample>] [-f {ascii|xml}]\n",\
-                argv[0]);
+        fprintf(stderr,"usage: %s <sample> [-f {ascii|xml}]\n",argv[0]);
         return EXIT_FAILURE;
     }
     
     /* I/O init */
     io_set_fmt(fmt);
     io_init();
-
+    
     /* getting sizes */
     rs_sample_load_nrow(&s1_nrow,inf_name,"");
     rs_sample_load_nsample(&s1_nsample,inf_name,"");
-
+    
     /* allocation */
-    s1 = rs_sample_create(s1_nrow,s1_nsample);
-    res = rs_sample_create(s1_nrow,s1_nsample);
+    s1  = rs_sample_create(s1_nrow,s1_nsample);
     sig = mat_create(s1_nrow,1);
-
+    
     /* loading samples */
     printf("-- loading sample from %s...\n",inf_name);
     rs_sample_load(s1,inf_name,"");
-
-    /* multiplying samples */
-    printf("-- executing operation on sample...\n");
-    rs_sample_binops(res,s1,d,&BINOPS);
-
+    
     /* result output */
-    rs_sample_varp(sig,res);
+    rs_sample_varp(sig,s1);
     mat_eqsqrt(sig);
     printf("central value:\n");
-    mat_print(rs_sample_pt_cent_val(res),"%e");
+    mat_print(rs_sample_pt_cent_val(s1),"%e");
     printf("standard deviation:\n");
     mat_print(sig,"%e");
-    if (do_save_res)
-    {
-        rs_sample_set_name(res,res_name);
-        rs_sample_save(outf_name,'w',res);
-    }
-
+    
     /* desallocation */
     rs_sample_destroy(s1);
-    rs_sample_destroy(res);
     mat_destroy(sig);
-
+    
     /* I/O finish */
     io_finish();
-
+    
     return EXIT_SUCCESS;
 }

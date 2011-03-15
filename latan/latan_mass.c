@@ -33,7 +33,7 @@ extern double acosh(double x); /* acosh is not ANSI compliant */
 #define NSIGMA 1.0
 #endif
 
-latan_errno effmass(mat *res, mat *mprop, const int parity)
+latan_errno effmass(mat *res, const mat *mprop, const int parity)
 {
     size_t i;
     double em;
@@ -71,7 +71,38 @@ latan_errno effmass(mat *res, mat *mprop, const int parity)
     return LATAN_SUCCESS;
 }
 
-latan_errno effmass_PCAC(mat *res, mat *mprop_AP, mat *mprop_PP)
+#define CENT_VAL(s)  rs_sample_pt_cent_val(s)
+#define ELEMENT(s,i) rs_sample_pt_sample(s,i)
+
+latan_errno rs_sample_effmass(rs_sample *s_res, const rs_sample *s_mprop,\
+                              const int parity)
+{
+    size_t i;
+    size_t nsample;
+    latan_errno status;
+    
+    if (rs_sample_get_nsample(s_res) != rs_sample_get_nsample(s_mprop))
+    {
+        LATAN_ERROR("operation between samples with different numbers of elements",\
+                    LATAN_EINVAL);
+    }
+    
+    nsample = rs_sample_get_nsample(s_res);
+    status  = LATAN_SUCCESS;
+    
+    USTAT(effmass(CENT_VAL(s_res),CENT_VAL(s_mprop),parity));
+    for (i=0;i<nsample;i++)
+    {
+        USTAT(effmass(ELEMENT(s_res,i),ELEMENT(s_mprop,i),parity));
+    }
+    
+    return status;
+}
+
+#undef CENT_VAL
+#undef ELEMENT
+
+latan_errno effmass_PCAC(mat *res, const mat *mprop_AP, const mat *mprop_PP)
 {
     latan_errno status;
     size_t t;
@@ -87,7 +118,6 @@ latan_errno effmass_PCAC(mat *res, mat *mprop_AP, mat *mprop_PP)
     {
         mat_set(res,t,0,mat_get(res,t,0)/(2.0*mat_get(mprop_PP,t+1,0)));
     }
-    mat_eqabs(res);
     
     return status;
 }

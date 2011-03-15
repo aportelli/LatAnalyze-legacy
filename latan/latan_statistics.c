@@ -22,19 +22,18 @@
 #include <latan/latan_math.h>
 #include <latan/latan_rand.h>
 #include <latan/latan_io.h>
-#include <latan/latan_mass.h>
 #include <gsl/gsl_histogram.h>
 #include <gsl/gsl_errno.h>
 
-static latan_errno resample_bootstrap(mat *cent_val, mat **sample,          \
-                                      const size_t nboot, mat **dat,    \
-                                      const size_t ndat, const size_t nobs, \
-                                      rs_func *f, void *param);
+static latan_errno resample_bootstrap(mat *cent_val, mat **sample,         \
+                                      const size_t nboot, mat **dat,       \
+                                      const size_t ndat, rs_func *f,       \
+                                      void *param);
 
 /* TODO : Jackknife resampling function
-static latan_errno resample_jackknife(mat *cent_val, mat **sample,          \
-                                      const size_t jk_depth, mat **dat,\
-                                      const size_t ndat, const size_t nobs, \
+static latan_errno resample_jackknife(mat *cent_val, mat **sample,         \
+                                      const size_t jk_depth, mat **dat,    \
+                                      const size_t ndat, const size_t nobs,\
                                       rs_func *f, void *param);
 */
 
@@ -350,17 +349,17 @@ latan_errno rs_sample_covp(mat *cov, const rs_sample *s, const rs_sample *t)
 /****************************************************************************/
 static latan_errno resample_bootstrap(mat *cent_val, mat **sample,         \
                                       const size_t nboot, mat **dat,       \
-                                      const size_t ndat, const size_t nobs,\
-                                      rs_func *f, void *param)
+                                      const size_t ndat, rs_func *f,       \
+                                      void *param)
 {
     mat **fakedat;
-    size_t i,j,k;
+    size_t i,j;
     unsigned int rj;
     latan_errno status;
     
     status = LATAN_SUCCESS;
     
-    MALLOC(fakedat,mat**,ndat*nobs);
+    MALLOC(fakedat,mat**,ndat);
     
     USTAT(f(cent_val,dat,ndat,0,param));
     for (i=0;i<nboot;i++)
@@ -369,10 +368,7 @@ static latan_errno resample_bootstrap(mat *cent_val, mat **sample,         \
         for (j=0;j<ndat;j++) 
         {
             rj = rand_ud((unsigned int)(ndat));
-            for (k=0; k<nobs; k++)
-            {
-                fakedat[j+k*ndat] = dat[rj+k*ndat];
-            }
+            fakedat[j] = dat[rj];
         }
         USTAT(f(sample[i],fakedat,ndat,i+1,param));
     }
@@ -382,9 +378,8 @@ static latan_errno resample_bootstrap(mat *cent_val, mat **sample,         \
     return status;
 }
 
-latan_errno resample(rs_sample *s, mat **dat, const size_t ndat,               \
-                     const size_t nobs, rs_func *f, unsigned int resamp_method,\
-                     void *param)
+latan_errno resample(rs_sample *s, mat **dat, const size_t ndat, rs_func *f, \
+                     unsigned int resamp_method, void *param)
 {
     latan_errno status;
 
@@ -393,7 +388,7 @@ latan_errno resample(rs_sample *s, mat **dat, const size_t ndat,               \
     {
         randgen_get_state(s->gen_state);
         status = resample_bootstrap(s->cent_val,s->sample,s->nsample,dat,ndat,\
-                                    nobs,f,param);
+                                    f,param);
     }
     /** jacknife **/
     else

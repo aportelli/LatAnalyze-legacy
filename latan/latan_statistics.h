@@ -86,9 +86,8 @@ latan_errno rs_sample_covp(mat *cov, const rs_sample *s, const rs_sample *t);
 #define rs_sample_varp(cov,s) rs_sample_covp(cov,s,s);
 
 /* resampling function */
-latan_errno resample(rs_sample *s, mat **dat, const size_t ndat,               \
-                     const size_t nobs, rs_func *f, unsigned int resamp_method,\
-                     void *param);
+latan_errno resample(rs_sample *s, mat **dat, const size_t ndat, rs_func *f,\
+                     unsigned int resamp_method, void *param);
 
 /* useful rs_func */
 latan_errno rs_mean(mat *res, mat **dat, const size_t ndat,\

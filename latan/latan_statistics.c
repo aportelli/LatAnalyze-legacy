@@ -409,7 +409,8 @@ latan_errno resample(rs_sample *s, mat **dat, const size_t ndat,               \
     return status;
 }
 
-/* some basic rs_func */
+/*                              useful rs_func                              */
+/****************************************************************************/
 latan_errno rs_mean(mat *res, mat **dat, const size_t ndat,\
                     const size_t sampno, void *nothing)
 {
@@ -424,73 +425,85 @@ latan_errno rs_mean(mat *res, mat **dat, const size_t ndat,\
     return status;
 }
 
-latan_errno rs_finite_diff(mat *res, mat **dat, const size_t ndat,\
-                           const size_t sampno, void *nothing)
+/*                              operations                                  */
+/****************************************************************************/
+#define CENT_VAL(s)  rs_sample_pt_cent_val(s)
+#define ELEMENT(s,i) rs_sample_pt_sample(s,i)
+
+latan_errno rs_sample_unop(rs_sample *s_a, const rs_sample *s_b, mat_unop *f)
 {
+    size_t i;
+    size_t nsample;
     latan_errno status;
-    mat *mean;
-    size_t st_nothing;
     
-    nothing    = NULL;
-    st_nothing = sampno;
-    status     = LATAN_SUCCESS;
+    if (rs_sample_get_nsample(s_a) != rs_sample_get_nsample(s_b))
+    {
+        LATAN_ERROR("operation between samples with different numbers of elements",\
+                    LATAN_EINVAL);
+    }
     
-    mean = mat_create_from_dim(dat[0]);
+    nsample = rs_sample_get_nsample(s_a);
+    status  = LATAN_SUCCESS;
     
-    USTAT(mat_mean(mean,dat,ndat));
-    USTAT(finite_diff(res,mean));
-    
-    mat_destroy(mean);
+    USTAT(f(CENT_VAL(s_a),CENT_VAL(s_b)));
+    for (i=0;i<nsample;i++)
+    {
+        USTAT(f(ELEMENT(s_a,i),ELEMENT(s_b,i)));
+    }
     
     return status;
 }
 
-latan_errno rs_effmass(mat *res, mat **dat, const size_t ndat,\
-                       const size_t sampno, void *parity)
+latan_errno rs_sample_binop(rs_sample *s_a, const rs_sample *s_b, \
+                            const rs_sample *s_c, mat_binop *f)
 {
+    size_t i;
+    size_t nsample;
     latan_errno status;
-    mat *mean;
-    int parityt;
-    size_t st_nothing;
     
-    st_nothing = sampno;
-    status     = LATAN_SUCCESS;
-    parityt    = *((int*)(parity));
-
-    mean = mat_create_from_dim(dat[0]);
+    if ((rs_sample_get_nsample(s_a) != rs_sample_get_nsample(s_b))\
+      ||(rs_sample_get_nsample(s_b) != rs_sample_get_nsample(s_c)))
+    {
+        LATAN_ERROR("operation between samples with different numbers of elements",\
+                    LATAN_EINVAL);
+    }
     
-    USTAT(mat_mean(mean,dat,ndat));
-    USTAT(effmass(res,mean,parityt));
+    nsample = rs_sample_get_nsample(s_a);
+    status  = LATAN_SUCCESS;
     
-    mat_destroy(mean);
+    USTAT(f(CENT_VAL(s_a),CENT_VAL(s_b),CENT_VAL(s_c)));
+    for (i=0;i<nsample;i++)
+    {
+        USTAT(f(ELEMENT(s_a,i),ELEMENT(s_b,i),ELEMENT(s_c,i)));
+    }
     
     return status;
 }
 
-latan_errno rs_effmass_PCAC(mat *res, mat **dat, const size_t ndat,\
-                            const size_t sampno, void *nothing)
+latan_errno rs_sample_binops(rs_sample *s_a, const rs_sample *s_b,\
+                             const double s, mat_binops *f)
 {
+    size_t i;
+    size_t nsample;
     latan_errno status;
-    mat **prop_AP;
-    mat **prop_PP;
-    mat *mprop_AP,*mprop_PP;
-    size_t st_nothing;
     
-    nothing    = NULL;
-    st_nothing = sampno;
-    status     = LATAN_SUCCESS;
+    if (rs_sample_get_nsample(s_a) != rs_sample_get_nsample(s_b))
+    {
+        LATAN_ERROR("operation between samples with different numbers of elements",\
+                    LATAN_EINVAL);
+    }
     
-    prop_AP  = dat;
-    prop_PP  = dat + ndat;
-    mprop_AP = mat_create_from_dim(prop_AP[0]);
-    mprop_PP = mat_create_from_dim(prop_PP[0]);
+    nsample = rs_sample_get_nsample(s_a);
+    status  = LATAN_SUCCESS;
     
-    USTAT(mat_mean(mprop_AP,prop_AP,ndat));
-    USTAT(mat_mean(mprop_PP,prop_PP,ndat));
-    USTAT(effmass_PCAC(res,mprop_AP,mprop_PP));
-    
-    mat_destroy(mprop_AP);
-    mat_destroy(mprop_PP);
+    USTAT(f(CENT_VAL(s_a),CENT_VAL(s_b),s));
+    for (i=0;i<nsample;i++)
+    {
+        USTAT(f(ELEMENT(s_a,i),ELEMENT(s_b,i),s));
+    }
     
     return status;
 }
+
+#undef CENT_VAL
+#undef ELEMENT

@@ -93,12 +93,33 @@ latan_errno resample(rs_sample *s, mat **dat, const size_t ndat,               \
 /* useful rs_func */
 latan_errno rs_mean(mat *res, mat **dat, const size_t ndat,\
                     const size_t sampno, void *nothing);
-latan_errno rs_finite_diff(mat *res, mat **dat, const size_t ndat,\
-                           const size_t sampno, void *nothing);
-latan_errno rs_effmass(mat *res, mat **dat, const size_t ndat,\
-                       const size_t sampno, void *parity);
-latan_errno rs_effmass_PCAC(mat *res, mat **dat, const size_t ndat,\
-                            const size_t sampno, void *nothing);
+
+/* operations */
+typedef latan_errno mat_unop(mat *a, const mat *b);
+typedef latan_errno mat_binop(mat *a, const mat *b, const mat *c);
+typedef latan_errno mat_binops(mat *a, const mat *b, const double s);
+
+latan_errno rs_sample_unop(rs_sample *s_a, const rs_sample *s_b, mat_unop *f);
+latan_errno rs_sample_binop(rs_sample *s_a, const rs_sample *s_b, \
+                            const rs_sample *s_c, mat_binop *f);
+latan_errno rs_sample_binops(rs_sample *s_a, const rs_sample *s_b,\
+                             const double s, mat_binops *f);
+#define rs_sample_abs(s_a,s_b)      rs_sample_unop(s_a,s_b,&mat_abs)
+#define rs_sample_eqabs(s_a)        rs_sample_abs(s_a,s_a)
+#define rs_sample_add(s_a,s_b,s_c)  rs_sample_binop(s_a,s_b,s_c,&mat_add)
+#define rs_sample_eqadd(s_a,s_b)    rs_sample_add(s_a,s_a,s_b)
+#define rs_sample_adds(s_a,s_b,s)   rs_sample_binops(s_a,s_b,s,&mat_adds)
+#define rs_sample_eqadds(s_a,s)     rs_sample_adds(s_a,s_a,s)
+#define rs_sample_divp(s_a,s_b,s_c) rs_sample_binop(s_a,s_b,s_c,&mat_divp)
+#define rs_sample_eqdivp(s_a,s_b)   rs_sample_divp(s_a,s_a,s_b)
+#define rs_sample_mulp(s_a,s_b,s_c) rs_sample_binop(s_a,s_b,s_c,&mat_mulp)
+#define rs_sample_eqmulp(s_a,s_b)   rs_sample_mulp(s_a,s_a,s_b)
+#define rs_sample_muls(s_a,s_b,s)   rs_sample_binops(s_a,s_b,s,&mat_muls)
+#define rs_sample_eqmuls(s_a,s)     rs_sample_muls(s_a,s_a,s)
+#define rs_sample_sqrt(s_a,s_b)     rs_sample_unop(s_a,s_b,&mat_sqrt)
+#define rs_sample_eqsqrt(s_a)       rs_sample_sqrt(s_a,s_a)
+#define rs_sample_sub(s_a,s_b,s_c)  rs_sample_binop(s_a,s_b,s_c,&mat_add)
+#define rs_sample_eqsub(s_a,s_b)    rs_sample_sub(s_a,s_a,s_b)
 
 __END_DECLS
 

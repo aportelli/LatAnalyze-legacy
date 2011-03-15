@@ -47,7 +47,7 @@ int main(void)
     printf("\n");
     
     printf("-- resampling mean...\n");
-    resample(s_mean,gvec,SEQ_LENGTH,1,&rs_mean,BOOT,NULL);
+    resample(s_mean,gvec,SEQ_LENGTH,&rs_mean,BOOT,NULL);
     
     printf("-- computing variance from resampled sample...\n");
     rs_sample_var(var,s_mean);

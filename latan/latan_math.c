@@ -44,7 +44,7 @@ unsigned int binomial(const unsigned int n, const unsigned int p)
     return res;
 }
 
-latan_errno finite_diff(mat *ddat, mat *dat)
+latan_errno finite_diff(mat *ddat, const mat *dat)
 {
     size_t i,j;
     double ddat_ij;

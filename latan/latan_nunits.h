@@ -20,7 +20,7 @@
 #ifndef LATAN_NUNITS_H_
 #define LATAN_NUNITS_H_
 
-/* source : Review of Particle Physics 2009 ( http://pdglive.lbl.gov/ ) */
+/* source : Review of Particle Physics 2010 ( http://pdglive.lbl.gov/ ) */
 
 /* units */
 #define NU_FM               0.005067731             /* MeV^(-1) */
@@ -44,5 +44,8 @@
 #define NU_M_K_0_ERR        0.024                   /* MeV */
 #define NU_M_K_M            493.677                 /* MeV */
 #define NU_M_K_M_ERR        0.016                   /* MeV */
+/** Omega **/
+#define NU_M_OMEGA_M        1672.45                 /* MeV */
+#define NU_M_OMEGA_M_ERR    0.29                    /* MeV */
 
 #endif

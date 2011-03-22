@@ -23,6 +23,7 @@ utils/latan_rs_muls
 utils/latan_rs_sub
 utils/latan_rs_div
 utils/latan_rs_sqrt
+utils/latan_rs_read
 
 # Apple stuffs
 *.xcodeproj

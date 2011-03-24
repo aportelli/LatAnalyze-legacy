@@ -24,11 +24,11 @@
 static strbuf channel_id[] = 
 {
     "SS"    ,\
-    "V4V4"  ,\
+    "ViVi"  ,\
     "PP"    ,\
     "PA4"   ,\
     "A4P"   ,\
-    "A4A4"  ,\
+    "AiAi"  ,\
     "NUCL"  ,\
     "LAMBDA",\
     "DELTA"  \

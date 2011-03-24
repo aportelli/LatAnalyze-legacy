@@ -5,6 +5,7 @@ COM_CFLAGS = -Wall -Wmissing-prototypes -Wstrict-prototypes \
 
 bin_PROGRAMS =              \
 	latan_create_rg_state   \
+	latan_get_mass          \
 	latan_info              \
 	latan_mat_bench         \
 	latan_rs_add            \
@@ -19,6 +20,10 @@ bin_PROGRAMS =              \
 latan_create_rg_state_SOURCES = latan_create_rg_state.c
 latan_create_rg_state_CFLAGS  = $(COM_CFLAGS)
 latan_create_rg_state_LDFLAGS = -llatan -L../latan/.libs
+
+latan_get_mass_SOURCES = latan_get_mass.c
+latan_get_mass_CFLAGS  = $(COM_CFLAGS)
+latan_get_mass_LDFLAGS = -llatan -L../latan/.libs
 
 latan_info_SOURCES = latan_info.c
 latan_info_CFLAGS  = $(COM_CFLAGS)

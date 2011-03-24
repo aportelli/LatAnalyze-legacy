@@ -21,16 +21,12 @@
 #include <latan/latan_includes.h>
 #include <latan/latan_math.h>
 #include <latan/latan_models.h>
+#include <latan/latan_nunits.h>
 
+/*                         effective mass functions                         */
+/****************************************************************************/
 #ifdef HAVE_ACOSH
 extern double acosh(double x); /* acosh is not ANSI compliant */
-#endif
-
-#ifndef PLAT_TOL
-#define PLAT_TOL 0.40
-#endif
-#ifndef NSIGMA
-#define NSIGMA 1.0
 #endif
 
 latan_errno effmass(mat *res, const mat *mprop, const int parity)
@@ -121,6 +117,77 @@ latan_errno effmass_PCAC(mat *res, const mat *mprop_AP, const mat *mprop_PP)
     
     return status;
 }
+
+/*            interface to read experimental masses in latan_nunits.h       */
+/****************************************************************************/
+latan_errno get_exp_mass(double mass[2], const strbuf name)
+{
+    if (strcmp(name,"pi+") == 0)
+    {
+        mass[0] = NU_M_PI_P;
+        mass[1] = NU_M_PI_P_ERR;
+    }
+    else if (strcmp(name,"pi0") == 0)
+    {
+        mass[0] = NU_M_PI_0;
+        mass[1] = NU_M_PI_0_ERR;
+    }
+    else if (strcmp(name,"pi-") == 0)
+    {
+        mass[0] = NU_M_PI_M;
+        mass[1] = NU_M_PI_M_ERR;
+    }
+    else if (strcmp(name,"K+") == 0)
+    {
+        mass[0] = NU_M_K_P;
+        mass[1] = NU_M_K_P_ERR;
+    }
+    else if (strcmp(name,"K0") == 0)
+    {
+        mass[0] = NU_M_K_0;
+        mass[1] = NU_M_K_0_ERR;
+    }
+    else if (strcmp(name,"K-") == 0)
+    {
+        mass[0] = NU_M_K_M;
+        mass[1] = NU_M_K_M_ERR;
+    }
+    else if (strcmp(name,"rho+") == 0)
+    {
+        mass[0] = NU_M_RHO_P;
+        mass[1] = NU_M_RHO_P_ERR;
+    }
+    else if (strcmp(name,"rho0") == 0)
+    {
+        mass[0] = NU_M_RHO_0;
+        mass[1] = NU_M_RHO_0_ERR;
+    }
+    else if (strcmp(name,"rho-") == 0)
+    {
+        mass[0] = NU_M_RHO_M;
+        mass[1] = NU_M_RHO_M_ERR;
+    }
+    else if (strcmp(name,"Omega-") == 0)
+    {
+        mass[0] = NU_M_OMEGA_M;
+        mass[1] = NU_M_OMEGA_M_ERR;
+    }
+    else
+    {
+        LATAN_ERROR("particle name unknown",LATAN_EINVAL);
+    }
+    
+    return LATAN_SUCCESS;
+}
+
+/*                     mass fit parameter tuning functions                  */
+/****************************************************************************/
+#ifndef PLAT_TOL
+#define PLAT_TOL 0.40
+#endif
+#ifndef NSIGMA
+#define NSIGMA 1.0
+#endif
 
 plat *search_plat(size_t *nplat, mat *data, mat *sigdata,\
                   const size_t ntmax, const double nsig, const double tol)

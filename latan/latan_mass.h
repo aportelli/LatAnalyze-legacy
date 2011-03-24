@@ -34,17 +34,22 @@ typedef struct
     double sig;
 } plat;
 
+/* effective mass functions */
 latan_errno effmass(mat *res, const mat *mprop, const int parity);
 latan_errno rs_sample_effmass(rs_sample *s_res, const rs_sample *s_mprop,\
                               const int parity);
 latan_errno effmass_PCAC(mat *res, const mat *mprop_AP, const mat *mprop_PP);
 #define rs_sample_effmass_PCAC(s_res,s_mprop_AP,s_mprop_PP)\
 rs_sample_binop(s_res,s_mprop_AP,s_mprop_PP,&effmass_PCAC)
+
+/* interface to read experimental masses in latan_nunits.h */
+latan_errno get_exp_mass(double mass[2], const strbuf name);
+
+/* mass fit parameter tuning functions */
 plat *search_plat(size_t *nplat, mat *data, mat *sigdata,\
                   const size_t ntmax, const double nsig, const double tol);
 latan_errno fit_data_mass_fit_tune(fit_data *d, mat *fit_init, mat *prop,\
-                                   mat *em, mat *sigem,            \
-                                   const int parity);
+                                   mat *em, mat *sigem, const int parity);
 
 __END_DECLS
 

@@ -659,6 +659,26 @@ latan_errno mat_mulp(mat *m, const mat *n, const mat *o)
     return status;
 }
 
+latan_errno mat_invp(mat *m, const mat *n)
+{
+    size_t i,j;
+    double buf;
+    
+    if (!(mat_is_samedim(m,n)))
+    {
+        LATAN_ERROR("operation between matrices with dimension mismatch",\
+                    LATAN_EBADLEN);
+    }
+    
+    FOR_VAL(m,i,j)
+    {
+        buf = 1.0/mat_get(n,i,j);
+        mat_set(m,i,j,buf);
+    }
+    
+    return LATAN_SUCCESS;
+}
+
 latan_errno mat_eqmuls(mat *m, const double s)
 {
     latan_errno status;

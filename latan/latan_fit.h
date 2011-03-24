@@ -57,8 +57,9 @@ npar_func npar_10;
 void fit_model_get_name(strbuf name, const fit_model *model);
 size_t fit_model_get_npar(const fit_model *model,                     \
                           const unsigned int stage_flag, void *model_param);
-double fit_model_eval(const fit_model *model, mat *x, mat *p,         \
-                      const unsigned int stage_flag, void *model_param);
+double fit_model_eval(const fit_model *model, const mat *x,       \
+                      const mat *p, const unsigned int stage_flag,\
+                      void *model_param);
 
 /* fit data structure */
 /** chi^2 buffer **/
@@ -108,8 +109,6 @@ typedef struct
     void *model_param;
     /* stages */
     unsigned int stage_flag;
-    stage_ar do_stage;
-    size_t stage_npar[MAX_STAGE];
     /* buffers for chi^2 computation */
     double chi2pdof;
     bool save_chi2pdof;

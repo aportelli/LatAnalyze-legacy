@@ -29,9 +29,6 @@
 
 /*                       internal functions prototypes                      */
 /****************************************************************************/
-static void init_npar(stage_ar do_stage, size_t stage_npar[MAX_STAGE],      \
-                      const fit_model *model, const unsigned int stage_flag,\
-                      void *model_param);
 static size_t sym_rowmaj(const size_t i, const size_t j, const size_t dim);
 static size_t get_Ysize(const fit_data *d);
 static void init_chi2(fit_data *d, const int thread, const int nthread);
@@ -83,57 +80,22 @@ size_t fit_model_get_npar(const fit_model *model,                     \
     return npar;
 }
 
-static double fit_model_eval_ker(const fit_model *model, const mat *x, \
-                                 const mat *p, const stage_ar do_stage,\
-                                 const size_t stage_npar[MAX_STAGE],   \
-                                 void *model_param)
+double fit_model_eval(const fit_model *model, const mat *x,       \
+                      const mat *p, const unsigned int stage_flag,\
+                      void *model_param)
 {
-    size_t i;
     double res;
-    size_t ind_i,ind_f;
-    gsl_matrix_view p_view;
-    mat subp;
+    size_t i;
 
     res   = 0.0;
-    ind_i = 0;
     
     for (i=0;i<model->nstage;i++)
     {
-        if (do_stage[i])
+        if (stage_flag & STAGE(i))
         {
-            ind_f  = ind_i + stage_npar[i] - 1;
-            p_view = gsl_matrix_submatrix(p->data_cpu,ind_i,0,ind_f-ind_i+1,1);
-            subp.data_cpu = &(p_view.matrix);
-            res   += model->func[i](x,&subp,model_param);
-            ind_i  = ind_f + 1;
+            res += model->func[i](x,p,model_param);
         }
     }
-
-    return res;
-}
-
-static void init_npar(stage_ar do_stage, size_t stage_npar[MAX_STAGE],      \
-                      const fit_model *model, const unsigned int stage_flag,\
-                      void *model_param)
-{
-    size_t i;
-
-    for (i=0;i<model->nstage;i++)
-    {
-        do_stage[i]   = ((stage_flag & STAGE(i)) != 0);
-        stage_npar[i] = model->npar[i](model_param);
-    }
-}
-
-double fit_model_eval(const fit_model *model, mat *x, mat *p,    \
-                      const unsigned int stage_flag, void *model_param)
-{
-    double res;
-    stage_ar do_stage;
-    size_t stage_npar[MAX_STAGE];
-
-    init_npar(do_stage,stage_npar,model,stage_flag,model_param);
-    res = fit_model_eval_ker(model,x,p,do_stage,stage_npar,model_param);
 
     return res;
 }
@@ -197,11 +159,6 @@ fit_data *fit_data_create(const size_t ndata, const size_t ndim)
     d->model       = NULL;
     d->model_param = NULL;
     d->stage_flag  = 1;
-    for (i=0;i<MAX_STAGE;i++)
-    {
-        d->do_stage[i]   = false;
-        d->stage_npar[i] = 0;
-    }
     d->chi2pdof      = -1.0;
     d->save_chi2pdof = true;
     d->buf           = NULL;
@@ -537,7 +494,6 @@ latan_errno fit_data_set_model(fit_data *d, const fit_model *model,\
     d->model       = model;
     d->model_param = model_param;
     d->npar        = fit_model_get_npar(d->model,d->stage_flag,d->model_param);
-    init_npar(d->do_stage,d->stage_npar,d->model,d->stage_flag,d->model_param);
 
     return LATAN_SUCCESS;
 }
@@ -554,8 +510,7 @@ double fit_data_model_eval(const fit_data *d, const size_t i, const mat *p)
     
     x_view       = gsl_matrix_submatrix(d->x->data_cpu,0,i,d->ndim,1);
     x_i.data_cpu = &(x_view.matrix);
-    res          = fit_model_eval_ker(d->model,&x_i,p,d->do_stage,\
-                                      d->stage_npar,d->model_param);
+    res          = fit_model_eval(d->model,&x_i,p,d->stage_flag,d->model_param);
     
     return res;
 }
@@ -567,8 +522,6 @@ void fit_data_set_stage_flag(fit_data *d, const unsigned int stage_flag)
     if (d->model != NULL)
     {
         d->npar = fit_model_get_npar(d->model,d->stage_flag,d->model_param);
-        init_npar(d->do_stage,d->stage_npar,d->model,d->stage_flag,\
-                  d->model_param);
     }
 }
 
@@ -592,8 +545,6 @@ void fit_data_set_stages(fit_data *d, const stage_ar s)
     if (d->model != NULL)
     {
         d->npar = fit_model_get_npar(d->model,d->stage_flag,d->model_param);
-        init_npar(d->do_stage,d->stage_npar,d->model,d->stage_flag,\
-                  d->model_param);
     }
 }
 
@@ -970,8 +921,8 @@ double chi2(mat *p, void *vd)
                     }
                     mat_set(x,k,0,buf);
                 }
-                eval = fit_model_eval_ker(d->model,x,p,d->do_stage,   \
-                                          d->stage_npar,d->model_param);
+                eval = fit_model_eval(d->model,x,p,d->stage_flag,\
+                                      d->model_param);
                 mat_set(X,i,0,eval - fit_data_get_data(d,i));
             }
             else
@@ -1253,6 +1204,7 @@ latan_errno rs_x_data_fit(rs_sample *p, rs_sample * const *x,         \
     {
         /** setting data and initial parameters **/
         USTAT(mat_cp(fit_data_pt_data(d),rs_sample_pt_sample(data,i)));
+        USTAT(mat_set_subm(pbuf,rs_sample_pt_cent_val(p),0,0,npar-1,0));
         px_ind = 0;
         for (k=0;k<ndim;k++)
         {

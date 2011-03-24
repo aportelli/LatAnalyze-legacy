@@ -113,6 +113,8 @@ latan_errno rs_sample_binops(rs_sample *s_a, const rs_sample *s_b,\
 #define rs_sample_eqdivp(s_a,s_b)   rs_sample_divp(s_a,s_a,s_b)
 #define rs_sample_mulp(s_a,s_b,s_c) rs_sample_binop(s_a,s_b,s_c,&mat_mulp)
 #define rs_sample_eqmulp(s_a,s_b)   rs_sample_mulp(s_a,s_a,s_b)
+#define rs_sample_invp(s_a,s_b)     rs_sample_unop(s_a,s_b,&mat_invp)
+#define rs_sample_eqinvp(s_a)       rs_sample_invp(s_a,s_a)
 #define rs_sample_muls(s_a,s_b,s)   rs_sample_binops(s_a,s_b,s,&mat_muls)
 #define rs_sample_eqmuls(s_a,s)     rs_sample_muls(s_a,s_a,s)
 #define rs_sample_sqrt(s_a,s_b)     rs_sample_unop(s_a,s_b,&mat_sqrt)

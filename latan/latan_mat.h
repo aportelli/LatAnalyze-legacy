@@ -103,6 +103,8 @@ latan_errno mat_eqtranspose(mat *m);
 latan_errno mat_transpose(mat *m, const mat *n);
 latan_errno mat_eqmulp(mat *m, const mat *n);
 latan_errno mat_mulp(mat *m, const mat *n, const mat *o);
+#define mat_eqinvp(m) mat_invp(m,m)
+latan_errno mat_invp(mat *m, const mat *n);
 latan_errno mat_eqmuls(mat *m, const double s);
 latan_errno mat_muls(mat *m, const mat *n, const double s);
 latan_errno mat_eqdivp(mat *m, const mat *n);

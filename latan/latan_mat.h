@@ -50,9 +50,9 @@ mat *mat_create(const size_t init_nrow, const size_t init_ncol);
 #define mat_create_from_trdim(n) mat_create(ncol(n),nrow(n))
 mat *mat_create_from_mat(const mat *n);
 mat *mat_create_from_ar(const double *ar, const size_t init_nrow,\
-                       const size_t init_ncol);
+                        const size_t init_ncol);
 mat **mat_ar_create(const size_t nmat, const size_t init_nrow,\
-                   const size_t init_ncol);
+                    const size_t init_ncol);
 #define mat_ar_create_from_dim(nmat,n) mat_ar_create(nmat,nrow(n),ncol(n))
 void mat_destroy(mat *m);
 void mat_ar_destroy(mat **m, const size_t nmat);

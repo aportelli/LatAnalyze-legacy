@@ -395,7 +395,7 @@ xmlNode * xml_insert_vect(xmlNode *parent, mat *v, const strbuf name)
     return node_new;
 }
 
-xmlNode * xml_insert_mat(xmlNode *parent, mat *m, const strbuf name)
+xmlNode * xml_insert_mat(xmlNode *parent, const mat *m, const strbuf name)
 {
     xmlNode *node_new;
     gsl_matrix_view m_view;
@@ -632,7 +632,7 @@ latan_errno xml_save_file(xml_file *f)
 {
     xmlDoc *doc;
     int blank_bak,size;
-    xmlChar **buf;
+    char *buf;
 
     buf = NULL;
     
@@ -643,8 +643,8 @@ latan_errno xml_save_file(xml_file *f)
 
     xmlReconciliateNs(f->doc,f->root);
     blank_bak = xmlKeepBlanksDefault(0);
-    xmlDocDumpFormatMemoryEnc(f->doc,buf,&size,LATAN_XML_ENC,0);
-    doc = xmlReadMemory((char *)(*buf),size,NULL,LATAN_XML_ENC,\
+    xmlDocDumpFormatMemoryEnc(f->doc,(xmlChar **)(&buf),&size,LATAN_XML_ENC,0);
+    doc = xmlReadMemory(buf,size,NULL,LATAN_XML_ENC,\
                         XML_PARSE_NOBLANKS);
     xmlSaveFormatFileEnc(f->fname,doc,LATAN_XML_ENC,1);
     xmlKeepBlanksDefault(blank_bak);

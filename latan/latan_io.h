@@ -122,13 +122,18 @@ int get_nfile(const strbuf manifestfname);
 latan_errno get_firstfname(strbuf fname, const strbuf manifestfname);
 
 /* mat I/O */
-void mat_dump(FILE* stream, mat *m, const strbuf fmt);
+void mat_dump(FILE* stream, const mat *m, const strbuf fmt);
 #define mat_print(m,fmt) mat_dump(stdout,m,fmt)
 latan_errno mat_save_plotdat(mat *x, mat *m, const strbuf fname);
 latan_errno mat_save_plotdat_yerr(mat *x, mat *dat, mat *yerr,\
                                   const strbuf fname);
 latan_errno mat_save_plotdat_xyerr(mat *x, mat *dat, mat *xerr,\
                                    mat *yerr, const strbuf fname);
+extern latan_errno (*mat_save)(const strbuf fname, const char mode,\
+                               const mat *m, const strbuf name);
+extern latan_errno (*mat_load_dim)(size_t dim[2], const strbuf fname,\
+                                   const strbuf name);
+extern latan_errno (*mat_load)(mat *m, const strbuf fname, const strbuf name);
 
 /* propagator I/O */
 extern latan_errno (*prop_load_nt)(size_t *nt, const channel_no channel,\

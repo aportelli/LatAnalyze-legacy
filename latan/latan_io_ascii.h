@@ -30,6 +30,13 @@ __BEGIN_DECLS
 void io_init_ascii(void);
 void io_finish_ascii(void);
 
+/* matrix I/O */
+latan_errno mat_save_ascii(const strbuf fname, const char mode, const mat *m,\
+                           const strbuf name);
+latan_errno mat_load_dim_ascii(size_t dim[2], const strbuf fname,\
+                               const strbuf name);
+latan_errno mat_load_ascii(mat *m, const strbuf fname, const strbuf name);
+
 /* propagator I/O */
 latan_errno prop_load_nt_ascii(size_t *nt, const channel_no channel,\
                                const quark_no q1, const quark_no q2,\

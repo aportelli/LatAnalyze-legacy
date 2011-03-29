@@ -32,6 +32,9 @@
 #define DEF_IO_INIT                IO_FUNC(io_init,ascii)
 #define DEF_IO_FINISH              IO_FUNC(io_finish,ascii)
 #define DEF_PROP_LOAD_NT           IO_FUNC(prop_load_nt,ascii)
+#define DEF_MAT_SAVE               IO_FUNC(mat_save,ascii)
+#define DEF_MAT_LOAD_DIM           IO_FUNC(mat_load_dim,ascii)
+#define DEF_MAT_LOAD               IO_FUNC(mat_load,ascii)
 #define DEF_PROP_LOAD              IO_FUNC(prop_load,ascii)
 #define DEF_PROP_SAVE              IO_FUNC(prop_save,ascii)
 #define DEF_RANDGEN_SAVE_STATE     IO_FUNC(randgen_save_state,ascii)
@@ -49,6 +52,9 @@ static io_fmt_no io_fmt = DEF_IO_FMT;
 #define SET_IO_FUNCS(suf)\
 SET_IO_FUNC(io_init,suf);\
 SET_IO_FUNC(io_finish,suf);\
+SET_IO_FUNC(mat_save,suf);\
+SET_IO_FUNC(mat_load_dim,suf);\
+SET_IO_FUNC(mat_load,suf);\
 SET_IO_FUNC(prop_load_nt,suf);\
 SET_IO_FUNC(prop_load,suf);\
 SET_IO_FUNC(prop_save,suf);\
@@ -131,7 +137,7 @@ latan_errno get_firstfname(strbuf fname, const strbuf manifestfname)
 
 /*                              mat I/O                                     */
 /****************************************************************************/
-void mat_dump(FILE* stream, mat *m, const strbuf fmt)
+void mat_dump(FILE* stream, const mat *m, const strbuf fmt)
 {
     size_t i,j;
     
@@ -197,6 +203,11 @@ latan_errno mat_save_plotdat_xyerr(mat *x, mat *dat, mat *xerr,\
     return LATAN_SUCCESS;
 }
 
+latan_errno (*mat_save)(const strbuf fname, const char mode, const mat *m, \
+                        const strbuf name);
+latan_errno (*mat_load_dim)(size_t dim[2], const strbuf fname,\
+                            const strbuf name);
+latan_errno (*mat_load)(mat *m, const strbuf fname, const strbuf name);
 
 /*                          propagator I/O                                  */
 /****************************************************************************/

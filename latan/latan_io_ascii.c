@@ -174,6 +174,178 @@ void io_finish_ascii(void)
     }
 }
 
+/*                             mat I/O                                      */
+/****************************************************************************/
+latan_errno mat_save_ascii(const strbuf fname, const char mode, const mat *m,\
+                           const strbuf name)
+{
+    int thread;
+    
+#ifdef _OPENMP
+    thread = omp_get_thread_num();
+#else
+    thread = 0;
+#endif
+    
+    if (mode == 'w')
+    {
+        ascii_open_file_buf(fname,mode);
+    }
+    else
+    {
+        LATAN_ERROR("only 'w' file mode is authorized for saving matrix in ASCII format",\
+                    LATAN_EINVAL);
+    }
+    fprintf(FILE_BUF(thread),"# latan_resampled_sample %s\n",name);
+    fprintf(FILE_BUF(thread),"%lu\n",(long unsigned int)ncol(m));
+    mat_dump(FILE_BUF(thread),m,"%.15e");
+    fprintf(FILE_BUF(thread),"\n");
+    
+    return LATAN_SUCCESS;
+}
+
+latan_errno mat_load_dim_ascii(size_t dim[2], const strbuf fname,\
+                               const strbuf name)
+{
+    int thread,nf,lc,ec;
+    int i;
+    strbuf *field;
+    double buf;
+    bool got_ncol;
+    
+#ifdef _OPENMP
+    thread = omp_get_thread_num();
+#else
+    thread = 0;
+#endif
+    field    = NULL;
+    name     = NULL;
+    ec       = 0;
+    got_ncol = false;
+    dim[0]   = 0;
+    dim[1]   = 0;
+    
+    ascii_open_file_buf(fname,'r');
+    BEGIN_FOR_LINE_TOK_F(field,FILE_BUF(thread)," ",nf,lc)
+    {
+        if (lc == 1)
+        {
+            continue;
+        }
+        else if (!got_ncol)
+        {
+            if (sscanf(field[0],"%d",(int *)(dim+1)) > 0)
+            {
+                got_ncol = true;
+            }
+            else
+            {
+                strbuf errmsg;
+                sprintf(errmsg,"error while reading number of columns (%s:%d)",\
+                        fname,lc);
+                LATAN_ERROR(errmsg,LATAN_ELATSYN);
+            }
+            continue;
+        }
+        else if (got_ncol)
+        {
+            for (i=0;i<nf;i++)
+            {
+                if (sscanf(field[i],"%lf",&buf) > 0)
+                {
+                    ec++;
+                }
+                else
+                {
+                    strbuf errmsg;
+                    sprintf(errmsg,"error while counting matrix elements (%s:%d)",\
+                            fname,lc);
+                    LATAN_ERROR(errmsg,LATAN_ELATSYN);
+                }
+            }
+            continue;
+        }
+    }
+    END_FOR_LINE_TOK_F(field);
+    if ((ec%(dim[1])) != 0)
+    {
+        LATAN_ERROR("error while getting number of rows",LATAN_ELATSYN);
+    }
+    else
+    {
+        dim[0] = (size_t)(ec/dim[1]);
+    }
+    
+    return LATAN_SUCCESS;
+}
+
+latan_errno mat_load_ascii(mat *m, const strbuf fname, const strbuf name)
+{
+    int thread,nf,lc,j,jmod,nc;
+    int i;
+    strbuf *field;
+    double buf;
+    bool got_ncol;
+    
+#ifdef _OPENMP
+    thread = omp_get_thread_num();
+#else
+    thread = 0;
+#endif
+    field    = NULL;
+    name     = NULL;
+    j        = 0;
+    got_ncol = false;
+    nc       = 0;
+    
+    ascii_open_file_buf(fname,'r');
+    BEGIN_FOR_LINE_TOK_F(field,FILE_BUF(thread)," ",nf,lc)
+    {
+        if (lc == 1)
+        {
+            continue;
+        }
+        else if (!got_ncol)
+        {
+            if (sscanf(field[0],"%d",&nc) > 0)
+            {
+                got_ncol = true;
+            }
+            else
+            {
+                strbuf errmsg;
+                sprintf(errmsg,"error while reading number of columns (%s:%d)",\
+                        fname,lc);
+                LATAN_ERROR(errmsg,LATAN_ELATSYN);
+            }
+            continue;
+        }
+        else if (got_ncol)
+        {
+            for (i=0;i<nf;i++)
+            {
+                if (sscanf(field[i],"%lf",&buf) > 0)
+                {
+                    jmod = j%nc;
+                    mat_set(m,(size_t)(j/nc),(size_t)(jmod),buf);
+                    j++;
+                }
+                else
+                {
+                    strbuf errmsg;
+                    sprintf(errmsg,"error while parsing matrix (%s:%d)",\
+                            fname,lc);
+                    LATAN_ERROR(errmsg,LATAN_ELATSYN);
+                }
+            }
+            continue;
+        }
+    }
+    END_FOR_LINE_TOK_F(field);
+    
+    return LATAN_SUCCESS;
+}
+
 /*                          propagator I/O                                  */
 /****************************************************************************/
 latan_errno prop_load_nt_ascii(size_t *nt, const channel_no channel,\

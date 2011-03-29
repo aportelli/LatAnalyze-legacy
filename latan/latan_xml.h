@@ -98,7 +98,7 @@ xmlNode * xml_insert_double(xmlNode *parent, const double d, const strbuf name);
 xmlNode * xml_insert_string(xmlNode *parent, const strbuf res,\
                             const strbuf name);
 xmlNode * xml_insert_vect(xmlNode *parent, mat *v, const strbuf name);
-xmlNode * xml_insert_mat(xmlNode *parent, mat *m, const strbuf name);
+xmlNode * xml_insert_mat(xmlNode *parent, const mat *m, const strbuf name);
 xmlNode * xml_insert_prop(xmlNode *parent, mat *prop,                   \
                           const strbuf ch, const quark_no q1,           \
                           const quark_no q2, const ss_no source,        \

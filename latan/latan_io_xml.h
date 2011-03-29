@@ -28,6 +28,13 @@
 void io_init_xml(void);
 void io_finish_xml(void);
 
+/* matrix I/O */
+latan_errno mat_save_xml(const strbuf fname, const char mode, const mat *m,\
+                         const strbuf name);
+latan_errno mat_load_dim_xml(size_t dim[2], const strbuf fname,\
+                             const strbuf name);
+latan_errno mat_load_xml(mat *m, const strbuf fname, const strbuf name);
+
 /* propagator I/O */
 latan_errno prop_load_nt_xml(size_t *nt, const channel_no channel,\
                              const quark_no q1, const quark_no q2,\

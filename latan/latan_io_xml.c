@@ -133,8 +133,122 @@ void io_finish_xml(void)
             }
         }
         xmlCleanupParser();
-        io_is_init     = false;
+        io_is_init = false;
     }
+}
+
+/*                             mat I/O                                      */
+/****************************************************************************/
+latan_errno mat_save_xml(const strbuf fname, const char mode, const mat *m,\
+                         const strbuf name)
+{
+    int thread;
+    
+#ifdef _OPENMP
+    thread = omp_get_thread_num();
+#else
+    thread = 0;
+#endif
+    
+    xml_open_file_buf(fname,mode);
+    xml_insert_mat(FILE_BUF(thread)->root,m,name);
+    
+    return LATAN_SUCCESS;
+}
+
+latan_errno mat_load_dim_xml(size_t dim[2], const strbuf fname,\
+                             const strbuf name)
+{
+    xmlXPathObject *nodeset;
+    strbuf xpath_expr;
+    latan_errno status;
+    int thread;
+    
+    status = LATAN_SUCCESS;
+    
+#ifdef _OPENMP
+    thread = omp_get_thread_num();
+#else
+    thread = 0;
+#endif
+    
+    USTAT(xml_open_file_buf(fname,'r'));
+    sprintf(xpath_expr,"/%s:%s/%s:%s",LATAN_XMLNS_PREF,xml_mark[i_main],\
+            LATAN_XMLNS_PREF,xml_mark[i_mat]);
+    if (strlen(name) > 0)
+    {
+        sprintf(xpath_expr,"%s[@name='%s']",xpath_expr,name);
+    }
+    nodeset = xml_get_nodeset(xpath_expr,FILE_BUF(thread));
+    if (nodeset->nodesetval != NULL)
+    {
+        USTAT(xml_get_mat_size(dim,nodeset->nodesetval->nodeTab[0]));
+    }
+    else
+    {
+        strbuf errmsg;
+        if (strlen(name) > 0)
+        {
+            sprintf(errmsg,"(name=\"%s\") ",name);
+        }
+        else
+        {
+            strbufcpy(errmsg,"");
+        }
+        sprintf(errmsg,"matrix %snot found in file %s",errmsg,fname);
+        LATAN_ERROR(errmsg,LATAN_ELATSYN);
+    }
+    
+    xmlXPathFreeObject(nodeset);
+    
+    return status;
+}
+
+latan_errno mat_load_xml(mat *m, const strbuf fname, const strbuf name)
+{
+    xmlXPathObject *nodeset;
+    strbuf xpath_expr;
+    latan_errno status;
+    int thread;
+    
+    status = LATAN_SUCCESS;
+    
+#ifdef _OPENMP
+    thread = omp_get_thread_num();
+#else
+    thread = 0;
+#endif
+    
+    USTAT(xml_open_file_buf(fname,'r'));
+    sprintf(xpath_expr,"/%s:%s/%s:%s",LATAN_XMLNS_PREF,xml_mark[i_main],\
+            LATAN_XMLNS_PREF,xml_mark[i_mat]);
+    if (strlen(name) > 0)
+    {
+        sprintf(xpath_expr,"%s[@name='%s']",xpath_expr,name);
+    }
+    nodeset = xml_get_nodeset(xpath_expr,FILE_BUF(thread));
+    if (nodeset->nodesetval != NULL)
+    {
+        USTAT(xml_get_mat(m,nodeset->nodesetval->nodeTab[0]));
+    }
+    else
+    {
+        strbuf errmsg;
+        if (strlen(name) > 0)
+        {
+            sprintf(errmsg,"(name=\"%s\") ",name);
+        }
+        else
+        {
+            strbufcpy(errmsg,"");
+        }
+        sprintf(errmsg,"matrix %snot found in file %s",errmsg,fname);
+        LATAN_ERROR(errmsg,LATAN_ELATSYN);
+    }
+    
+    xmlXPathFreeObject(nodeset);
+    
+    return status;
 }
 
 /*                          propagator I/O                                  */
@@ -300,7 +414,7 @@ latan_errno randgen_load_state_xml(rg_state state, const strbuf fname,\
         strbuf errmsg;
         if (strlen(name) > 0)
         {
-            sprintf(errmsg,"(name=\"%s\")",name);
+            sprintf(errmsg,"(name=\"%s\") ",name);
         }
         else
         {
@@ -373,7 +487,7 @@ latan_errno rs_sample_load_nrow_xml(size_t *nr, const strbuf fname,\
         strbuf errmsg;
         if (strlen(name) > 0)
         {
-            sprintf(errmsg,"(name=\"%s\")",name);
+            sprintf(errmsg,"(name=\"%s\") ",name);
         }
         else
         {
@@ -421,7 +535,7 @@ latan_errno rs_sample_load_nsample_xml(size_t *nsample, const strbuf fname,\
         strbuf errmsg;
         if (strlen(name) > 0)
         {
-            sprintf(errmsg,"(name=\"%s\")",name);
+            sprintf(errmsg,"(name=\"%s\") ",name);
         }
         else
         {
@@ -469,7 +583,7 @@ latan_errno rs_sample_load_xml(rs_sample *s, const strbuf fname,\
         strbuf errmsg;
         if (strlen(name) > 0)
         {
-            sprintf(errmsg,"(name=\"%s\")",name);
+            sprintf(errmsg,"(name=\"%s\") ",name);
         }
         else
         {

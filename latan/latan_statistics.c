@@ -313,6 +313,56 @@ void rs_sample_set_name(rs_sample *s, const strbuf name)
     strbufcpy(s->name,name);
 }
 
+latan_errno rs_sample_get_subsamp(rs_sample *s_a, const rs_sample *s_b,\
+                                  const size_t k1, const size_t k2)
+{
+    latan_errno status;
+    size_t nsample;
+    size_t i;
+    
+    if (s_a->nsample != s_b->nsample)
+    {
+        LATAN_ERROR("operation between samples with different numbers of elements",\
+                    LATAN_EINVAL);
+    }
+    
+    status  = LATAN_SUCCESS;
+    nsample = s_a->nsample;
+    
+    USTAT(mat_get_subm(s_a->cent_val,s_b->cent_val,k1,0,k2,0));
+    for (i=0;i<nsample;i++)
+    {
+        USTAT(mat_get_subm(s_a->sample[i],s_b->sample[i],k1,0,k2,0));
+    }
+    
+    return status;
+}
+
+latan_errno rs_sample_set_subsamp(rs_sample *s_a, const rs_sample *s_b,\
+                                  const size_t k1, const size_t k2)
+{
+    latan_errno status;
+    size_t nsample;
+    size_t i;
+    
+    if (s_a->nsample != s_b->nsample)
+    {
+        LATAN_ERROR("operation between samples with different numbers of elements",\
+                    LATAN_EINVAL);
+    }
+    
+    status  = LATAN_SUCCESS;
+    nsample = s_a->nsample;
+    
+    USTAT(mat_set_subm(s_a->cent_val,s_b->cent_val,k1,0,k2,0));
+    for (i=0;i<nsample;i++)
+    {
+        USTAT(mat_set_subm(s_a->sample[i],s_b->sample[i],k1,0,k2,0));
+    }
+    
+    return status;
+}
+
 /** estimators **/
 latan_errno rs_sample_cov(mat *cov, const rs_sample *s, const rs_sample *t)
 {
@@ -444,6 +494,24 @@ latan_errno rs_sample_unop(rs_sample *s_a, const rs_sample *s_b, mat_unop *f)
     for (i=0;i<nsample;i++)
     {
         USTAT(f(ELEMENT(s_a,i),ELEMENT(s_b,i)));
+    }
+    
+    return status;
+}
+
+latan_errno rs_sample_unops(rs_sample *s_a, const double s, mat_unops *f)
+{
+    size_t i;
+    size_t nsample;
+    latan_errno status;
+    
+    nsample = rs_sample_get_nsample(s_a);
+    status  = LATAN_SUCCESS;
+    
+    USTAT(f(CENT_VAL(s_a),s));
+    for (i=0;i<nsample;i++)
+    {
+        USTAT(f(ELEMENT(s_a,i),s));
     }
     
     return status;

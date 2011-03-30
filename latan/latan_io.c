@@ -209,6 +209,26 @@ latan_errno (*mat_load_dim)(size_t dim[2], const strbuf fname,\
                             const strbuf name);
 latan_errno (*mat_load)(mat *m, const strbuf fname, const strbuf name);
 
+latan_errno mat_load_subm(mat *m, const strbuf fname, const strbuf name,    \
+                          const size_t k1, const size_t l1, const size_t k2,\
+                          const size_t l2)
+{
+    mat *big_m;
+    size_t dim[2];
+    latan_errno status;
+    
+    status = LATAN_SUCCESS;
+    
+    USTAT(mat_load_dim(dim,fname,name));
+    big_m = mat_create(dim[0],dim[1]);
+    USTAT(mat_load(big_m,fname,name));
+    USTAT(mat_get_subm(m,big_m,k1,l1,k2,l2));
+    
+    mat_destroy(big_m);
+    
+    return status;
+}
+
 /*                          propagator I/O                                  */
 /****************************************************************************/
 latan_errno (*prop_load_nt)(size_t *nt, const channel_no channel,\
@@ -364,3 +384,24 @@ latan_errno (*rs_sample_load_nsample)(size_t *nsample, const strbuf fname,\
 latan_errno (*rs_sample_load)(rs_sample *s, const strbuf fname,\
                               const strbuf name)               \
         = &DEF_RS_SAMPLE_LOAD;
+
+latan_errno rs_sample_load_subsamp(rs_sample *s, const strbuf fname,  \
+                                   const strbuf name, const size_t k1,\
+                                   const size_t k2)
+{
+    latan_errno status;
+    rs_sample *big_s;
+    size_t nr,nsample;
+    
+    status = LATAN_SUCCESS;
+    
+    USTAT(rs_sample_load_nrow(&nr,fname,name));
+    USTAT(rs_sample_load_nsample(&nsample,fname,name));
+    big_s = rs_sample_create(nr,nsample);
+    USTAT(rs_sample_load(big_s,fname,name));
+    USTAT(rs_sample_get_subsamp(s,big_s,k1,k2));
+    
+    rs_sample_destroy(big_s);
+    
+    return status;
+}

@@ -324,9 +324,12 @@ void mat_zero(mat *m)
     gsl_matrix_set_zero(m->data_cpu);
 }
 
-void mat_cst(mat *m, const double x)
+/* mat_cst return something to be usable with rs_sample_unops */
+latan_errno mat_cst(mat *m, const double x)
 {
     gsl_matrix_set_all(m->data_cpu,x);
+    
+    return LATAN_SUCCESS;
 }
 
 void mat_rand_u(mat *m, const double a, const double b)

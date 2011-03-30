@@ -78,6 +78,10 @@ void rs_sample_get_name(strbuf name, const rs_sample *s);
 mat *rs_sample_pt_cent_val(const rs_sample *s);
 mat *rs_sample_pt_sample(const rs_sample *s, const size_t i);
 void rs_sample_set_name(rs_sample *s, const strbuf name);
+latan_errno rs_sample_get_subsamp(rs_sample *s_a, const rs_sample *s_b,\
+                                  const size_t k1, const size_t k2);
+latan_errno rs_sample_set_subsamp(rs_sample *s_a, const rs_sample *s_b,\
+                                  const size_t k1, const size_t k2);
 
 /** estimators **/
 latan_errno rs_sample_cov(mat *cov, const rs_sample *s, const rs_sample *t);
@@ -95,10 +99,12 @@ latan_errno rs_mean(mat *res, mat **dat, const size_t ndat,\
 
 /* operations */
 typedef latan_errno mat_unop(mat *a, const mat *b);
+typedef latan_errno mat_unops(mat *a, const double s);
 typedef latan_errno mat_binop(mat *a, const mat *b, const mat *c);
 typedef latan_errno mat_binops(mat *a, const mat *b, const double s);
 
 latan_errno rs_sample_unop(rs_sample *s_a, const rs_sample *s_b, mat_unop *f);
+latan_errno rs_sample_unops(rs_sample *s_a, const double s, mat_unops *f);
 latan_errno rs_sample_binop(rs_sample *s_a, const rs_sample *s_b, \
                             const rs_sample *s_c, mat_binop *f);
 latan_errno rs_sample_binops(rs_sample *s_a, const rs_sample *s_b,\
@@ -109,6 +115,7 @@ latan_errno rs_sample_binops(rs_sample *s_a, const rs_sample *s_b,\
 #define rs_sample_eqadd(s_a,s_b)    rs_sample_add(s_a,s_a,s_b)
 #define rs_sample_adds(s_a,s_b,s)   rs_sample_binops(s_a,s_b,s,&mat_adds)
 #define rs_sample_eqadds(s_a,s)     rs_sample_adds(s_a,s_a,s)
+#define rs_sample_cst(s_a,s)        rs_sample_unops(s_a,s,&mat_cst)
 #define rs_sample_divp(s_a,s_b,s_c) rs_sample_binop(s_a,s_b,s_c,&mat_divp)
 #define rs_sample_eqdivp(s_a,s_b)   rs_sample_divp(s_a,s_a,s_b)
 #define rs_sample_mulp(s_a,s_b,s_c) rs_sample_binop(s_a,s_b,s_c,&mat_mulp)

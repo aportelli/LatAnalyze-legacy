@@ -87,7 +87,7 @@ bool mat_is_assumed_sym(const mat *m);
 
 /** operations **/
 void mat_zero(mat *m);
-void mat_cst(mat *m, const double x);
+latan_errno mat_cst(mat *m, const double x);
 void mat_rand_u(mat *m, const double a, const double b);
 void mat_id(mat *m);
 latan_errno mat_cp(mat *m, const mat *n);

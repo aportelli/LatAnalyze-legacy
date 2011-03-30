@@ -134,6 +134,9 @@ extern latan_errno (*mat_save)(const strbuf fname, const char mode,\
 extern latan_errno (*mat_load_dim)(size_t dim[2], const strbuf fname,\
                                    const strbuf name);
 extern latan_errno (*mat_load)(mat *m, const strbuf fname, const strbuf name);
+latan_errno mat_load_subm(mat *m, const strbuf fname, const strbuf name,    \
+                          const size_t k1, const size_t l1, const size_t k2,\
+                          const size_t l2);
 
 /* propagator I/O */
 extern latan_errno (*prop_load_nt)(size_t *nt, const channel_no channel,\
@@ -173,6 +176,9 @@ extern latan_errno (*rs_sample_load_nsample)(size_t *nsample,   \
                                              const strbuf name);
 extern latan_errno (*rs_sample_load)(rs_sample *s, const strbuf fname,\
                                      const strbuf name);
+latan_errno rs_sample_load_subsamp(rs_sample *s, const strbuf fname,  \
+                                   const strbuf name, const size_t k1,\
+                                   const size_t k2);
 
 __END_DECLS
 

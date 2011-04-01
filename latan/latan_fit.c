@@ -61,42 +61,22 @@ void fit_model_get_name(strbuf name, const fit_model *model)
     strbufcpy(name,model->name);
 }
 
-size_t fit_model_get_npar(const fit_model *model,                     \
-                          const unsigned int stage_flag, void *model_param)
+size_t fit_model_get_npar(const fit_model *model,void *model_param)
 {
     size_t npar;
-    size_t i;
 
-    npar = 0;
-
-    for (i=0;i<model->nstage;i++)
-    {
-        if (stage_flag & STAGE(i))
-        {
-            npar += model->npar[i](model_param);
-        }
-    }
+    npar = model->npar(model_param);
 
     return npar;
 }
 
-double fit_model_eval(const fit_model *model, const mat *x,       \
-                      const mat *p, const unsigned int stage_flag,\
+double fit_model_eval(const fit_model *model, const mat *x, const mat *p,\
                       void *model_param)
 {
     double res;
-    size_t i;
 
-    res   = 0.0;
+    res   =  model->func(x,p,model_param);
     
-    for (i=0;i<model->nstage;i++)
-    {
-        if (stage_flag & STAGE(i))
-        {
-            res += model->func[i](x,p,model_param);
-        }
-    }
-
     return res;
 }
 
@@ -154,11 +134,10 @@ fit_data *fit_data_create(const size_t ndata, const size_t ndim)
     {
         d->have_xdata_covar[k] = false;
     }
-    d->var_inv     = NULL;
-    d->is_inverted = false;
-    d->model       = NULL;
-    d->model_param = NULL;
-    d->stage_flag  = 1;
+    d->var_inv       = NULL;
+    d->is_inverted   = false;
+    d->model         = NULL;
+    d->model_param   = NULL;
     d->chi2pdof      = -1.0;
     d->save_chi2pdof = true;
     d->buf           = NULL;
@@ -493,7 +472,7 @@ latan_errno fit_data_set_model(fit_data *d, const fit_model *model,\
     
     d->model       = model;
     d->model_param = model_param;
-    d->npar        = fit_model_get_npar(d->model,d->stage_flag,d->model_param);
+    d->npar        = fit_model_get_npar(d->model,d->model_param);
 
     return LATAN_SUCCESS;
 }
@@ -510,52 +489,9 @@ double fit_data_model_eval(const fit_data *d, const size_t i, const mat *p)
     
     x_view       = gsl_matrix_submatrix(d->x->data_cpu,0,i,d->ndim,1);
     x_i.data_cpu = &(x_view.matrix);
-    res          = fit_model_eval(d->model,&x_i,p,d->stage_flag,d->model_param);
+    res          = fit_model_eval(d->model,&x_i,p,d->model_param);
     
     return res;
-}
-
-/*** stages ***/
-void fit_data_set_stage_flag(fit_data *d, const unsigned int stage_flag)
-{
-    d->stage_flag = stage_flag;
-    if (d->model != NULL)
-    {
-        d->npar = fit_model_get_npar(d->model,d->stage_flag,d->model_param);
-    }
-}
-
-unsigned int fit_data_get_stage_flag(const fit_data *d)
-{
-    return d->stage_flag;
-}
-
-void fit_data_set_stages(fit_data *d, const stage_ar s)
-{
-    unsigned int i;
-    
-    d->stage_flag = 0;
-    for (i=0;i<MAX_STAGE;i++)
-    {
-        if (s[i])
-        {
-            d->stage_flag |= STAGE(i);
-        }
-    }
-    if (d->model != NULL)
-    {
-        d->npar = fit_model_get_npar(d->model,d->stage_flag,d->model_param);
-    }
-}
-
-void fit_data_get_stages(stage_ar s, const fit_data *d)
-{
-    unsigned int i;
-    
-    for (i=0;i<MAX_STAGE;i++)
-    {
-        s[i] = ((d->stage_flag & STAGE(i)) != 0);
-    }
 }
 
 /*** dof ***/
@@ -921,8 +857,7 @@ double chi2(mat *p, void *vd)
                     }
                     mat_set(x,k,0,buf);
                 }
-                eval = fit_model_eval(d->model,x,p,d->stage_flag,\
-                                      d->model_param);
+                eval = fit_model_eval(d->model,x,p,d->model_param);
                 mat_set(X,i,0,eval - fit_data_get_data(d,i));
             }
             else

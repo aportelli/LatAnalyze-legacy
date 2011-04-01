@@ -23,9 +23,6 @@
 #include <latan/latan_globals.h>
 #include <latan/latan_statistics.h>
 
-#define MAX_STAGE (sizeof(unsigned int)*8)
-#define STAGE(s) (1 << (s))
-
 __BEGIN_DECLS
 
 /* fit model structure */
@@ -35,10 +32,9 @@ typedef size_t npar_func(void *model_param);
 typedef struct
 {
     strbuf name;
-    model_func *func[MAX_STAGE];
-    npar_func *npar[MAX_STAGE];
+    model_func *func;
+    npar_func *npar;
     size_t ndim;
-    size_t nstage;
 } fit_model;
 
 /** some useful constant npar_func **/
@@ -55,12 +51,9 @@ npar_func npar_10;
 
 /** access **/
 void fit_model_get_name(strbuf name, const fit_model *model);
-size_t fit_model_get_npar(const fit_model *model,                     \
-                          const unsigned int stage_flag, void *model_param);
-double fit_model_eval(const fit_model *model, const mat *x,       \
-                      const mat *p, const unsigned int stage_flag,\
+size_t fit_model_get_npar(const fit_model *model, void *model_param);
+double fit_model_eval(const fit_model *model, const mat *x, const mat *p,\
                       void *model_param);
-
 /* fit data structure */
 /** chi^2 buffer **/
 typedef struct
@@ -74,9 +67,6 @@ typedef struct
     mat *ClX;
     bool is_xpart_alloc;
 } chi2_buf;
-
-/** boolean array for stages **/
-typedef bool stage_ar[MAX_STAGE];
 
 /** the main structure **/
 typedef struct
@@ -107,8 +97,6 @@ typedef struct
     /* fit model */
     const fit_model *model;
     void *model_param;
-    /* stages */
-    unsigned int stage_flag;
     /* buffers for chi^2 computation */
     double chi2pdof;
     bool save_chi2pdof;
@@ -163,13 +151,7 @@ latan_errno fit_data_set_model(fit_data *d, const fit_model *model,\
                                void *model_param);
 void fit_data_set_model_param(fit_data *d, void *model_param);
 double fit_data_model_eval(const fit_data *d, const size_t i, const mat *p);
-
-/*** stages ***/
-void fit_data_set_stage_flag(fit_data *d, const unsigned int stage_flag);
-unsigned int fit_data_get_stage_flag(const fit_data *d);
 size_t fit_data_get_npar(const fit_data *d);
-void fit_data_set_stages(fit_data *d, const stage_ar s);
-void fit_data_get_stages(stage_ar s, const fit_data *d);
 
 /*** dof ***/
 size_t fit_data_get_dof(const fit_data *d);

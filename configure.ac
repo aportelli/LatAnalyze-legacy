@@ -53,6 +53,7 @@ AC_ARG_WITH([Minuit2],
     [AS_HELP_STRING([--with-Minuit2=prefix],
 		[try this for a non-standard install prefix of the Minuit2 library])],
     [AM_CFLAGS="$AM_CFLAGS -I$with_Minuit2/include"]
+    [AM_CXXFLAGS="$AM_CXXFLAGS -I$with_Minuit2/include"]
 	[AM_LDFLAGS="$AM_LDFLAGS -L$with_Minuit2/lib"],
 	[]
 )
@@ -60,7 +61,6 @@ AC_ARG_WITH([xml2],
     [AS_HELP_STRING([--with-xml2=prefix],
 		[try this for a non-standard install prefix of the xml2 library])],
     [AM_CFLAGS="$AM_CFLAGS -I$with_xml2/include"]
-	[AM_CXXFLAGS="$AM_CXXFLAGS -I$with_xml2/include"]
 	[AM_LDFLAGS="$AM_LDFLAGS -L$with_xml2/lib"],
 	[]
 )

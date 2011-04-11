@@ -26,13 +26,17 @@
 #define FIT_TOL 1.0e-2
 #endif 
 
-class Minuit2MinFunc: public ROOT::Minuit2::FCNBase
+using namespace std;
+using namespace ROOT;
+using namespace Minuit2;
+
+class Minuit2MinFunc: public FCNBase
 {
 public:
     Minuit2MinFunc(min_func *init_f, void *init_param);
     ~Minuit2MinFunc(void);
     
-    virtual double operator()(const std::vector<double>& v_var) const;
+    virtual double operator()(const vector<double>& v_var) const;
     virtual double Up(void) const;
     
 private:
@@ -50,7 +54,7 @@ Minuit2MinFunc::~Minuit2MinFunc(void)
 {
 }
 
-double Minuit2MinFunc::operator()(const std::vector<double>& v_x) const
+double Minuit2MinFunc::operator()(const vector<double>& v_x) const
 {
     size_t i;
     double res;
@@ -78,12 +82,12 @@ latan_errno minimize_minuit2(mat *x, double *f_min, min_func *f, void *param)
 {
     latan_errno status;
     strbuf buf;
-    std::string name;
+    string name;
     size_t ndim;
     size_t i;
     double x_i;
-    ROOT::Minuit2::MnUserParameters Init_x;
-    ROOT::Minuit2::MnApplication *Minimizer;
+    MnUserParameters Init_x;
+    MnApplication *Minimizer;
   
     status        = LATAN_SUCCESS;
     ndim          = nrow(x);
@@ -96,8 +100,8 @@ latan_errno minimize_minuit2(mat *x, double *f_min, min_func *f, void *param)
     }
 
     Minuit2MinFunc F(f,param);
-    ROOT::Minuit2::MnMigrad  Migrad(F,Init_x,STRATEGY);
-    ROOT::Minuit2::MnSimplex Simplex(F,Init_x,STRATEGY);
+    MnMigrad Migrad(F,Init_x,STRATEGY);
+    MnSimplex Simplex(F,Init_x,STRATEGY);
     switch (minimizer_get_alg())
     {
         case MIN_MIGRAD:
@@ -112,7 +116,7 @@ latan_errno minimize_minuit2(mat *x, double *f_min, min_func *f, void *param)
             break;
     }
     latan_printf(DEBUG,"(MINUIT) Minimizing...\n");
-    ROOT::Minuit2::FunctionMinimum Min = (*Minimizer)();
+    FunctionMinimum Min = (*Minimizer)();
     if (!Min.IsValid())
     {
         LATAN_WARNING("MINUIT library reported that minimization result is not valid",\
@@ -129,28 +133,28 @@ latan_errno minimize_minuit2(mat *x, double *f_min, min_func *f, void *param)
     latan_printf(DEBUG,"(MINUIT) Scan around last position :\n");
     if (latan_get_verb() == DEBUG)
     {
-        std::vector<std::pair<double, double> > ScanRes;
-        ROOT::Minuit2::MnPlot Plot;
+        vector<pair<double, double> > ScanRes;
+        MnPlot Plot;
 
-        ROOT::Minuit2::MnScan DScanner(F,Min.UserParameters(),STRATEGY);
-        std::cout << "--------------------------------------------------------";
-        std::cout << std::endl;
+        MnScan Scanner(F,Min.UserParameters(),STRATEGY);
+        cout << "--------------------------------------------------------";
+        cout << std::endl;
         for (i=0;i<ndim;i++)
         {
-            std::cout << "Parameter p" << (int)i << std::endl;
-            ScanRes = DScanner.Scan((unsigned int)i);
+            cout << "Parameter p" << (int)i << endl;
+            ScanRes = Scanner.Scan((unsigned int)i);
             Plot(ScanRes);
         }
-        std::cout << "--------------------------------------------------------";
-        std::cout << std::endl;
+        cout << "--------------------------------------------------------";
+        cout << endl;
     }
     latan_printf(DEBUG,"(MINUIT) Minimizer call :\n");
     if (latan_get_verb() == DEBUG)
     {
-        std::cout << "--------------------------------------------------------";
-        std::cout << Min;
-        std::cout << "--------------------------------------------------------";
-        std::cout << std::endl;
+        cout << "--------------------------------------------------------";
+        cout << Min;
+        cout << "--------------------------------------------------------";
+        cout << std::endl;
     }
     
     return status;

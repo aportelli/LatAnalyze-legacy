@@ -43,7 +43,7 @@ latan_errno effmass_PCAC(mat *res, const mat *mprop_AP, const mat *mprop_PP);
 rs_sample_binop(s_res,s_mprop_AP,s_mprop_PP,&effmass_PCAC)
 
 /* interface to read experimental masses in latan_nunits.h */
-latan_errno get_exp_mass(double mass[2], const strbuf name);
+latan_errno get_mass(double mass[2], const strbuf name);
 
 /* mass fit parameter tuning functions */
 plat *search_plat(size_t *nplat, mat *data, mat *sigdata,\

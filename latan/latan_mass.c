@@ -120,58 +120,50 @@ latan_errno effmass_PCAC(mat *res, const mat *mprop_AP, const mat *mprop_PP)
 
 /*            interface to read experimental masses in latan_nunits.h       */
 /****************************************************************************/
-latan_errno get_exp_mass(double mass[2], const strbuf name)
+#define IF_NAME(pname)\
+if (strcmp(name,#pname) == 0)\
+{\
+    mass[0] = NU_M_##pname;\
+    mass[1] = NU_M_##pname##_ERR;\
+}
+#define ELIF_NAME(pname)\
+else IF_NAME(pname)
+
+latan_errno get_mass(double mass[2], const strbuf name)
 {
-    if (strcmp(name,"pi+") == 0)
-    {
-        mass[0] = NU_M_PI_P;
-        mass[1] = NU_M_PI_P_ERR;
-    }
-    else if (strcmp(name,"pi0") == 0)
-    {
-        mass[0] = NU_M_PI_0;
-        mass[1] = NU_M_PI_0_ERR;
-    }
-    else if (strcmp(name,"pi-") == 0)
-    {
-        mass[0] = NU_M_PI_M;
-        mass[1] = NU_M_PI_M_ERR;
-    }
-    else if (strcmp(name,"K+") == 0)
-    {
-        mass[0] = NU_M_K_P;
-        mass[1] = NU_M_K_P_ERR;
-    }
-    else if (strcmp(name,"K0") == 0)
-    {
-        mass[0] = NU_M_K_0;
-        mass[1] = NU_M_K_0_ERR;
-    }
-    else if (strcmp(name,"K-") == 0)
-    {
-        mass[0] = NU_M_K_M;
-        mass[1] = NU_M_K_M_ERR;
-    }
-    else if (strcmp(name,"rho+") == 0)
-    {
-        mass[0] = NU_M_RHO_P;
-        mass[1] = NU_M_RHO_P_ERR;
-    }
-    else if (strcmp(name,"rho0") == 0)
-    {
-        mass[0] = NU_M_RHO_0;
-        mass[1] = NU_M_RHO_0_ERR;
-    }
-    else if (strcmp(name,"rho-") == 0)
-    {
-        mass[0] = NU_M_RHO_M;
-        mass[1] = NU_M_RHO_M_ERR;
-    }
-    else if (strcmp(name,"Omega-") == 0)
-    {
-        mass[0] = NU_M_OMEGA_M;
-        mass[1] = NU_M_OMEGA_M_ERR;
-    }
+    IF_NAME(pi_p)
+    ELIF_NAME(pi_0)
+    ELIF_NAME(pi_m)
+    ELIF_NAME(pi_iso)
+    ELIF_NAME(pi_p_miso)
+    ELIF_NAME(pi_0_miso)
+    ELIF_NAME(K_p)
+    ELIF_NAME(K_0)
+    ELIF_NAME(K_m)
+    ELIF_NAME(K_iso)
+    ELIF_NAME(rho_p)
+    ELIF_NAME(rho_0)
+    ELIF_NAME(rho_m)
+    ELIF_NAME(Kst_p)
+    ELIF_NAME(Kst_0)
+    ELIF_NAME(Kst_m)
+    ELIF_NAME(p)
+    ELIF_NAME(n)
+    ELIF_NAME(Sigma_p)
+    ELIF_NAME(Sigma_0)
+    ELIF_NAME(Sigma_m)
+    ELIF_NAME(Xi_0)
+    ELIF_NAME(Xi_m)
+    ELIF_NAME(Delta_pp)
+    ELIF_NAME(Delta_p)
+    ELIF_NAME(Delta_0)
+    ELIF_NAME(Delta_m)
+    ELIF_NAME(Sigmast_p)
+    ELIF_NAME(Sigmast_0)
+    ELIF_NAME(Sigmast_m)
+    ELIF_NAME(Xist_0)
+    ELIF_NAME(Xist_m)
+    ELIF_NAME(Omega_m)
     else
     {
         LATAN_ERROR("particle name unknown",LATAN_EINVAL);
@@ -179,6 +171,9 @@ latan_errno get_exp_mass(double mass[2], const strbuf name)
     
     return LATAN_SUCCESS;
 }
+
+#undef IF_NAME
+#undef ELIF_NAME
 
 /*                     mass fit parameter tuning functions                  */
 /****************************************************************************/

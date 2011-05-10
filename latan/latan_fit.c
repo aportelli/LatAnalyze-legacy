@@ -672,7 +672,7 @@ static void init_chi2(fit_data *d, const int thread, const int nthread)
                 {
                     if (fit_data_have_x_covar(d,k1))
                     {
-                        px_ind2 = k1;
+                        px_ind2 = px_ind1;
                         for (k2=k1;k2<ndim;k2++)
                         {
                             if (fit_data_have_x_covar(d,k2))
@@ -691,8 +691,9 @@ static void init_chi2(fit_data *d, const int thread, const int nthread)
                                                  (px_ind2+1)*ndata-1,         \
                                                  (px_ind1+1)*ndata-1);
                                 }
+                                px_ind2++;
                             }
-                            px_ind2++;
+                            
                         }
                         px_ind1++;
                     }

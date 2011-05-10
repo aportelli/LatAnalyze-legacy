@@ -12,7 +12,7 @@ int main(int argc, char *argv[])
         return EXIT_FAILURE;
     }
     
-    get_exp_mass(mass,argv[1]);
+    get_mass(mass,argv[1]);
     printf("M_%s = %f +/- %f MeV\n",argv[1],mass[0],mass[1]);
     
     return EXIT_SUCCESS;

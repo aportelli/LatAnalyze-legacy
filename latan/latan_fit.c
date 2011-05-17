@@ -646,7 +646,7 @@ static void init_chi2(fit_data *d, const int thread, const int nthread)
             latan_printf(DEBUG,"Cd^-1=\n");
             if (latan_get_verb() == DEBUG)
             {
-                mat_print(d->data_var_inv,"%6.1e");
+                mat_print(d->data_var_inv,"% 6.1e");
             }
             /** inversing x variance matrix **/
             if (fit_data_have_x_var(d)||have_xdata_covar)
@@ -724,7 +724,7 @@ static void init_chi2(fit_data *d, const int thread, const int nthread)
                 latan_printf(DEBUG,"Cx^-1=\n");
                 if (latan_get_verb() == DEBUG)
                 {
-                    mat_print(d->x_var_inv,"%6.1e");
+                    mat_print(d->x_var_inv,"% 6.1e");
                 }
                 
                 mat_destroy(tx_covar_k1k2);
@@ -753,7 +753,7 @@ static void init_chi2(fit_data *d, const int thread, const int nthread)
                 latan_printf(DEBUG,"C^-1=\n");
                 if (latan_get_verb() == DEBUG)
                 {
-                    mat_print(d->var_inv,"%6.1e");
+                    mat_print(d->var_inv,"% 6.1e");
                 }
 
                 mat_destroy(txdata_covar_k);

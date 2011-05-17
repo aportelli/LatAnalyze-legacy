@@ -289,7 +289,7 @@ spectrum *spectrum_create_qcd(void)
     hadron_set_2q_nomix(s_qcd->particle[h_pi],"pi",ODD,ch_PP,qu_l,qu_l);
     hadron_set_2q_nomix(s_qcd->particle[h_K],"K",ODD,ch_PP,qu_l,qu_s);
     hadron_set_2q_nomix(s_qcd->particle[h_rho],"rho",ODD,ch_VV,qu_l,qu_l);
-    hadron_set_2q_nomix(s_qcd->particle[h_Kst],"K*",ODD,ch_VV,qu_l,qu_s);
+    hadron_set_2q_nomix(s_qcd->particle[h_Kst],"Kst",ODD,ch_VV,qu_l,qu_s);
     
     /* baryons */
     hadron_set_2q_nomix(s_qcd->particle[h_N],"N",EVEN,ch_N,qu_l,qu_l);
@@ -299,9 +299,9 @@ spectrum *spectrum_create_qcd(void)
     hadron_set_2q_nomix(s_qcd->particle[h_Xi],"Xi",EVEN,ch_N,qu_l,qu_s);
     hadron_set_2q_nomix(s_qcd->particle[h_Delta],"Delta",EVEN,ch_Delta,qu_l,\
                         qu_l);
-    hadron_set_2q_nomix(s_qcd->particle[h_Sigmast],"Sigma*",EVEN,ch_Delta,qu_s,\
+    hadron_set_2q_nomix(s_qcd->particle[h_Sigmast],"Sigmast",EVEN,ch_Delta,qu_s,\
                         qu_l);
-    hadron_set_2q_nomix(s_qcd->particle[h_Xist],"Xi*",EVEN,ch_Delta,qu_l,qu_s);
+    hadron_set_2q_nomix(s_qcd->particle[h_Xist],"Xist",EVEN,ch_Delta,qu_l,qu_s);
     hadron_set_2q_nomix(s_qcd->particle[h_Omega],"Omega",EVEN,ch_Delta,qu_s,\
                         qu_s);
     
@@ -350,16 +350,19 @@ spectrum *spectrum_create_qcdqed(void)
     s_qcdqed = spectrum_create(SPECT_QCDQED_SIZE);
     
     /* mesons */
-    hadron_set_2q_2stmean(s_qcdqed->particle[h_pi_0],"pi0",ODD,ch_PP,\
+    hadron_set_2q_2stmean(s_qcdqed->particle[h_pi_0],"pi_0",ODD,ch_PP,\
                           qu_u,qu_u,qu_d,qu_d);
-    hadron_set_2q_nomix(s_qcdqed->particle[h_pi_p],"pi+",ODD,ch_PP,qu_u,qu_d);
-    hadron_set_2q_nomix(s_qcdqed->particle[h_K_0],"K0",ODD,ch_PP,qu_d,qu_s);
-    hadron_set_2q_nomix(s_qcdqed->particle[h_K_p],"K+",ODD,ch_PP,qu_u,qu_s);
-    hadron_set_2q_2stmean(s_qcdqed->particle[h_rho_0],"rho0",ODD,ch_VV,\
+    hadron_set_2q_nomix(s_qcdqed->particle[h_pi_p],"pi_p",ODD,ch_PP,qu_u,qu_d);
+    hadron_set_2q_nomix(s_qcdqed->particle[h_K_0],"K_0",ODD,ch_PP,qu_d,qu_s);
+    hadron_set_2q_nomix(s_qcdqed->particle[h_K_p],"K_p",ODD,ch_PP,qu_u,qu_s);
+    hadron_set_2q_2stmean(s_qcdqed->particle[h_rho_0],"rho_0",ODD,ch_VV,\
                           qu_u,qu_u,qu_d,qu_d);
-    hadron_set_2q_nomix(s_qcdqed->particle[h_rho_p],"rho+",ODD,ch_VV,qu_u,qu_d);
-    hadron_set_2q_nomix(s_qcdqed->particle[h_Kst_0],"K*0",ODD,ch_VV,qu_d,qu_s);
-    hadron_set_2q_nomix(s_qcdqed->particle[h_Kst_p],"K*+",ODD,ch_VV,qu_u,qu_s);
+    hadron_set_2q_nomix(s_qcdqed->particle[h_rho_p],"rho_p",ODD,ch_VV,qu_u,\
+                        qu_d);
+    hadron_set_2q_nomix(s_qcdqed->particle[h_Kst_0],"Kst_0",ODD,ch_VV,qu_d,\
+                        qu_s);
+    hadron_set_2q_nomix(s_qcdqed->particle[h_Kst_p],"Kst_p",ODD,ch_VV,qu_u,\
+                        qu_s);
     hadron_set_2q_nomix(s_qcdqed->particle[h_PP_uu],"PP_uu",ODD,ch_PP,qu_u,\
                         qu_u);
     hadron_set_2q_nomix(s_qcdqed->particle[h_PP_dd],"PP_dd",ODD,ch_PP,qu_d,\
@@ -376,29 +379,29 @@ spectrum *spectrum_create_qcdqed(void)
     /* baryons */
     hadron_set_2q_nomix(s_qcdqed->particle[h_n],"n",EVEN,ch_N,qu_u,qu_d);
     hadron_set_2q_nomix(s_qcdqed->particle[h_p],"p",EVEN,ch_N,qu_d,qu_u);
-    hadron_set_2q_nomix(s_qcdqed->particle[h_Sigma_m],"Sigma-",EVEN,ch_N,qu_s,\
+    hadron_set_2q_nomix(s_qcdqed->particle[h_Sigma_m],"Sigma_m",EVEN,ch_N,qu_s,\
                         qu_d);
-    hadron_set_2q_nomix(s_qcdqed->particle[h_Sigma_p],"Sigma+",EVEN,ch_N,qu_s,\
+    hadron_set_2q_nomix(s_qcdqed->particle[h_Sigma_p],"Sigma_p",EVEN,ch_N,qu_s,\
                         qu_u);
-    hadron_set_2q_nomix(s_qcdqed->particle[h_Xi_m],"Xi-",EVEN,ch_N,qu_d,qu_s);
-    hadron_set_2q_nomix(s_qcdqed->particle[h_Xi_0],"Xi0",EVEN,ch_N,qu_u,qu_s);
-    hadron_set_2q_nomix(s_qcdqed->particle[h_Delta_m],"Delta-",EVEN,ch_Delta,\
+    hadron_set_2q_nomix(s_qcdqed->particle[h_Xi_m],"Xi_m",EVEN,ch_N,qu_d,qu_s);
+    hadron_set_2q_nomix(s_qcdqed->particle[h_Xi_0],"Xi_0",EVEN,ch_N,qu_u,qu_s);
+    hadron_set_2q_nomix(s_qcdqed->particle[h_Delta_m],"Delta_m",EVEN,ch_Delta,\
                   qu_d,qu_d);
-    hadron_set_2q_nomix(s_qcdqed->particle[h_Delta_0],"Delta0",EVEN,ch_Delta,\
+    hadron_set_2q_nomix(s_qcdqed->particle[h_Delta_0],"Delta_0",EVEN,ch_Delta,\
                   qu_u,qu_d);
-    hadron_set_2q_nomix(s_qcdqed->particle[h_Delta_p],"Delta+",EVEN,ch_Delta,\
+    hadron_set_2q_nomix(s_qcdqed->particle[h_Delta_p],"Delta_p",EVEN,ch_Delta,\
                   qu_d,qu_u);
-    hadron_set_2q_nomix(s_qcdqed->particle[h_Delta_pp],"Delta++",EVEN,ch_Delta,\
-                  qu_u,qu_u);
-    hadron_set_2q_nomix(s_qcdqed->particle[h_Sigmast_m],"Sigma*-",EVEN,\
+    hadron_set_2q_nomix(s_qcdqed->particle[h_Delta_pp],"Delta_pp",EVEN,\
+                        ch_Delta,qu_u,qu_u);
+    hadron_set_2q_nomix(s_qcdqed->particle[h_Sigmast_m],"Sigmast_m",EVEN,\
                         ch_Delta,qu_s,qu_d);
-    hadron_set_2q_nomix(s_qcdqed->particle[h_Sigmast_p],"Sigma*+",EVEN,\
+    hadron_set_2q_nomix(s_qcdqed->particle[h_Sigmast_p],"Sigmast_p",EVEN,\
                         ch_Delta,qu_s,qu_u);
-    hadron_set_2q_nomix(s_qcdqed->particle[h_Xist_m],"Xi*-",EVEN,ch_Delta,qu_d,\
-                        qu_s);
-    hadron_set_2q_nomix(s_qcdqed->particle[h_Xist_0],"Xi*0",EVEN,ch_Delta,qu_u,\
-                        qu_s);
-    hadron_set_2q_nomix(s_qcdqed->particle[h_Omega_m],"Omega-",EVEN,ch_Delta,\
+    hadron_set_2q_nomix(s_qcdqed->particle[h_Xist_m],"Xist_m",EVEN,ch_Delta,\
+                        qu_d,qu_s);
+    hadron_set_2q_nomix(s_qcdqed->particle[h_Xist_0],"Xist_0",EVEN,ch_Delta,\
+                        qu_u,qu_s);
+    hadron_set_2q_nomix(s_qcdqed->particle[h_Omega_m],"Omega_m",EVEN,ch_Delta,\
                         qu_s,qu_s);
     return s_qcdqed;
 }

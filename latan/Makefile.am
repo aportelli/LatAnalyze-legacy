@@ -1,9 +1,9 @@
 COM_CFLAGS = -Wall -Wmissing-prototypes -Wstrict-prototypes			\
-	-Wshadow -Wpointer-arith -Wcast-qual -Wcast-align			\
+	-Wshadow -Wpointer-arith -Wcast-qual -Wcast-align               \
 	-Wwrite-strings -Wnested-externs -W -fPIC -fno-common -O2		\
 	-g -ansi -pedantic
 	
-COM_CXXFLAGS = -Wall -Wconversion -Wshadow -Wpointer-arith -Wcast-qual		\
+COM_CXXFLAGS = -Wall -Wshadow -Wpointer-arith -Wcast-qual           \
 	-Wcast-align -Wwrite-strings -W -fPIC -fno-common -O2 -g		\
 	-pedantic
 

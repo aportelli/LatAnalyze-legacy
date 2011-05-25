@@ -374,6 +374,29 @@ latan_errno (*randgen_load_state)(rg_state state, const strbuf f_name,\
 latan_errno (*rs_sample_save)(const strbuf fname, const char mode,\
                               const rs_sample *s)                 \
         = &DEF_RS_SAMPLE_SAVE;
+
+latan_errno rs_sample_save_subsamp(const strbuf fname, const char mode,   \
+                                   const rs_sample *s,                    \
+                                   const size_t k1, const size_t k2)
+{
+    latan_errno status;
+    rs_sample *little_s;
+    strbuf name;
+    
+    status = LATAN_SUCCESS;
+    
+    little_s = rs_sample_create(k2-k1+1,rs_sample_get_nsample(s));
+    
+    rs_sample_get_name(name,s);
+    rs_sample_set_name(little_s,name);
+    USTAT(rs_sample_get_subsamp(little_s,s,k1,k2));
+    USTAT(rs_sample_save(fname,mode,little_s));
+    
+    rs_sample_destroy(little_s);
+    
+    return status;
+}
+
 latan_errno (*rs_sample_load_nrow)(size_t *nr, const strbuf fname,\
                                    const strbuf name)             \
                                                                   \
@@ -400,6 +423,7 @@ latan_errno rs_sample_load_subsamp(rs_sample *s, const strbuf fname,  \
     big_s = rs_sample_create(nr,nsample);
     USTAT(rs_sample_load(big_s,fname,name));
     USTAT(rs_sample_get_subsamp(s,big_s,k1,k2));
+    rs_sample_set_name(s,name);
     
     rs_sample_destroy(big_s);
     

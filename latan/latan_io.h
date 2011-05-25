@@ -169,6 +169,9 @@ extern latan_errno (*randgen_load_state)(rg_state state, const strbuf f_name,\
 /* resampled sample I/O */
 extern latan_errno (*rs_sample_save)(const strbuf fname, const char mode,\
                                      const rs_sample *s);
+latan_errno rs_sample_save_subsamp(const strbuf fname, const char mode,   \
+                                   const rs_sample *s,                    \
+                                   const size_t k1, const size_t k2);
 extern latan_errno (*rs_sample_load_nrow)(size_t *nr, const strbuf fname,\
                                           const strbuf name);
 extern latan_errno (*rs_sample_load_nsample)(size_t *nsample,   \

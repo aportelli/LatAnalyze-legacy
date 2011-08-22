@@ -26,6 +26,8 @@ static char * gnuplot_get_program_path(const char *pname);
 static void gnuplot_cmd(FILE *ctrl, const char *cmd, ...);
 static void plot_add_tmpf(plot *p, const strbuf tmpfname);
 
+static size_t ntmpf = 0;
+
 /*                              internal code                               */
 /****************************************************************************/
 
@@ -145,9 +147,9 @@ static void gnuplot_cmd(FILE* ctrl, const char *cmd, ...)
 /** temporary file management **/
 static void plot_add_tmpf(plot *p, const strbuf tmpfname)
 {
-    (p->ntmpf)++;
-    REALLOC_NOERRET(p->tmpfname,p->tmpfname,strbuf*,p->ntmpf);
-    strbufcpy(p->tmpfname[p->ntmpf-1],tmpfname);
+    (ntmpf)++;
+    REALLOC_NOERRET(p->tmpfname,p->tmpfname,strbuf*,ntmpf);
+    strbufcpy(p->tmpfname[ntmpf-1],tmpfname);
 }
 
 /*                              allocation                                  */
@@ -160,7 +162,6 @@ plot *plot_create(void)
     
     p->nplot = 0;
     p->plotbuf = NULL;
-    p->ntmpf = 0;
     p->tmpfname = NULL;
     strbufcpy(p->title,"");
     strbufcpy(p->term,DEFTERM);
@@ -182,7 +183,7 @@ void plot_destroy(plot *p)
     size_t i;
     
     FREE(p->plotbuf);
-    for (i=0;i<p->ntmpf;i++)
+    for (i=0;i<ntmpf;i++)
     {
         remove(p->tmpfname[i]);
     }
@@ -275,14 +276,14 @@ void plot_add_plot(plot *p, const strbuf cmd)
     strbufcpy(p->plotbuf[p->nplot-1],cmd);
 }
 
-void plot_add_dat(plot *p, mat *x, mat *dat, const strbuf title,\
+void plot_add_dat(plot *p, const mat *x, const mat *dat, const strbuf title,\
                   const strbuf color)
 {
     FILE* tmpf;
     strbuf tmpfname, plotcmd, colorcmd;
     size_t i;
     
-    sprintf(tmpfname,"latan_plot_tmp_%lu",(long unsigned)p->ntmpf);
+    sprintf(tmpfname,"latan_plot_tmp_%lu",(long unsigned)ntmpf);
     FOPEN_NOERRET(tmpf,tmpfname,"w");
     for (i=0;i<nrow(dat);i++)
     {
@@ -302,14 +303,14 @@ void plot_add_dat(plot *p, mat *x, mat *dat, const strbuf title,\
     plot_add_plot(p,plotcmd);
 }
 
-void plot_add_dat_yerr(plot *p, mat *x, mat *dat, mat *yerr,\
+void plot_add_dat_yerr(plot *p, const mat *x, const mat *dat, const mat *yerr,\
                      const strbuf title, const strbuf color)
 {
     FILE* tmpf;
     strbuf tmpfname, plotcmd, colorcmd;
     size_t i;
     
-    sprintf(tmpfname,"latan_plot_tmp_%lu",(long unsigned)p->ntmpf);
+    sprintf(tmpfname,"latan_plot_tmp_%lu",(long unsigned)ntmpf);
     FOPEN_NOERRET(tmpf,tmpfname,"w");
     for (i=0;i<nrow(dat);i++)
     {
@@ -331,15 +332,14 @@ void plot_add_dat_yerr(plot *p, mat *x, mat *dat, mat *yerr,\
     plot_add_plot(p,plotcmd);
 }
 
-void plot_add_dat_xyerr(plot *p, mat *x, mat *dat, mat *xerr,\
-                        mat *yerr, const strbuf title,             \
-                        const strbuf color)
+void plot_add_dat_xyerr(plot *p, const mat *x, const mat *dat, const mat *xerr,\
+                        const mat *yerr, const strbuf title, const strbuf color)
 {
     FILE* tmpf;
     strbuf tmpfname, plotcmd, colorcmd;
     size_t i;
     
-    sprintf(tmpfname,"latan_plot_tmp_%lu",(long unsigned)p->ntmpf);
+    sprintf(tmpfname,"latan_plot_tmp_%lu",(long unsigned)ntmpf);
     FOPEN_NOERRET(tmpf,tmpfname,"w");
     for (i=0;i<nrow(dat);i++)
     {

@@ -55,7 +55,6 @@ typedef struct
 {
     size_t nplot;       /* number of plot commands the buffer*/
     strbuf *plotbuf;    /* buffer of plot commands */
-    size_t ntmpf;       /* number of temporary files opened for this plot */
     strbuf *tmpfname;   /* names of the temporary files opened for this plot */
     strbuf title;       /* title of the plot */
     strbuf term;        /* output terminal of the plot */
@@ -92,18 +91,22 @@ void plot_set_output(plot *p, const strbuf output);
 
 /* plot functions */
 void plot_add_plot(plot *p, const strbuf cmd);
-void plot_add_dat(plot *p, mat *x, mat *dat, const strbuf title,\
+void plot_add_dat(plot *p, const mat *x, const mat *dat, const strbuf title,\
                   const strbuf color);
-void plot_add_dat_yerr(plot *p, mat *x, mat *dat, mat *yerr,\
-                     const strbuf title, const strbuf color);
-void plot_add_dat_xyerr(plot *p, mat *x, mat *dat, mat *xerr,\
-                        mat *yerr, const strbuf title,             \
+void plot_add_dat_yerr(plot *p, const mat *x, const mat *dat, const mat *yerr, \
+                       const strbuf title, const strbuf color);
+void plot_add_dat_xyerr(plot *p, const mat *x, const mat *dat, const mat *xerr,\
+                        const mat *yerr, const strbuf title,                   \
                         const strbuf color);
-void plot_add_hline(plot *p, const double y, const strbuf style,        \
+void plot_add_hline(plot *p, const double y, const strbuf style,  \
                     const strbuf color);
-void plot_add_hlineerr(plot *p, const double y, const double err,       \
-                       const strbuf style, const strbuf color1, \
+void plot_add_hlineerr(plot *p, const double y, const double err, \
+                       const strbuf style, const strbuf color1,   \
                        const strbuf color2);
+void plot_add_fit(plot *p, const fit_data *d, const size_t k, const mat *x_ex,\
+                  const mat *par, const bool do_sub, const unsigned int obj,  \
+                  const strbuf title, const strbuf style, const strbuf pcolor,\
+                  const strbuf lcolor);
 
 /* plot parsing */
 latan_errno plot_parse(FILE* outstr, const plot *p);

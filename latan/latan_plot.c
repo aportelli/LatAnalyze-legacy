@@ -382,6 +382,99 @@ void plot_add_hlineerr(plot *p, const double y, const double err,       \
     plot_add_hline(p,y,style,color1);
 }
 
+void plot_add_fit(plot *p, const fit_data *d, const size_t k, const mat *x_ex,\
+                  const mat *par, const bool do_sub, const unsigned int obj,  \
+                  const strbuf title, const strbuf style, const strbuf pcolor,\
+                  const strbuf lcolor)
+{
+    mat *x,*x_err,*y,*y_err,*cor_data;
+    bool have_x_err;
+    size_t npt,ndata;
+    size_t i,j;
+    strbuf plotstr,plotcmd,lcolcmd,stcmd;
+    
+    npt        = fit_data_fit_point_num(d);
+    ndata      = fit_data_get_ndata(d);
+    j          = 0;
+    have_x_err = fit_data_have_x_covar(d,k);
+    
+    x          = mat_create(npt,1);
+    y          = mat_create(npt,1);
+    x_err      = mat_create(npt,1);
+    y_err      = mat_create(npt,1);
+    cor_data   = mat_create(ndata,1);
+
+    if (par != NULL)
+    {
+        if (obj & PF_FIT)
+        {
+            fit_data_plot2dstr(plotstr,d,k,x_ex,par);
+            if (strlen(lcolor) == 0)
+            {
+                strbufcpy(lcolcmd,"");
+            }
+            else
+            {
+                sprintf(lcolcmd,"lc %s",lcolor);
+            }
+            if (strlen(style) == 0)
+            {
+                strbufcpy(stcmd,"");
+            }
+            else
+            {
+                sprintf(stcmd,"lt %s",style);
+            }
+            sprintf(plotcmd,"%s notitle %s %s",plotstr,stcmd,lcolcmd);
+            plot_add_plot(p,plotcmd);
+        }
+        if (do_sub)
+        {
+            fit_partresidual(cor_data,par,d,x_ex,k);
+        }
+        else
+        {
+            mat_cp(cor_data,fit_data_pt_data(d));
+        }
+    }
+    else
+    {
+        mat_cp(cor_data,fit_data_pt_data(d));
+    }
+    if (obj & PF_DATA)
+    {
+        for (i=0;i<ndata;i++)
+        {
+            if (fit_data_is_fit_point(d,i))
+            {
+                mat_set(x,j,0,fit_data_get_x(d,i,k));
+                if (have_x_err)
+                {
+                    mat_set(x_err,j,0,\
+                            sqrt(mat_get(fit_data_pt_x_covar(d,k,k),i,i)));
+                }
+                mat_set(y,j,0,mat_get(cor_data,i,0));
+                mat_set(y_err,j,0,sqrt(mat_get(fit_data_pt_data_var(d),i,i)));
+                j++;
+            }
+        }
+        if (have_x_err)
+        {
+            plot_add_dat_xyerr(p,x,y,x_err,y_err,title,pcolor);
+        }
+        else
+        {
+            plot_add_dat_yerr(p,x,y,y_err,title,pcolor);
+        }
+    }
+    
+    mat_destroy(x);
+    mat_destroy(x_err);
+    mat_destroy(y);
+    mat_destroy(y_err);
+    mat_destroy(cor_data);
+}
+
 /*                              plot parsing                                */
 /****************************************************************************/
 latan_errno plot_parse(FILE* outstr, const plot *p)

@@ -40,6 +40,7 @@ latan_errno effmass(mat *res, const mat *mprop, const int parity)
                     LATAN_EBADLEN);
     }
     
+    /* fabs/MAX(.,1.0) : you don't want NaN at half-time */
     switch (parity)
     {
         case EVEN:

@@ -769,3 +769,21 @@ latan_errno mat_sqrt(mat *m, const mat *n)
 
     return LATAN_SUCCESS;
 }
+
+latan_errno mat_expp(mat *m, const mat *n)
+{
+    size_t i,j;
+    
+    if (!mat_is_samedim(m,n))
+    {
+        LATAN_ERROR("operation between matrices with dimension mismatch",\
+                    LATAN_EBADLEN);
+    }
+    
+    FOR_VAL(m,i,j)
+    {
+        mat_set(m,i,j,exp(mat_get(n,i,j)));
+    }
+    
+    return LATAN_SUCCESS;
+}

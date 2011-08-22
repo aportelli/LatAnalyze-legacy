@@ -80,6 +80,12 @@ double fit_model_eval(const fit_model *model, const mat *x, const mat *p,\
     return res;
 }
 
+void fit_model_plot2dstr(strbuf str, const fit_model *model, const size_t k,\
+                         const mat *x, const mat *p, void *model_param)
+{
+    model->plot2dstr(str,k,x,p,model_param);
+}
+
 /*                          fit data structure                              */
 /****************************************************************************/
 static size_t sym_rowmaj(const size_t i, const size_t j, const size_t dim)
@@ -242,22 +248,31 @@ void fit_data_set_x(fit_data *d, const size_t i, const size_t k,\
     mat_set(d->x,k,i,x_ik);
 }
 
-latan_errno fit_data_set_x_from_mat(fit_data *d, const size_t k, const mat *m)
+latan_errno fit_data_set_x_vec(fit_data *d, const size_t i, const mat *x_i)
 {
     latan_errno status;
-    gsl_vector_view m_vview;
-    mat *x;
-    
-    x       = fit_data_pt_x(d);
-    m_vview = gsl_matrix_column(m->data_cpu,0);
-    status  = gsl_matrix_set_row(x->data_cpu,k,&(m_vview.vector));
+    gsl_vector_view x_vview;
+
+    x_vview = gsl_matrix_column(x_i->data_cpu,0);
+    status  = gsl_matrix_set_row(d->x->data_cpu,i,&(x_vview.vector));
 
     return status;
 }
 
-double fit_data_get_x(const fit_data *d, const size_t i, const size_t j)
+double fit_data_get_x(const fit_data *d, const size_t i, const size_t k)
 {
-    return mat_get(d->x,j,i);
+    return mat_get(d->x,k,i);
+}
+
+latan_errno fit_data_get_x_vec(mat *x_i, const fit_data *d, const size_t i)
+{
+    latan_errno status;
+    gsl_vector_view x_vview;
+
+    x_vview = gsl_matrix_column(x_i->data_cpu,0);
+    status  = gsl_matrix_get_row(&(x_vview.vector),d->x->data_cpu,i);
+    
+    return status;
 }
 
 mat *fit_data_pt_x(const fit_data *d)
@@ -289,6 +304,16 @@ latan_errno fit_data_set_x_covar(fit_data *d, const size_t k1,  \
     }
 
     return status;
+}
+
+const mat * fit_data_pt_x_covar(const fit_data *d, const size_t k1,\
+                                const size_t k2)
+{
+    size_t ind;
+    
+    ind = sym_rowmaj(k1,k2,d->ndim);
+    
+    return d->x_covar[ind];
 }
 
 bool fit_data_have_x_covar(const fit_data *d, const size_t k)
@@ -356,6 +381,27 @@ void fit_data_fit_range(fit_data *d, const size_t start, const size_t end,\
     }
 }
 
+void fit_data_fit_region(fit_data *d, double **xb)
+{
+    size_t i,k;
+    bool fit;
+    double x_ik;
+    
+    for (i=0;i<d->ndata;i++)
+    {
+        fit = true;
+        for (k=0;k<d->ndim;k++)
+        {
+            if (xb[k] != NULL)
+            {
+                x_ik = fit_data_get_x(d,i,k);
+                fit  = fit && (xb[k][0] < x_ik) && (xb[k][1] > x_ik);
+            }
+        }
+        fit_data_fit_point(d,i,fit);
+    }
+}
+
 bool fit_data_is_fit_point(const fit_data *d, const size_t i)
 {
     if (i>=d->ndata)
@@ -420,6 +466,11 @@ latan_errno fit_data_set_data_var(fit_data *d, const mat *var)
     return status;
 }
 
+const mat * fit_data_pt_data_var(const fit_data *d)
+{
+    return d->data_var;
+}
+
 bool fit_data_is_data_correlated(const fit_data *d)
 {
     return d->is_data_correlated;
@@ -477,6 +528,11 @@ latan_errno fit_data_set_model(fit_data *d, const fit_model *model,\
     return LATAN_SUCCESS;
 }
 
+double fit_data_model_xeval(const fit_data *d, const mat *x, const mat *p)
+{
+    return fit_model_eval(d->model,x,p,d->model_param);
+}
+
 /* CRITICALLY CALLED FUNCTION
  * fit_data_model_eval is heavily called during one call of minimize function,
  * optimization is done using GSL matrix view
@@ -489,9 +545,15 @@ double fit_data_model_eval(const fit_data *d, const size_t i, const mat *p)
     
     x_view       = gsl_matrix_submatrix(d->x->data_cpu,0,i,d->ndim,1);
     x_i.data_cpu = &(x_view.matrix);
-    res          = fit_model_eval(d->model,&x_i,p,d->model_param);
+    res          = fit_data_model_xeval(d,&x_i,p);
     
     return res;
+}
+
+void fit_data_plot2dstr(strbuf str, const fit_data *d, const size_t k,\
+                        const mat *x, const mat *p)
+{
+    fit_model_plot2dstr(str,d->model,k,x,p,d->model_param);
 }
 
 /*** dof ***/
@@ -1115,7 +1177,7 @@ latan_errno rs_x_data_fit(rs_sample *p, rs_sample * const *x,         \
     px_ind = 0;
     for (k=0;k<ndim;k++)
     {
-        USTAT(fit_data_set_x_from_mat(d,k,rs_sample_pt_cent_val(x[k])));
+        USTAT(fit_data_set_x_vec(d,k,rs_sample_pt_cent_val(x[k])));
         if (use_x_var[k])
         {
             USTAT(mat_set_subm(pbuf,rs_sample_pt_cent_val(x[k]),             \
@@ -1144,7 +1206,7 @@ latan_errno rs_x_data_fit(rs_sample *p, rs_sample * const *x,         \
         px_ind = 0;
         for (k=0;k<ndim;k++)
         {
-            USTAT(fit_data_set_x_from_mat(d,k,rs_sample_pt_sample(x[k],i)));
+            USTAT(fit_data_set_x_vec(d,k,rs_sample_pt_sample(x[k],i)));
             if (use_x_var[k])
             {
                 USTAT(mat_set_subm(pbuf,rs_sample_pt_sample(x[k],i),\
@@ -1179,50 +1241,36 @@ void fit_residual(mat *res, const mat *p, const fit_data *d)
     
     for (i=0;i<ndata;i++)
     {
-        res_i = fit_data_get_data(d,i)/fit_data_model_eval(d,i,p) - 1.0;
+        res_i = fit_data_get_data(d,i) - fit_data_model_eval(d,i,p);
         mat_set(res,i,0,res_i);
     }
 }
 
-void rs_fit_residual(rs_sample *res, const rs_sample *p, const rs_sample *data,\
-                     fit_data *d)
+void fit_partresidual(mat *res, const mat *p, const fit_data *d,\
+                      const mat *x_ex, const size_t k)
 {
-    size_t i,nsample;
+    size_t i,ndata,ndim;
+    double res_i;
+    mat *x_buf;
     
-    nsample = rs_sample_get_nsample(data);
-
-    mat_cp(fit_data_pt_data(d),rs_sample_pt_cent_val(data));
-    fit_residual(rs_sample_pt_cent_val(res),rs_sample_pt_cent_val(p),d);
-    for (i=0;i<nsample;i++)
+    ndim  = fit_data_get_ndim(d);
+    
+    if (ndim > 1)
     {
-        mat_cp(fit_data_pt_data(d),rs_sample_pt_sample(data,i));
-        fit_residual(rs_sample_pt_sample(res,i),rs_sample_pt_sample(p,i),d);
-    }
-}
-
-void rs_x_fit_residual(rs_sample *res, const rs_sample *p,         \
-                       rs_sample * const *x, const rs_sample *data,\
-                       fit_data *d)
-{
-    size_t nsample,ndim;
-    size_t i,j;
-
-    nsample = rs_sample_get_nsample(data);
-    ndim    = fit_data_get_ndim(d);
-
-    for (j=0;j<ndim;j++)
-    {
-        fit_data_set_x_from_mat(d,j,rs_sample_pt_cent_val(x[j]));
-    }
-    mat_cp(fit_data_pt_data(d),rs_sample_pt_cent_val(data));
-    fit_residual(rs_sample_pt_cent_val(res),rs_sample_pt_cent_val(p),d);
-    for (i=0;i<nsample;i++)
-    {
-        for (j=0;j<ndim;j++)
+        ndata = fit_data_get_ndata(d);
+        x_buf = mat_create(ndim,1);
+        for (i=0;i<ndata;i++)
         {
-            fit_data_set_x_from_mat(d,j,rs_sample_pt_sample(x[j],i));
+            mat_cp(x_buf,x_ex);
+            mat_set(x_buf,k,0,fit_data_get_x(d,i,k));
+            res_i = fit_data_get_data(d,i) - fit_data_model_eval(d,i,p)\
+                    + fit_data_model_xeval(d,x_buf,p);
+            mat_set(res,i,0,res_i);
         }
-        mat_cp(fit_data_pt_data(d),rs_sample_pt_sample(data,i));
-        fit_residual(rs_sample_pt_sample(res,i),rs_sample_pt_sample(p,i),d);
+        mat_destroy(x_buf);
+    }
+    else
+    {
+        mat_cp(res,fit_data_pt_data(d));
     }
 }

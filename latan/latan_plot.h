@@ -21,6 +21,7 @@
 #define LATAN_PLOT_H_
 
 #include <latan/latan_globals.h>
+#include <latan/latan_fit.h>
 
 /* system dependant gnuplot terminal setting */
 #ifdef __APPLE__
@@ -39,6 +40,13 @@
 #define XLOG 1
 #define YLOG 2
 #define XYLOG 3
+
+enum
+{
+    PF_NOTHING = 0,
+    PF_DATA    = 1 << 0,
+    PF_FIT     = 1 << 1
+};
 
 __BEGIN_DECLS
 

@@ -55,7 +55,7 @@ latan_errno effmass(mat *res, const mat *mprop, const int parity)
             {
                 em  = mat_get(mprop,i,0) + mat_get(mprop,i+2,0);
                 em /= 2.0*mat_get(mprop,i+1,0);
-                em  = MAX(em,1.0);
+                em  = MAX(em,cosh(1.0e-3));
                 em  = acosh(em);
                 mat_set(res,i,0,em);
             }
@@ -136,6 +136,7 @@ latan_errno get_mass(double mass[2], const strbuf name)
     ELIF_NAME(pi_0)
     ELIF_NAME(pi_m)
     ELIF_NAME(pi_iso)
+    ELIF_NAME(pi)
     ELIF_NAME(pi_p_miso)
     ELIF_NAME(pi_0_miso)
     ELIF_NAME(K_p)
@@ -165,6 +166,7 @@ latan_errno get_mass(double mass[2], const strbuf name)
     ELIF_NAME(Xist_0)
     ELIF_NAME(Xist_m)
     ELIF_NAME(Omega_m)
+    ELIF_NAME(Omega)
     else
     {
         LATAN_ERROR("particle name unknown",LATAN_EINVAL);

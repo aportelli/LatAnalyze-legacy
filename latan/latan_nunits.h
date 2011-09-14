@@ -41,6 +41,8 @@
 #define NU_M_pi_m_ERR       3.5e-4                  /* MeV */
 #define NU_M_pi_iso         134.8                   /* MeV */
 #define NU_M_pi_iso_ERR     0.3                     /* MeV */
+#define NU_M_pi             NU_M_pi_iso
+#define NU_M_pi_ERR         NU_M_pi_iso_ERR
 #define NU_M_pi_p_miso      139.5                   /* MeV */
 #define NU_M_pi_p_miso_ERR  0.3                     /* MeV */
 #define NU_M_pi_0_miso      135.1                   /* MeV */
@@ -109,5 +111,7 @@
 /** Omega **/
 #define NU_M_Omega_m        1672.45                 /* MeV */
 #define NU_M_Omega_m_ERR    0.29                    /* MeV */
+#define NU_M_Omega          NU_M_Omega_m
+#define NU_M_Omega_ERR      NU_M_Omega_m_ERR
 
 #endif

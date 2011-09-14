@@ -20,9 +20,6 @@
 #ifndef LATAN_IO_H_
 #define LATAN_IO_H_
 
-#define _POSIX_SOURCE
-#define _THREAD_SAFE
-
 #include <latan/latan_globals.h>
 #include <latan/latan_hadron.h>
 #include <latan/latan_rand.h>

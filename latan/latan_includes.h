@@ -45,7 +45,15 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <math.h>
+#ifndef _POSIX_SOURCE
+#define _POSIX_SOURCE
+#endif
+#ifndef _THREAD_SAFE
+#define _THREAD_SAFE
+#endif
 #include <string.h>
+#undef _POSIX_SOURCE
+#undef _THREAD_SAFE
 #include <limits.h>
 #include <time.h>
 #include <float.h>

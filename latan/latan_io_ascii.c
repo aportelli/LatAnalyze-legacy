@@ -17,7 +17,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-#define _POSIX_SOURCE /* str_tok_r is used here */
+#define _POSIX_C_SOURCE 199506L /* strtok_r is used here */
 
 #include <latan/latan_io_ascii.h>
 #include <latan/latan_includes.h>

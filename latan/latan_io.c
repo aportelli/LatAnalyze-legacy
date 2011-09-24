@@ -103,34 +103,41 @@ void (*io_finish)(void) = &DEF_IO_FINISH;
 /****************************************************************************/
 int get_nfile(const strbuf manifestfname)
 {
-    strbuf buf1, buf2;
-    int nfile;
-    FILE* manifest = NULL;
+    strbuf *field;
+    int nfile,lc,nf;
     
     nfile = 0;
+    field = NULL;
     
-    FOPEN_ERRVAL(manifest,manifestfname,"r",LATAN_FAILURE);
-    while (!feof(manifest))
+    BEGIN_FOR_LINE_TOK(field,manifestfname," \t",nf,lc)
+    if (field[0][0] != '#')
     {
-        if ((fgets(buf1,STRING_LENGTH,manifest))&&(sscanf(buf1,"%s\n",buf2)>0))
-        {
-            nfile++;
-        }
+        nfile++;
     }
-    fclose(manifest);
+    END_FOR_LINE_TOK(field)
     
     return nfile;
 }
 
 latan_errno get_firstfname(strbuf fname, const strbuf manifestfname)
 {
-    strbuf buf;
-    FILE* manifest = NULL;
+    strbuf *field;
+    int lc,nf;
+    bool isfirst;
     
-    FOPEN(manifest,manifestfname,"r");
-    fgets(buf,STRING_LENGTH,manifest);
-    fclose(manifest);
-    sscanf(buf,"%s\n",fname);
+    isfirst = true;
+    field   = NULL;
+    
+    BEGIN_FOR_LINE_TOK(field,manifestfname," \t",nf,lc)
+    if (field[0][0] != '#')
+    {
+       if (isfirst)
+       {
+           strbufcpy(fname,field[0]);
+           break;
+       }
+    }
+    END_FOR_LINE_TOK(field)
     
     return LATAN_SUCCESS;
 }

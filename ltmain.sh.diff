@@ -1,0 +1,8 @@
+5646c5646
+<       -mt|-mthreads|-kthread|-Kthread|-pthread|-pthreads|--thread-safe|-threads)
+---
+>       -mt|-mthreads|-kthread|-Kthread|-pthread|-pthreads|--thread-safe|-threads|-fopenmp|-openmp|-mp|-xopenmp|-omp|-qsmp=omp)
+6150c6150
+< 	-mt|-mthreads|-kthread|-Kthread|-pthread|-pthreads|--thread-safe|-threads)
+---
+> 	-mt|-mthreads|-kthread|-Kthread|-pthread|-pthreads|--thread-safe|-threads|-fopenmp|-openmp|-mp|-xopenmp|-omp|-qsmp=omp)

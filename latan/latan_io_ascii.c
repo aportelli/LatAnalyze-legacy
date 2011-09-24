@@ -169,6 +169,8 @@ void io_finish_ascii(void)
                 env.file_is_loaded[i] = false;
             }
         }
+        FREE(env.ascii_buf);
+        FREE(env.file_is_loaded);
         io_is_init = false;
     }
 }

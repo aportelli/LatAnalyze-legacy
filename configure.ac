@@ -2,7 +2,7 @@
 
 # Initialization
 AC_PREREQ([2.64])
-AC_INIT([LatAnalyze],[2.0beta],[antonin.portelli@gmail.com],[latan])
+AC_INIT([LatAnalyze],[2.0beta1],[antonin.portelli@gmail.com],[latan])
 AC_CONFIG_AUX_DIR([.buildutils])
 AC_CONFIG_SRCDIR([latan/latan_globals.c])
 AC_CONFIG_SRCDIR([utils/latan_info.c])

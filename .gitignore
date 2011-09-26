@@ -3,6 +3,7 @@
 # binaries
 *.o
 *.a
+*.so
 *.dylib
 examples/ex_fit
 examples/ex_getmat

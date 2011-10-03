@@ -3,6 +3,9 @@
 # PREFIX definition work with an autotool generated Makefile
 PREFIX=`cat Makefile | grep '^prefix =' | awk '{print $3}'`
 
+# get Intel environment
+source  /opt/intel/Compiler/11.1/084/bin/iccvars.sh intel64
+
 case $1 in
     '')
         echo '-- building...'

@@ -350,7 +350,7 @@ spectrum *spectrum_create_qcdqed(void)
     s_qcdqed = spectrum_create(SPECT_QCDQED_SIZE);
     
     /* mesons */
-    hadron_set_2q_2stmean(s_qcdqed->particle[h_pi_0],"pi_0",ODD,ch_PP,\
+    hadron_set_2q_2stmean(s_qcdqed->particle[h_pi_0],"pi_0_con",ODD,ch_PP,\
                           qu_u,qu_u,qu_d,qu_d);
     hadron_set_2q_nomix(s_qcdqed->particle[h_pi_p],"pi_p",ODD,ch_PP,qu_u,qu_d);
     hadron_set_2q_nomix(s_qcdqed->particle[h_K_0],"K_0",ODD,ch_PP,qu_d,qu_s);

@@ -3,5 +3,4 @@
 rm -rf .buildutils
 mkdir -p .buildutils/m4
 autoreconf -fvi
-patch .buildutils/ltmain.sh ltmain.sh.diff
 

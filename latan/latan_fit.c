@@ -1193,10 +1193,7 @@ latan_errno rs_x_data_fit(rs_sample *p, rs_sample * const *x,         \
     USTAT(mat_get_subm(rs_sample_pt_cent_val(p),pbuf,0,0,npar-1,0));
     chi2pdof_backup = fit_data_get_chi2pdof(d);
     latan_printf(DEBUG,"central value chi^2/dof = %e\n",chi2pdof_backup);
-    if (verb_backup != DEBUG)
-    {
-        USTAT(latan_set_verb(QUIET));
-    }
+    
     /* sample fits */
     for (i=0;i<rs_sample_get_nsample(data);i++)
     {
@@ -1216,13 +1213,25 @@ latan_errno rs_x_data_fit(rs_sample *p, rs_sample * const *x,         \
             }
         }
         /** fit **/
+        if (verb_backup != DEBUG)
+        {
+            USTAT(latan_set_verb(QUIET));
+        }
         USTAT(data_fit(pbuf,d));
+        USTAT(latan_set_verb(verb_backup));
+        latan_printf(VERB,"fit: sample %d/%d chi^2/dof = %e\n",(int)i+1,\
+                        (int)rs_sample_get_nsample(data),               \
+                        fit_data_get_chi2pdof(d));
         USTAT(mat_get_subm(rs_sample_pt_sample(p,i),pbuf,0,0,npar-1,0));
         latan_printf(DEBUG,"sample %lu chi^2/dof = %e\n",(long unsigned)i,\
                      fit_data_get_chi2pdof(d));
     }
     d->chi2pdof = chi2pdof_backup;
-    USTAT(latan_set_verb(verb_backup));
+    USTAT(mat_cp(fit_data_pt_data(d),rs_sample_pt_cent_val(data)));
+    for (k=0;k<ndim;k++)
+    {
+        USTAT(fit_data_set_x_vec(d,k,rs_sample_pt_cent_val(x[k])));
+    }
     
     mat_destroy(datavar);
     mat_destroy(xcovar);

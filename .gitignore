@@ -83,3 +83,5 @@ aclocal.m4
 config.log
 config.status
 stamp-h1
+myconfig.sh
+

@@ -23,21 +23,26 @@
 #include <latan/latan_globals.h>
 #include <latan/latan_statistics.h>
 
+#ifndef MAX_YDIM
+#define MAX_YDIM 16
+#endif
+
 __BEGIN_DECLS
 
 /* fit model structure */
 typedef double model_func(const mat *x, const mat *p, void *model_param);
 typedef size_t npar_func(void *model_param);
-typedef void plot2dstr_func(strbuf str, const size_t i, const mat *x,\
+typedef void plot2dstr_func(strbuf str, const size_t kx, const mat *x,\
                             const mat *p, void *model_param);
 
 typedef struct
 {
     strbuf name;
-    model_func *func;
+    model_func *func[MAX_YDIM];
     npar_func *npar;
-    plot2dstr_func *plot2dstr;
-    size_t ndim;
+    plot2dstr_func *plot2dstr[MAX_YDIM];
+    size_t nxdim;
+    size_t nydim;
 } fit_model;
 
 /** some useful constant npar_func **/
@@ -55,31 +60,33 @@ npar_func npar_10;
 /** access **/
 void fit_model_get_name(strbuf name, const fit_model *model);
 size_t fit_model_get_npar(const fit_model *model, void *model_param);
-double fit_model_eval(const fit_model *model, const mat *x, const mat *p,\
-                      void *model_param);
-void fit_model_plot2dstr(strbuf str, const fit_model *model, const size_t k,\
-                         const mat *x, const mat *p,void *model_param);
+double fit_model_eval(const fit_model *model, const size_t k, const mat *x,\
+                      const mat *p, void *model_param);
+void fit_model_plot2dstr(strbuf str, const fit_model *model, const size_t kx,\
+                         const size_t ky, const mat *x, const mat *p,        \
+                         void *model_param);
 
 /* fit data structure */
 /** chi^2 buffer **/
-typedef struct
+typedef struct chi2_buf_s
 {
     mat *x;
-    mat *X;
-    mat *CdX;
     mat *Y;
-    mat *CxY;
+    mat *CyY;
+    mat *X;
+    mat *CxX;
     mat *lX;
     mat *ClX;
     bool is_xpart_alloc;
 } chi2_buf;
 
 /** the main structure **/
-typedef struct
+typedef struct fid_data_s
 {
     /* sizes */
     size_t ndata;
-    size_t ndim;
+    size_t nxdim;
+    size_t nydim;
     size_t npar;
     /* point matrices */
     mat *x;
@@ -89,19 +96,19 @@ typedef struct
     bool *have_x_covar;
     bool *to_fit;
     /* data matrices */
-    mat *data;
-    mat *data_var;
-    mat *data_var_inv;
-    bool is_data_correlated;
+    mat *y;
+    mat **y_covar;
+    mat *y_var_inv;
+    bool is_y_correlated;
     /* data/point covariance matrix */
-    mat **xdata_covar;
-    bool *have_xdata_covar;
+    mat **xy_covar;
+    bool *have_xy_covar;
     /* inverse variance matrix */
     mat *var_inv;
     /* is everything ready to perform a fit ? */
     bool is_inverted;
     /* fit model */
-    const fit_model *model;
+    fit_model const *model;
     void *model_param;
     /* buffers for chi^2 computation */
     double chi2pdof;
@@ -110,28 +117,44 @@ typedef struct
     int nbuf;
 } fit_data;
 
-
-
 /** allocation **/
-fit_data *fit_data_create(const size_t ndata, const size_t ndim);
+fit_data *fit_data_create(const size_t ndata, const size_t nxdim,\
+                          const size_t nydim);
 void fit_data_destroy(fit_data *d);
 
 /** access **/
 /*** sizes ***/
 size_t fit_data_get_ndata(const fit_data *d);
-size_t fit_data_get_ndim(const fit_data *d);
+size_t fit_data_get_nydim(const fit_data *d);
+size_t fit_data_get_nxdim(const fit_data *d);
 size_t fit_data_get_npar(const fit_data *d);
 
 /*** chi2 value ***/
 void fit_data_save_chi2pdof(fit_data *d, bool save);
 double fit_data_get_chi2pdof(const fit_data *d);
 
+/*** data ***/
+void fit_data_set_y(fit_data *d, const size_t i, const size_t k,\
+                    const double y_ik);
+latan_errno fit_data_set_y_k(fit_data *d, const size_t i, const mat *y_i);
+double fit_data_get_y(const fit_data *d, const size_t i, const size_t k);
+latan_errno fit_data_get_y_k(mat *y_i, const fit_data *d, const size_t i);
+mat * fit_data_pt_y(const fit_data *d);
+latan_errno fit_data_set_y_covar(fit_data *d, const size_t k1,  \
+                                 const size_t k2, const mat *var);
+const mat * fit_data_pt_y_covar(const fit_data *d, const size_t k1,\
+                                const size_t k2);
+bool fit_data_is_y_correlated(const fit_data *d);
+latan_errno fit_data_set_xy_covar(fit_data *d, const size_t ky, \
+                                  const size_t kx, const mat *covar);
+bool fit_data_have_xy_covar(const fit_data *d);
+
 /*** fit points ***/
 void fit_data_set_x(fit_data *d, const size_t i, const size_t k,\
                     const double x_ik);
-latan_errno fit_data_set_x_vec(fit_data *d, const size_t i, const mat *x_i);
+latan_errno fit_data_set_x_k(fit_data *d, const size_t i, const mat *x_i);
 double fit_data_get_x(const fit_data *d, const size_t i, const size_t k);
-latan_errno fit_data_get_x_vec(mat *x, const fit_data *d, const size_t i);
+latan_errno fit_data_get_x_k(mat *x, const fit_data *d, const size_t i);
 mat * fit_data_pt_x(const fit_data *d);
 latan_errno fit_data_set_x_covar(fit_data *d, const size_t k1,  \
                                  const size_t k2, const mat *var);
@@ -147,25 +170,16 @@ void fit_data_fit_region(fit_data *d, double **xb);
 bool fit_data_is_fit_point(const fit_data *d, size_t i);
 size_t fit_data_fit_point_num(const fit_data *d);
 
-/*** data ***/
-void fit_data_set_data(fit_data *d, const size_t i, const double data_i);
-double fit_data_get_data(const fit_data *d, const size_t i);
-mat * fit_data_pt_data(const fit_data *d);
-latan_errno fit_data_set_data_var(fit_data *d, const mat *var);
-const mat * fit_data_pt_data_var(const fit_data *d);
-bool fit_data_is_data_correlated(const fit_data *d);
-latan_errno fit_data_set_xdata_covar(fit_data *d, const size_t j,\
-                                     const mat *covar);
-bool fit_data_have_xdata_covar(const fit_data *d);
-
 /*** fit model ***/
 latan_errno fit_data_set_model(fit_data *d, const fit_model *model,\
                                void *model_param);
 void fit_data_set_model_param(fit_data *d, void *model_param);
-double fit_data_model_xeval(const fit_data *d, const mat *x, const mat *p);
-double fit_data_model_eval(const fit_data *d, const size_t i, const mat *p);
-void fit_data_plot2dstr(strbuf str, const fit_data *d, const size_t k,\
-                        const mat *x, const mat *p);
+double fit_data_model_xeval(const fit_data *d, const size_t k, const mat *x,\
+                            const mat *p);
+double fit_data_model_eval(const fit_data *d, const size_t k, const size_t i,\
+                           const mat *p);
+void fit_data_plot2dstr(strbuf str, const fit_data *d, const size_t ky,\
+                        const mat *x, const size_t kx, const mat *p);
 
 /*** dof ***/
 size_t fit_data_get_dof(const fit_data *d);
@@ -183,14 +197,14 @@ typedef enum
 } cor_flag;
 
 latan_errno data_fit(mat *p, fit_data *d);
-latan_errno rs_data_fit(rs_sample *p, const rs_sample *data, fit_data *d,\
+latan_errno rs_data_fit(rs_sample *p, rs_sample * const *data, fit_data *d,\
                         const cor_flag flag);
 latan_errno rs_x_data_fit(rs_sample *p, rs_sample * const *x,         \
-                          const rs_sample *data, fit_data *d,         \
+                          rs_sample * const *data, fit_data *d,       \
                           const cor_flag flag, const bool *use_x_var);
-void fit_residual(mat *res, const mat *p, const fit_data *d);
-void fit_partresidual(mat *res, const mat *p, const fit_data *d,\
-                      const mat *x_ex, const size_t k);
+void fit_residual(mat *res, const fit_data *d, const size_t ky, const mat *p);
+void fit_partresidual(mat *res, const fit_data *d, const size_t ky, \
+                      const mat *x_ex, const size_t kx, const mat *p);
 
 __END_DECLS
 

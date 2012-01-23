@@ -50,9 +50,10 @@ static void fm_const_pstr(strbuf str, const size_t i, const mat *x,\
 const fit_model fm_const =
 {
     "y(x) = p0",
-    &fm_const_func,
+    {&fm_const_func},
     &npar_1,
-    &fm_const_pstr,
+    {&fm_const_pstr},
+    1,
     1
 };
 
@@ -83,9 +84,10 @@ static void fm_expdec_pstr(strbuf str, const size_t i, const mat *x,\
 const fit_model fm_expdec = 
 {
     "y(x) = p1*exp(-p0*x)",
-    &fm_expdec_func,
+    {&fm_expdec_func},
     &npar_2,
-    &fm_expdec_pstr,
+    {&fm_expdec_pstr},
+    1,
     1
 };
 
@@ -116,9 +118,10 @@ static void fm_cosh_pstr(strbuf str, const size_t i, const mat *x,\
 const fit_model fm_cosh =
 {
     "y(x) = p1*cosh(p0*x)",
-    &fm_cosh_func,
+    {&fm_cosh_func},
     &npar_2,
-    &fm_cosh_pstr,
+    {&fm_cosh_pstr},
+    1,
     1
 };
 

@@ -382,10 +382,10 @@ void plot_add_hlineerr(plot *p, const double y, const double err,       \
     plot_add_hline(p,y,style,color1);
 }
 
-void plot_add_fit(plot *p, const fit_data *d, const size_t k, const mat *x_ex,\
-                  const mat *par, const bool do_sub, const unsigned int obj,  \
-                  const strbuf title, const strbuf style, const strbuf pcolor,\
-                  const strbuf lcolor)
+void plot_add_fit(plot *p, const fit_data *d, const size_t ky, const mat *x_ex,\
+                  const size_t kx, const mat *par, const bool do_sub,          \
+                  const unsigned int obj, const strbuf title,                  \
+                  const strbuf style, const strbuf pcolor, const strbuf lcolor)
 {
     mat *x,*x_err,*y,*y_err,*cor_data;
     bool have_x_err;
@@ -396,7 +396,7 @@ void plot_add_fit(plot *p, const fit_data *d, const size_t k, const mat *x_ex,\
     npt        = fit_data_fit_point_num(d);
     ndata      = fit_data_get_ndata(d);
     j          = 0;
-    have_x_err = fit_data_have_x_covar(d,k);
+    have_x_err = fit_data_have_x_covar(d,kx);
     
     x          = mat_create(npt,1);
     y          = mat_create(npt,1);
@@ -408,7 +408,7 @@ void plot_add_fit(plot *p, const fit_data *d, const size_t k, const mat *x_ex,\
     {
         if (obj & PF_FIT)
         {
-            fit_data_plot2dstr(plotstr,d,k,x_ex,par);
+            fit_data_plot2dstr(plotstr,d,ky,x_ex,kx,par);
             if (strlen(lcolor) == 0)
             {
                 strbufcpy(lcolcmd,"");
@@ -430,16 +430,16 @@ void plot_add_fit(plot *p, const fit_data *d, const size_t k, const mat *x_ex,\
         }
         if (do_sub)
         {
-            fit_partresidual(cor_data,par,d,x_ex,k);
+            fit_partresidual(cor_data,d,ky,x_ex,kx,par);
         }
         else
         {
-            mat_cp(cor_data,fit_data_pt_data(d));
+            mat_cp(cor_data,fit_data_pt_y(d));
         }
     }
     else
     {
-        mat_cp(cor_data,fit_data_pt_data(d));
+        fit_data_get_y_k(cor_data,d,ky);
     }
     if (obj & PF_DATA)
     {
@@ -447,14 +447,15 @@ void plot_add_fit(plot *p, const fit_data *d, const size_t k, const mat *x_ex,\
         {
             if (fit_data_is_fit_point(d,i))
             {
-                mat_set(x,j,0,fit_data_get_x(d,i,k));
+                mat_set(x,j,0,fit_data_get_x(d,i,kx));
                 if (have_x_err)
                 {
-                    mat_set(x_err,j,0,\
-                            sqrt(mat_get(fit_data_pt_x_covar(d,k,k),i,i)));
+                    mat_set(x_err,j,0,                                       \
+                            sqrt(mat_get(fit_data_pt_x_covar(d,kx,kx),i,i)));
                 }
                 mat_set(y,j,0,mat_get(cor_data,i,0));
-                mat_set(y_err,j,0,sqrt(mat_get(fit_data_pt_data_var(d),i,i)));
+                mat_set(y_err,j,0,                                       \
+                        sqrt(mat_get(fit_data_pt_y_covar(d,ky,ky),i,i)));
                 j++;
             }
         }

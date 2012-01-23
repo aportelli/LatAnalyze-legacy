@@ -103,10 +103,10 @@ void plot_add_hline(plot *p, const double y, const strbuf style,  \
 void plot_add_hlineerr(plot *p, const double y, const double err, \
                        const strbuf style, const strbuf color1,   \
                        const strbuf color2);
-void plot_add_fit(plot *p, const fit_data *d, const size_t k, const mat *x_ex,\
-                  const mat *par, const bool do_sub, const unsigned int obj,  \
-                  const strbuf title, const strbuf style, const strbuf pcolor,\
-                  const strbuf lcolor);
+void plot_add_fit(plot *p, const fit_data *d, const size_t ky, const mat *x_ex,\
+                  const size_t kx, const mat *par, const bool do_sub,          \
+                  const unsigned int obj, const strbuf title,                  \
+                  const strbuf style, const strbuf pcolor, const strbuf lcolor);
 
 /* plot parsing */
 latan_errno plot_parse(FILE* outstr, const plot *p);

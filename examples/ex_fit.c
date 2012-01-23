@@ -18,34 +18,35 @@
 int main(void)
 {
     plot *p;
-    mat *var,*x,*real_param,*fit_param;
+    mat *var,*x,*y,*real_param,*fit_param;
     size_t i;
     minalg_no alg;
-    double step;
+    double step,buf;
     fit_data *d;
     strbuf plotcmd;
     
     step = DRATIO(XMAX,NDATA);
     
-    var = mat_create(NDATA,1);
-    x   = mat_create(NDATA,1);
+    var        = mat_create(NDATA,1);
+    x          = mat_create(NDATA,1);
+    y          = mat_create(NDATA,1);
     real_param = mat_create(NPAR,1);
-    fit_param = mat_create(NPAR,1);
-    d = fit_data_create(NDATA,fm_expdec.ndim);
-    p = plot_create();
+    fit_param  = mat_create(NPAR,1);
+    d          = fit_data_create(NDATA,fm_expdec.nxdim,fm_expdec.nydim);
+    p          = plot_create();
     
     randgen_init_from_time();
     mat_set(real_param,0,0,0.5);
     mat_set(real_param,1,0,5.0);
     mat_cst(var,SQ(ERR));
     fit_data_set_model(d,&fm_expdec,NULL);
-    fit_data_set_data_var(d,var);
+    fit_data_set_y_covar(d,0,0,var);
     printf("-- generating exponential decay data with gaussian errors...\n");
     for (i=0;i<NDATA;i++)
     {
         fit_data_set_x(d,i,0,i*step);
-        fit_data_set_data(d,i,fit_data_model_eval(d,i,real_param)\
-                          +rand_n(0.0,ERR));
+        buf = fit_data_model_eval(d,0,i,real_param)+rand_n(0.0,ERR);
+        fit_data_set_y(d,i,0,buf);
     }
     fit_data_fit_all_points(d,true);
     latan_set_verb(DEBUG);
@@ -66,14 +67,16 @@ int main(void)
         plot_add_plot(p,plotcmd);
     }
     mat_eqsqrt(var);
-    mat_transpose(x,fit_data_pt_x(d));
-    plot_add_dat_yerr(p,x,fit_data_pt_data(d),var,"","");
+    fit_data_get_x_k(x,d,0);
+    fit_data_get_y_k(y,d,0);
+    plot_add_dat_yerr(p,x,y,var,"","");
     plot_disp(p);
     plot_destroy(p);
     
     fit_data_destroy(d);
     mat_destroy(var);
     mat_destroy(x);
+    mat_destroy(y);
     mat_destroy(real_param);
     mat_destroy(fit_param);
     

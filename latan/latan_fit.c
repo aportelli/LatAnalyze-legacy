@@ -29,10 +29,11 @@
 
 /*                       internal functions prototypes                      */
 /****************************************************************************/
+static size_t rowmaj(const size_t i, const size_t j, const size_t dim1,\
+                     const size_t dim2);
 static size_t sym_rowmaj(const size_t i, const size_t j, const size_t dim);
-static size_t get_Ysize(const fit_data *d);
+static size_t get_Xsize(const fit_data *d);
 static void init_chi2(fit_data *d, const int thread, const int nthread);
-
 
 /*                          fit model structure                             */
 /****************************************************************************/
@@ -70,24 +71,39 @@ size_t fit_model_get_npar(const fit_model *model,void *model_param)
     return npar;
 }
 
-double fit_model_eval(const fit_model *model, const mat *x, const mat *p,\
-                      void *model_param)
+double fit_model_eval(const fit_model *model, const size_t k, const mat *x,\
+                      const mat *p, void *model_param)
 {
     double res;
 
-    res   =  model->func(x,p,model_param);
+    res   =  model->func[k](x,p,model_param);
     
     return res;
 }
 
-void fit_model_plot2dstr(strbuf str, const fit_model *model, const size_t k,\
-                         const mat *x, const mat *p, void *model_param)
+void fit_model_plot2dstr(strbuf str, const fit_model *model, const size_t kx,\
+                         const size_t ky, const mat *x, const mat *p,        \
+                         void *model_param)
 {
-    model->plot2dstr(str,k,x,p,model_param);
+    model->plot2dstr[ky](str,kx,x,p,model_param);
 }
 
 /*                          fit data structure                              */
 /****************************************************************************/
+static size_t rowmaj(const size_t i, const size_t j, const size_t dim1,\
+                     const size_t dim2)
+{
+    size_t ind,x[2],dim[2];
+    
+    x[0]   = i;
+    x[1]   = j;
+    dim[0] = dim1;
+    dim[1] = dim2;
+    ind    = coord_to_rowmaj(x,dim,2);
+    
+    return ind;
+}
+
 static size_t sym_rowmaj(const size_t i, const size_t j, const size_t dim)
 {
     size_t si,sj,ind;
@@ -106,28 +122,33 @@ static size_t sym_rowmaj(const size_t i, const size_t j, const size_t dim)
 }
 
 /** allocation **/
-fit_data *fit_data_create(const size_t ndata, const size_t ndim)
+fit_data *fit_data_create(const size_t ndata, const size_t nxdim,\
+                          const size_t nydim)
 {
     fit_data *d;
     size_t i,k,k1,k2;
     
     MALLOC_ERRVAL(d,fit_data *,1,NULL);
     MALLOC_ERRVAL(d->to_fit,bool*,ndata,NULL);
-    MALLOC_ERRVAL(d->have_x_covar,bool *,ndim,NULL);
-    MALLOC_ERRVAL(d->have_xdata_covar,bool *,ndim,NULL);
-    d->x            = mat_create(ndim,ndata);
-    d->x_covar      = mat_ar_create(ndim*(ndim+1)/2,ndata,ndata);
-    d->data         = mat_create(ndata,1);
-    d->data_var     = mat_create(ndata,ndata);
-    d->data_var_inv = mat_create(ndata,ndata);
-    d->xdata_covar  = mat_ar_create(ndim,ndata,ndata);
+    MALLOC_ERRVAL(d->have_x_covar,bool *,nxdim,NULL);
+    MALLOC_ERRVAL(d->have_xy_covar,bool *,nxdim,NULL);
+    d->x         = mat_create(nxdim,ndata);
+    d->x_covar   = mat_ar_create(nxdim*(nxdim+1)/2,ndata,ndata);
+    d->y         = mat_create(nydim,ndata);
+    d->y_covar   = mat_ar_create(nydim*(nydim+1)/2,ndata,ndata);
+    d->y_var_inv = mat_create(ndata*nydim,ndata);
+    mat_assume_sym(d->y_var_inv,true);
+    d->xy_covar  = mat_ar_create(nxdim*nydim,ndata,ndata);
 
     d->ndata           = ndata;
-    d->ndim            = ndim;
+    d->nxdim           = nxdim;
+    d->nydim           = nydim;
+    d->model           = NULL;
+    d->model_param     = NULL;
     d->npar            = 0;
     d->x_var_inv       = NULL;
     d->is_x_correlated = false;
-    for (k=0;k<ndim;k++)
+    for (k=0;k<nxdim;k++)
     {
         d->have_x_covar[k] = false;
     }
@@ -135,41 +156,52 @@ fit_data *fit_data_create(const size_t ndata, const size_t ndim)
     {
         d->to_fit[i] = false;
     }
-    d->is_data_correlated = false;
-    for (k=0;k<ndim;k++)
+    d->is_y_correlated = false;
+    for (k=0;k<nxdim;k++)
     {
-        d->have_xdata_covar[k] = false;
+        d->have_xy_covar[k] = false;
     }
     d->var_inv       = NULL;
     d->is_inverted   = false;
-    d->model         = NULL;
-    d->model_param   = NULL;
     d->chi2pdof      = -1.0;
     d->save_chi2pdof = true;
     d->buf           = NULL;
     d->nbuf          = 0;
 
-    for (k1=0;k1<ndim;k1++)
+    for (k1=0;k1<nxdim;k1++)
     {
-        for (k2=k1;k2<ndim;k2++)
+        for (k2=k1;k2<nxdim;k2++)
         {
             if (k1 == k2)
             {
-                mat_id(d->x_covar[sym_rowmaj(k1,k2,ndim)]);
+                mat_id(d->x_covar[sym_rowmaj(k1,k2,nxdim)]);
             }
             else
             {
-                mat_zero(d->x_covar[sym_rowmaj(k1,k2,ndim)]);
+                mat_zero(d->x_covar[sym_rowmaj(k1,k2,nxdim)]);
             }
 
         }
     }
-    mat_id(d->data_var);
-    mat_assume_sym(d->data_var,true);
-    mat_assume_sym(d->data_var_inv,true);
-    for (k=0;k<ndim;k++)
+    for (k1=0;k1<nydim;k1++)
     {
-        mat_zero(d->xdata_covar[k]);
+        for (k2=k1;k2<nydim;k2++)
+        {
+            if (k1 == k2)
+            {
+                mat_id(d->y_covar[sym_rowmaj(k1,k2,nydim)]);
+            }
+            else
+            {
+                mat_zero(d->y_covar[sym_rowmaj(k1,k2,nydim)]);
+            }
+            
+        }
+    }
+    for (k1=0;k1<nydim;k1++)
+    for (k2=0;k2<nxdim;k2++)
+    {
+        mat_zero(d->xy_covar[rowmaj(k1,k2,nydim,nxdim)]);
     }
 
     return d;
@@ -180,17 +212,17 @@ void fit_data_destroy(fit_data *d)
     int i;
 
     mat_destroy(d->x);
-    mat_ar_destroy(d->x_covar,d->ndim*(d->ndim+1)/2);
+    mat_ar_destroy(d->x_covar,d->nxdim*(d->nxdim+1)/2);
     if (d->x_var_inv != NULL)
     {
         mat_destroy(d->x_var_inv);
     }
     FREE(d->have_x_covar);
-    FREE(d->have_xdata_covar);
-    mat_destroy(d->data);
-    mat_destroy(d->data_var);
-    mat_destroy(d->data_var_inv);
-    mat_ar_destroy(d->xdata_covar,d->ndim);
+    FREE(d->have_xy_covar);
+    mat_destroy(d->y);
+    mat_ar_destroy(d->y_covar,d->nydim*(d->nydim+1)/2);
+    mat_destroy(d->y_var_inv);
+    mat_ar_destroy(d->xy_covar,d->nydim*d->nxdim);
     if (d->var_inv != NULL)
     {
         mat_destroy(d->var_inv);
@@ -198,12 +230,12 @@ void fit_data_destroy(fit_data *d)
     for(i=0;i<d->nbuf;i++)
     {
         mat_destroy(d->buf[i].x);
-        mat_destroy(d->buf[i].X);
-        mat_destroy(d->buf[i].CdX);
+        mat_destroy(d->buf[i].Y);
+        mat_destroy(d->buf[i].CyY);
         if (d->buf[i].is_xpart_alloc)
         {
-            mat_destroy(d->buf[i].Y);
-            mat_destroy(d->buf[i].CxY);
+            mat_destroy(d->buf[i].X);
+            mat_destroy(d->buf[i].CxX);
             mat_destroy(d->buf[i].lX);
             mat_destroy(d->buf[i].ClX);
         }
@@ -220,9 +252,14 @@ size_t fit_data_get_ndata(const fit_data *d)
     return d->ndata;
 }
 
-size_t fit_data_get_ndim(const fit_data *d)
+size_t fit_data_get_nydim(const fit_data *d)
 {
-    return d->ndim;
+    return d->nydim;
+}
+
+size_t fit_data_get_nxdim(const fit_data *d)
+{
+    return d->nxdim;
 }
 
 size_t fit_data_get_npar(const fit_data *d)
@@ -241,6 +278,122 @@ double fit_data_get_chi2pdof(const fit_data *d)
     return d->chi2pdof;
 }
 
+/*** data ***/
+void fit_data_set_y(fit_data *d, const size_t i, const size_t k,\
+                    const double y_ik)
+{
+    mat_set(d->y,k,i,y_ik);
+}
+
+latan_errno fit_data_set_y_k(fit_data *d, const size_t i, const mat *y_i)
+{
+    latan_errno status;
+    gsl_vector_view y_vview;
+    
+    y_vview = gsl_matrix_column(y_i->data_cpu,0);
+    status  = gsl_matrix_set_row(d->y->data_cpu,i,&(y_vview.vector));
+    
+    return status;
+}
+
+double fit_data_get_y(const fit_data *d, const size_t i, const size_t k)
+{
+    return mat_get(d->y,k,i);
+}
+
+latan_errno fit_data_get_y_k(mat *y_i, const fit_data *d, const size_t i)
+{
+    latan_errno status;
+    gsl_vector_view y_vview;
+    
+    y_vview = gsl_matrix_column(y_i->data_cpu,0);
+    status  = gsl_matrix_get_row(&(y_vview.vector),d->y->data_cpu,i);
+    
+    return status;
+}
+
+mat *fit_data_pt_y(const fit_data *d)
+{
+    return d->y;
+}
+
+latan_errno fit_data_set_y_covar(fit_data *d, const size_t k1,  \
+                                 const size_t k2, const mat *var)
+{
+    latan_errno status;
+    size_t ind;
+    
+    ind                 = sym_rowmaj(k1,k2,d->nydim);
+    d->is_y_correlated  = d->is_y_correlated \
+    || (mat_is_square(var) || (k1 != k2));
+    d->is_inverted      = false;
+    
+    if (mat_is_square(var))
+    {
+        status = mat_cp(d->y_covar[ind],var);
+    }
+    else
+    {
+        mat_zero(d->y_covar[ind]);
+        status = mat_set_diag(d->y_covar[ind],var);
+    }
+    
+    return status;
+}
+
+const mat * fit_data_pt_y_covar(const fit_data *d, const size_t k1,\
+                                const size_t k2)
+{
+    size_t ind;
+    
+    ind = sym_rowmaj(k1,k2,d->nydim);
+    
+    return d->y_covar[ind];
+}
+
+bool fit_data_is_y_correlated(const fit_data *d)
+{
+    return d->is_y_correlated;
+}
+
+latan_errno fit_data_set_xy_covar(fit_data *d, const size_t ky, \
+                                  const size_t kx, const mat *covar)
+{
+    latan_errno status;
+    size_t ind;
+    
+    d->have_xy_covar[kx] = true;
+    d->is_inverted       = false;
+    ind                  = rowmaj(ky,kx,d->nydim,d->nxdim);
+    
+    if (mat_is_square(covar))
+    {
+        status = mat_cp(d->xy_covar[ind],covar);
+    }
+    else
+    {
+        mat_zero(d->xy_covar[ind]);
+        status = mat_set_diag(d->xy_covar[ind],covar);
+    }
+    
+    return status;
+}
+
+bool fit_data_have_xy_covar(const fit_data *d)
+{
+    size_t k;
+    bool have_xdata_covar;
+    
+    have_xdata_covar = false;
+    
+    for (k=0;k<d->nxdim;k++)
+    {
+        have_xdata_covar = have_xdata_covar || d->have_xy_covar[k];
+    }
+    
+    return have_xdata_covar;
+}
+
 /*** fit points ***/
 void fit_data_set_x(fit_data *d, const size_t i, const size_t k,\
                     const double x_ik)
@@ -248,7 +401,7 @@ void fit_data_set_x(fit_data *d, const size_t i, const size_t k,\
     mat_set(d->x,k,i,x_ik);
 }
 
-latan_errno fit_data_set_x_vec(fit_data *d, const size_t i, const mat *x_i)
+latan_errno fit_data_set_x_k(fit_data *d, const size_t i, const mat *x_i)
 {
     latan_errno status;
     gsl_vector_view x_vview;
@@ -264,7 +417,7 @@ double fit_data_get_x(const fit_data *d, const size_t i, const size_t k)
     return mat_get(d->x,k,i);
 }
 
-latan_errno fit_data_get_x_vec(mat *x_i, const fit_data *d, const size_t i)
+latan_errno fit_data_get_x_k(mat *x_i, const fit_data *d, const size_t i)
 {
     latan_errno status;
     gsl_vector_view x_vview;
@@ -286,7 +439,7 @@ latan_errno fit_data_set_x_covar(fit_data *d, const size_t k1,  \
     latan_errno status;
     size_t ind;
 
-    ind                 = sym_rowmaj(k1,k2,d->ndim);
+    ind                 = sym_rowmaj(k1,k2,d->nxdim);
     d->have_x_covar[k1] = true;
     d->have_x_covar[k2] = true;
     d->is_x_correlated  = d->is_x_correlated \
@@ -311,7 +464,7 @@ const mat * fit_data_pt_x_covar(const fit_data *d, const size_t k1,\
 {
     size_t ind;
     
-    ind = sym_rowmaj(k1,k2,d->ndim);
+    ind = sym_rowmaj(k1,k2,d->nxdim);
     
     return d->x_covar[ind];
 }
@@ -328,7 +481,7 @@ bool fit_data_have_x_var(const fit_data *d)
 
     have_x_var = false;
 
-    for (k=0;k<d->ndim;k++)
+    for (k=0;k<d->nxdim;k++)
     {
         have_x_var = have_x_var || d->have_x_covar[k];
     }
@@ -390,7 +543,7 @@ void fit_data_fit_region(fit_data *d, double **xb)
     for (i=0;i<d->ndata;i++)
     {
         fit = true;
-        for (k=0;k<d->ndim;k++)
+        for (k=0;k<d->nxdim;k++)
         {
             if (xb[k] != NULL)
             {
@@ -430,93 +583,11 @@ size_t fit_data_fit_point_num(const fit_data *d)
     return nfitpt;
 }
 
-/*** data ***/
-void fit_data_set_data(fit_data *d, const size_t i, const double data_i)
-{
-    mat_set(d->data,i,0,data_i);
-}
-
-double fit_data_get_data(const fit_data *d, const size_t i)
-{
-    return mat_get(d->data,i,0);
-}
-
-mat *fit_data_pt_data(const fit_data *d)
-{
-    return d->data;
-}
-
-latan_errno fit_data_set_data_var(fit_data *d, const mat *var)
-{
-    latan_errno status;
-    
-    d->is_data_correlated = mat_is_square(var);
-    d->is_inverted        = false;
-    
-    if (mat_is_square(var))
-    {
-        status = mat_cp(d->data_var,var);
-    }
-    else
-    {
-        mat_zero(d->data_var);
-        status = mat_set_diag(d->data_var,var);
-    }
-    
-    return status;
-}
-
-const mat * fit_data_pt_data_var(const fit_data *d)
-{
-    return d->data_var;
-}
-
-bool fit_data_is_data_correlated(const fit_data *d)
-{
-    return d->is_data_correlated;
-}
-
-latan_errno fit_data_set_xdata_covar(fit_data *d, const size_t k,\
-                                     const mat *covar)
-{
-    latan_errno status;
-
-    d->have_xdata_covar[k] = true;
-    d->is_inverted         = false;
-
-    if (mat_is_square(covar))
-    {
-        status = mat_cp(d->xdata_covar[k],covar);
-    }
-    else
-    {
-        mat_zero(d->xdata_covar[k]);
-        status = mat_set_diag(d->xdata_covar[k],covar);
-    }
-
-    return status;
-}
-
-bool fit_data_have_xdata_covar(const fit_data *d)
-{
-    size_t k;
-    bool have_xdata_covar;
-
-    have_xdata_covar = false;
-
-    for (k=0;k<d->ndim;k++)
-    {
-        have_xdata_covar = have_xdata_covar || d->have_xdata_covar[k];
-    }
-
-    return have_xdata_covar;
-}
-
 /*** model ***/
 latan_errno fit_data_set_model(fit_data *d, const fit_model *model,\
                                void *model_param)
 {
-    if (model->ndim != d->ndim)
+    if ((model->nxdim != d->nxdim)||(model->nydim != d->nydim))
     {
         LATAN_ERROR("fit model and fit data dimension mismatch",LATAN_EBADLEN);
     }
@@ -528,32 +599,34 @@ latan_errno fit_data_set_model(fit_data *d, const fit_model *model,\
     return LATAN_SUCCESS;
 }
 
-double fit_data_model_xeval(const fit_data *d, const mat *x, const mat *p)
+double fit_data_model_xeval(const fit_data *d, const size_t k, const mat *x,\
+                            const mat *p)
 {
-    return fit_model_eval(d->model,x,p,d->model_param);
+    return fit_model_eval(d->model,k,x,p,d->model_param);
 }
 
 /* CRITICALLY CALLED FUNCTION
  * fit_data_model_eval is heavily called during one call of minimize function,
  * optimization is done using GSL matrix view
  */
-double fit_data_model_eval(const fit_data *d, const size_t i, const mat *p)
+double fit_data_model_eval(const fit_data *d, const size_t k, const size_t i,\
+                           const mat *p)
 {
     mat x_i;
     gsl_matrix_view x_view;
     double res;
     
-    x_view       = gsl_matrix_submatrix(d->x->data_cpu,0,i,d->ndim,1);
+    x_view       = gsl_matrix_submatrix(d->x->data_cpu,0,i,d->nxdim,1);
     x_i.data_cpu = &(x_view.matrix);
-    res          = fit_data_model_xeval(d,&x_i,p);
+    res          = fit_data_model_xeval(d,k,&x_i,p);
     
     return res;
 }
 
-void fit_data_plot2dstr(strbuf str, const fit_data *d, const size_t k,\
-                        const mat *x, const mat *p)
+void fit_data_plot2dstr(strbuf str, const fit_data *d, const size_t ky,\
+                        const mat *x, const size_t kx, const mat *p)
 {
-    fit_model_plot2dstr(str,d->model,k,x,p,d->model_param);
+    fit_model_plot2dstr(str,d->model,kx,ky,x,p,d->model_param);
 }
 
 /*** dof ***/
@@ -569,15 +642,15 @@ size_t fit_data_get_dof(const fit_data *d)
 /*                          chi2 function                                   */
 /****************************************************************************/
 /*** compute size of Y vector for chi2 ***/
-static size_t get_Ysize(const fit_data *d)
+static size_t get_Xsize(const fit_data *d)
 {
     size_t Ysize;
     size_t k;
 
     Ysize = 0;
-    for (k=0;k<d->ndim;k++)
+    for (k=0;k<d->nxdim;k++)
     {
-        if (d->have_xdata_covar[k]||d->have_x_covar[k])
+        if (d->have_xy_covar[k]||d->have_x_covar[k])
         {
             Ysize += d->ndata;
         }
@@ -589,24 +662,25 @@ static size_t get_Ysize(const fit_data *d)
 /*** (re)allocate chi2 buffers and invert variance matrices ***/
 static void init_chi2(fit_data *d, const int thread, const int nthread)
 {
-    mat *txdata_covar_k,*tx_covar_k1k2;
+    mat *tmp_covar;
     int t;
     size_t i,k,k1,k2;
-    size_t ind,ndata,ndim,lXsize,Ysize,px_ind,px_ind1,px_ind2;
+    size_t ind,ndata,nydim,nxdim,lXsize,Ysize,Xsize,px_ind,px_ind1,px_ind2;
     double inv;
-    bool have_xdata_covar;
+    bool have_xy_covar;
 
 #ifdef _OPENMP
     #pragma omp critical
 #endif
     {
-        txdata_covar_k   = NULL;
-        tx_covar_k1k2    = NULL;
-        have_xdata_covar = fit_data_have_xdata_covar(d);
-        ndata            = d->ndata;
-        ndim             = d->ndim;
-        Ysize            = get_Ysize(d);
-        lXsize           = ndata + Ysize;
+        tmp_covar      = NULL;
+        have_xy_covar  = fit_data_have_xy_covar(d);
+        ndata          = fit_data_get_ndata(d);
+        nydim          = fit_data_get_nydim(d);
+        nxdim          = fit_data_get_nxdim(d);
+        Ysize          = ndata*nydim;
+        Xsize          = get_Xsize(d);
+        lXsize         = Ysize + Xsize;
         
         /* (re)allocating buffers if necessary */
         if (nthread > d->nbuf)
@@ -614,21 +688,21 @@ static void init_chi2(fit_data *d, const int thread, const int nthread)
             REALLOC_NOERRET(d->buf,d->buf,chi2_buf *,nthread);
             for (t=d->nbuf;t<nthread;t++)
             {
-                d->buf[t].x   = mat_create(ndim,1);
-                d->buf[t].X   = mat_create(ndata,1);
-                d->buf[t].CdX = mat_create(ndata,1);
-                if (Ysize > 0)
+                d->buf[t].x   = mat_create(nxdim,1);
+                d->buf[t].Y   = mat_create(Ysize,1);
+                d->buf[t].CyY = mat_create(Ysize,1);
+                if (Xsize > 0)
                 {
-                    d->buf[t].Y              = mat_create(Ysize,1);
-                    d->buf[t].CxY            = mat_create(Ysize,1);
+                    d->buf[t].X              = mat_create(Xsize,1);
+                    d->buf[t].CxX            = mat_create(Xsize,1);
                     d->buf[t].lX             = mat_create(lXsize,1);
                     d->buf[t].ClX            = mat_create(lXsize,1);
                     d->buf[t].is_xpart_alloc = true;
                 }
                 else
                 {
-                    d->buf[t].Y              = NULL;
-                    d->buf[t].CxY            = NULL;
+                    d->buf[t].X              = NULL;
+                    d->buf[t].CxX            = NULL;
                     d->buf[t].lX             = NULL;
                     d->buf[t].ClX            = NULL;
                     d->buf[t].is_xpart_alloc = false;
@@ -636,24 +710,24 @@ static void init_chi2(fit_data *d, const int thread, const int nthread)
             }
             d->nbuf = nthread;
         }
-        else if (Ysize > 0)
+        else if (Xsize > 0)
         {
             if ((d->buf[thread].is_xpart_alloc\
-                &&((nrow(d->buf[thread].Y)  != Ysize)\
-                ||(nrow(d->buf[thread].CxY) != Ysize) \
+                &&((nrow(d->buf[thread].X)  != Xsize)\
+                ||(nrow(d->buf[thread].CxX) != Xsize) \
                 ||(nrow(d->buf[thread].lX)  != lXsize)\
                 ||(nrow(d->buf[thread].ClX) != lXsize)))
                 ||(!d->buf[thread].is_xpart_alloc))
             {
                 if (d->buf[thread].is_xpart_alloc)
                 {
-                    mat_destroy(d->buf[thread].Y);
-                    mat_destroy(d->buf[thread].CxY);
+                    mat_destroy(d->buf[thread].X);
+                    mat_destroy(d->buf[thread].CxX);
                     mat_destroy(d->buf[thread].lX);
                     mat_destroy(d->buf[thread].ClX);
                 }
-                d->buf[thread].Y              = mat_create(Ysize,1);
-                d->buf[thread].CxY            = mat_create(Ysize,1);
+                d->buf[thread].X              = mat_create(Xsize,1);
+                d->buf[thread].CxX            = mat_create(Xsize,1);
                 d->buf[thread].lX             = mat_create(lXsize,1);
                 d->buf[thread].ClX            = mat_create(lXsize,1);
                 d->buf[thread].is_xpart_alloc = true;
@@ -661,7 +735,7 @@ static void init_chi2(fit_data *d, const int thread, const int nthread)
             
         }
         /* (re)allocating global inverse variance matrix if necessary */
-        if (have_xdata_covar)
+        if (have_xy_covar)
         {
             if (d->var_inv == NULL)
             {
@@ -678,21 +752,38 @@ static void init_chi2(fit_data *d, const int thread, const int nthread)
         /* inverting covariance matrices if necessary */
         if (!d->is_inverted)
         {
-            /** inversing data variance matrix **/
-            if (have_xdata_covar)
+            tmp_covar = mat_create(ndata,ndata);
+            
+            /** inverting data variance matrix **/
+            mat_zero(d->y_var_inv);
+            /*** building y variance matrix by blocks ***/
+            for (k1=0;k1<nydim;k1++)
+            for (k2=0;k2<nydim;k2++)
             {
-                mat_set_subm(d->var_inv,d->data_var,0,0,ndata-1,ndata-1);
+                ind = sym_rowmaj(k1,k2,nydim);
+                mat_set_subm(d->y_var_inv,d->y_covar[ind],k1*ndata,k2*ndata,\
+                             (k1+1)*ndata-1,(k2+1)*ndata-1);
+                if (k1 != k2)
+                {
+                    mat_transpose(tmp_covar,d->y_covar[ind]);
+                    mat_set_subm(d->y_var_inv,tmp_covar,k2*ndata,k1*ndata,\
+                                 (k2+1)*ndata-1,(k1+1)*ndata-1);
+                }
             }
-            if (fit_data_is_data_correlated(d))
+            if (have_xy_covar)
             {
-                mat_inv(d->data_var_inv,d->data_var);
+                mat_set_subm(d->var_inv,d->y_var_inv,0,0,Ysize-1,Ysize-1);
+            }
+            /*** inversion ***/
+            if (fit_data_is_y_correlated(d))
+            {
+                mat_eqinv(d->y_var_inv);
             }
             else
             {
-                mat_zero(d->data_var_inv);
                 for (i=0;i<ndata;i++)
                 {
-                    inv = 1.0/mat_get(d->data_var,i,i);
+                    inv = 1.0/mat_get(d->y_var_inv,i,i);
                     if (gsl_isinf(inv))
                     {
                         strbuf errmsg;
@@ -702,53 +793,51 @@ static void init_chi2(fit_data *d, const int thread, const int nthread)
                         LATAN_WARNING(errmsg,LATAN_EDOM);
                         inv = 0.0;
                     }
-                    mat_set(d->data_var_inv,i,i,inv);
+                    mat_set(d->y_var_inv,i,i,inv);
                 }
             }
             latan_printf(DEBUG,"Cd^-1=\n");
             if (latan_get_verb() == DEBUG)
             {
-                mat_print(d->data_var_inv,"% 6.1e");
+                mat_print(d->y_var_inv,"% 6.1e");
             }
-            /** inversing x variance matrix **/
-            if (fit_data_have_x_var(d)||have_xdata_covar)
+            /** inverting x variance matrix **/
+            if (fit_data_have_x_var(d)||have_xy_covar)
             {
-                tx_covar_k1k2 = mat_create(ndata,ndata);
-
                 /*** (re)allocating x inverse variance matrix if necessary ***/
                 if (d->x_var_inv == NULL)
                 {
-                    d->x_var_inv = mat_create(Ysize,Ysize);
+                    d->x_var_inv = mat_create(Xsize,Xsize);
                     mat_assume_sym(d->x_var_inv,true);
                 }
-                else if (nrow(d->x_var_inv) != Ysize)
+                else if (nrow(d->x_var_inv) != Xsize)
                 {
                     mat_destroy(d->x_var_inv);
-                    d->x_var_inv = mat_create(Ysize,Ysize);
+                    d->x_var_inv = mat_create(Xsize,Xsize);
                     mat_assume_sym(d->x_var_inv,true);
                 }
                 mat_zero(d->x_var_inv);
                 /*** building x variance matrix by blocks ***/
                 px_ind1 = 0;
-                for (k1=0;k1<ndim;k1++)
+                for (k1=0;k1<nxdim;k1++)
                 {
                     if (fit_data_have_x_covar(d,k1))
                     {
                         px_ind2 = px_ind1;
-                        for (k2=k1;k2<ndim;k2++)
+                        for (k2=k1;k2<nxdim;k2++)
                         {
                             if (fit_data_have_x_covar(d,k2))
                             {
-                                ind = sym_rowmaj(k1,k2,ndim);
+                                ind = sym_rowmaj(k1,k2,nxdim);
                                 mat_set_subm(d->x_var_inv,d->x_covar[ind],\
                                              px_ind1*ndata,px_ind2*ndata, \
                                              (px_ind1+1)*ndata-1,         \
                                              (px_ind2+1)*ndata-1);
                                 if (k1 != k2)
                                 {
-                                    mat_transpose(tx_covar_k1k2,\
+                                    mat_transpose(tmp_covar,\
                                                   d->x_covar[ind]);
-                                    mat_set_subm(d->x_var_inv,tx_covar_k1k2,\
+                                    mat_set_subm(d->x_var_inv,tmp_covar,\
                                                  px_ind2*ndata,px_ind1*ndata, \
                                                  (px_ind2+1)*ndata-1,         \
                                                  (px_ind1+1)*ndata-1);
@@ -760,9 +849,9 @@ static void init_chi2(fit_data *d, const int thread, const int nthread)
                         px_ind1++;
                     }
                 }
-                if (have_xdata_covar)
+                if (have_xy_covar)
                 {
-                    mat_set_subm(d->var_inv,d->x_var_inv,ndata,ndata,\
+                    mat_set_subm(d->var_inv,d->x_var_inv,Ysize,Ysize,\
                                  lXsize-1,lXsize-1);
                 }
                 /*** inversion ***/
@@ -772,7 +861,7 @@ static void init_chi2(fit_data *d, const int thread, const int nthread)
                 }
                 else
                 {
-                    for (i=0;i<Ysize;i++)
+                    for (i=0;i<Xsize;i++)
                     {
                         inv = 1.0/mat_get(d->x_var_inv,i,i);
                         if (gsl_isinf(inv))
@@ -789,25 +878,24 @@ static void init_chi2(fit_data *d, const int thread, const int nthread)
                     mat_print(d->x_var_inv,"% 6.1e");
                 }
                 
-                mat_destroy(tx_covar_k1k2);
             }
-            /** inversing global variance matrix **/
-            if (have_xdata_covar)
+            /** inverting global variance matrix **/
+            if (have_xy_covar)
             {
-                txdata_covar_k = mat_create(ndata,ndata);
-
                 px_ind = 0;
-                for (k=0;k<ndim;k++)
+                for (k1=0;k1<nydim;k1++)
+                for (k2=0;k2<nxdim;k2++)
                 {
-                    if (d->have_xdata_covar[k])
+                    ind = rowmaj(k1,k2,nydim,nxdim);
+                    if (d->have_xy_covar[k2])
                     {
-                        mat_set_subm(d->var_inv,d->xdata_covar[k],0,\
-                                     (px_ind+1)*ndata,ndata-1,      \
-                                     (px_ind+2)*ndata-1);
-                        mat_transpose(txdata_covar_k,d->xdata_covar[k]);
-                        mat_set_subm(d->var_inv,txdata_covar_k,            \
-                                     (px_ind+1)*ndata,0,(px_ind+2)*ndata-1,\
-                                     ndata-1);
+                        mat_set_subm(d->var_inv,d->xy_covar[ind],k1*ndata,\
+                                     px_ind*ndata+Ysize,(k1+1)*ndata-1,   \
+                                     (px_ind+1)*ndata+Ysize-1);
+                        mat_transpose(tmp_covar,d->xy_covar[k]);
+                        mat_set_subm(d->var_inv,tmp_covar,px_ind*ndata+Ysize,\
+                                     k1*ndata,(px_ind+1)*ndata+Ysize-1,      \
+                                     (k1+1)*ndata-1);
                         px_ind++;
                     }
                 }
@@ -818,9 +906,10 @@ static void init_chi2(fit_data *d, const int thread, const int nthread)
                     mat_print(d->var_inv,"% 6.1e");
                 }
 
-                mat_destroy(txdata_covar_k);
             }
             d->is_inverted = true;
+            
+            mat_destroy(tmp_covar);
         }
     }
 }
@@ -868,14 +957,15 @@ double chi2(mat *p, void *vd)
 {
     fit_data *d;
     int nthread,thread;
-    size_t ndata,ndim,npar,px_ind;
+    size_t ndata,nxdim,nydim,npar,px_ind;
     size_t i,k;
-    mat *x,*X,*CdX,*Cd,*Y,*CxY,*Cx,*lX,*ClX,*C;
+    mat *x,*Y,*CyY,*Cy,*X,*CxX,*Cx,*lX,*ClX,*C;
     double res,buf,eval;
     
     d       = (fit_data *)vd;
     ndata   = fit_data_get_ndata(d);
-    ndim    = fit_data_get_ndim(d);
+    nxdim   = fit_data_get_nxdim(d);
+    nydim   = fit_data_get_nydim(d);
     npar    = fit_data_get_npar(d);
 #ifdef _OPENMP
     nthread = omp_get_num_threads();
@@ -888,11 +978,11 @@ double chi2(mat *p, void *vd)
     /* buffers and inverse variance matrices initialization */
     init_chi2(d,thread,nthread);
     x   = d->buf[thread].x;
-    X   = d->buf[thread].X;
-    CdX = d->buf[thread].CdX;
-    Cd  = d->data_var_inv;
     Y   = d->buf[thread].Y;
-    CxY = d->buf[thread].CxY;
+    CyY = d->buf[thread].CyY;
+    Cy  = d->y_var_inv;
+    X   = d->buf[thread].X;
+    CxX = d->buf[thread].CxX;
     Cx  = d->x_var_inv;
     lX  = d->buf[thread].lX;
     ClX = d->buf[thread].ClX;
@@ -906,12 +996,12 @@ double chi2(mat *p, void *vd)
             px_ind = 0;
             if (fit_data_is_fit_point(d,i))
             {
-                for (k=0;k<ndim;k++)
+                for (k=0;k<nxdim;k++)
                 {
                     if (fit_data_have_x_covar(d,k))
                     {
                         buf = mat_get(p,npar+px_ind*ndata+i,0);
-                        mat_set(Y,px_ind*ndata+i,0,buf-fit_data_get_x(d,i,k));
+                        mat_set(X,px_ind*ndata+i,0,buf-fit_data_get_x(d,i,k));
                         px_ind++;
                     }
                     else
@@ -920,57 +1010,69 @@ double chi2(mat *p, void *vd)
                     }
                     mat_set(x,k,0,buf);
                 }
-                eval = fit_model_eval(d->model,x,p,d->model_param);
-                mat_set(X,i,0,eval - fit_data_get_data(d,i));
+                for (k=0;k<nydim;k++)
+                {
+                    eval = fit_model_eval(d->model,k,x,p,d->model_param);
+                    mat_set(Y,k*ndata+i,0,eval - fit_data_get_y(d,i,k));
+                }
             }
             else
             {
 
-                for (k=0;k<ndim;k++)
+                for (k=0;k<nxdim;k++)
                 {
                     if (fit_data_have_x_covar(d,k))
                     {
-                        mat_set(Y,px_ind*ndata+i,0,0.0);
+                        mat_set(X,px_ind*ndata+i,0,0.0);
                         px_ind++;
                     }
                 }
-                mat_set(X,i,0,0.0);
+                for (k=0;k<nydim;k++)
+                {
+                    mat_set(Y,k*ndata+i,0,0.0);
+                }
             }
         }
     }
-    /* setting X in case of no covariance in x */
+    /* setting Y in case of no covariance in x */
     else
     {
         for (i=0;i<ndata;i++)
         {
             if (fit_data_is_fit_point(d,i))
             {
-                mat_set(X,i,0,fit_data_model_eval(d,i,p)\
-                        -fit_data_get_data(d,i));
+                for (k=0;k<nydim;k++)
+                {
+                    mat_set(Y,k*ndata+i,0,fit_data_model_eval(d,k,i,p)\
+                            -fit_data_get_y(d,i,k));
+                }
             }
             else
             {
-                mat_set(X,i,0,0.0);
+                for (k=0;k<nydim;k++)
+                {
+                    mat_set(Y,k*ndata+i,0,0.0);
+                }
             }
         }
     }
     /* setting lX and computing chi^2 in case of data/x covariance */
-    if (fit_data_have_xdata_covar(d))
+    if (fit_data_have_xy_covar(d))
     {
-        mat_set_subm(lX,X,0,0,d->ndata-1,0);
-        mat_set_subm(lX,Y,d->ndata,0,nrow(lX)-1,0);
+        mat_set_subm(lX,Y,0,0,nrow(Y)-1,0);
+        mat_set_subm(lX,X,d->ndata,0,nrow(lX)-1,0);
         mat_mul(ClX,C,'n',lX,'n');
         latan_blas_ddot(ClX,lX,&res);
     }
     /* computing chi^2 by blocks in case of no data/x covariance */
     else
     {
-        mat_mul(CdX,Cd,'n',X,'n');
-        latan_blas_ddot(CdX,X,&res);
+        mat_mul(CyY,Cy,'n',Y,'n');
+        latan_blas_ddot(CyY,Y,&res);
         if (fit_data_have_x_var(d))
         {
-            mat_mul(CxY,Cx,'n',Y,'n');
-            latan_blas_ddot(CxY,Y,&buf);
+            mat_mul(CxX,Cx,'n',X,'n');
+            latan_blas_ddot(CxX,X,&buf);
             res += buf;
         }
     }
@@ -987,7 +1089,7 @@ latan_errno data_fit(mat *p, fit_data *d)
     double chi2_min;
     
     strbufcpy(cor_status,"correlations :");
-    if (fit_data_is_data_correlated(d))
+    if (fit_data_is_y_correlated(d))
     {
         strcat(cor_status," data/data");
     }
@@ -995,7 +1097,7 @@ latan_errno data_fit(mat *p, fit_data *d)
     {
         strcat(cor_status," x/x");
     }
-    if (fit_data_have_xdata_covar(d))
+    if (fit_data_have_xy_covar(d))
     {
         strcat(cor_status," data/x");
     }
@@ -1015,13 +1117,13 @@ latan_errno data_fit(mat *p, fit_data *d)
     return status;
 }
 
-latan_errno rs_data_fit(rs_sample *p, const rs_sample *data, fit_data *d,\
+latan_errno rs_data_fit(rs_sample *p, rs_sample * const *data, fit_data *d,\
                         const cor_flag flag)
 {
     latan_errno status;
     mat *datavar;
-    size_t ndata;
-    size_t i;
+    size_t ndata,nydim,nsample;
+    size_t i,k,k1,k2;
     bool is_data_cor;
     int verb_backup;
     double chi2pdof_backup;
@@ -1029,37 +1131,49 @@ latan_errno rs_data_fit(rs_sample *p, const rs_sample *data, fit_data *d,\
     verb_backup = latan_get_verb();
     status      = LATAN_SUCCESS;
     ndata       = fit_data_get_ndata(d);
+    nydim       = fit_data_get_nydim(d);
+    nsample     = rs_sample_get_nsample(data[0]);
     is_data_cor = ((flag & DATA_COR) != 0);
     
     datavar     = mat_create(ndata,is_data_cor ? ndata : 1);
     
-    if (is_data_cor)
+    for (k1=0;k1<nydim;k1++)
+    for (k2=k1;k2<nydim;k2++)
     {
-        USTAT(rs_sample_var(datavar,data));
+        if (is_data_cor)
+        {
+            USTAT(rs_sample_cov(datavar,data[k1],data[k2]));
+        }
+        else
+        {
+            USTAT(rs_sample_covp(datavar,data[k1],data[k2]));
+        }
+        USTAT(fit_data_set_y_covar(d,k1,k2,datavar));
     }
-    else
+    for (k=0;k<nydim;k++)
     {
-        USTAT(rs_sample_varp(datavar,data));
+        USTAT(fit_data_set_y_k(d,k,rs_sample_pt_cent_val(data[k])));
     }
-    USTAT(fit_data_set_data_var(d,datavar));
-    USTAT(mat_cp(fit_data_pt_data(d),rs_sample_pt_cent_val(data)));
     USTAT(data_fit(rs_sample_pt_cent_val(p),d));
     chi2pdof_backup = fit_data_get_chi2pdof(d);
-    latan_printf(DEBUG,"central value chi^2/dof = %e\n",chi2pdof_backup);
-    if (verb_backup != DEBUG)
-    {
-        latan_set_verb(QUIET);
-    }
-    for (i=0;i<rs_sample_get_nsample(data);i++)
+    latan_printf(VERB,"fit: central value chi^2/dof = %e\n",chi2pdof_backup);
+    for (i=0;i<nsample;i++)
     {
         USTAT(mat_cp(rs_sample_pt_sample(p,i),rs_sample_pt_cent_val(p)));
-        USTAT(mat_cp(fit_data_pt_data(d),rs_sample_pt_sample(data,i)));
+        for (k=0;k<nydim;k++)
+        {
+            USTAT(fit_data_set_y_k(d,k,rs_sample_pt_sample(data[k],i)));
+        }
+        if (verb_backup != DEBUG)
+        {
+            latan_set_verb(QUIET);
+        }
         USTAT(data_fit(rs_sample_pt_sample(p,i),d));
-        latan_printf(DEBUG,"sample %lu chi^2/dof = %e\n",(long unsigned)i,\
-                     fit_data_get_chi2pdof(d));
+        latan_set_verb(verb_backup);
+        latan_printf(VERB,"fit: sample %d/%d chi^2/dof = %e\n",(int)i+1,\
+                     (int)nsample,fit_data_get_chi2pdof(d));
     }
     d->chi2pdof = chi2pdof_backup;
-    latan_set_verb(verb_backup);
     
     mat_destroy(datavar);
     
@@ -1067,12 +1181,12 @@ latan_errno rs_data_fit(rs_sample *p, const rs_sample *data, fit_data *d,\
 }
 
 latan_errno rs_x_data_fit(rs_sample *p, rs_sample * const *x,         \
-                          const rs_sample *data, fit_data *d,         \
+                          rs_sample * const *data, fit_data *d,       \
                           const cor_flag flag, const bool *use_x_var)
 {
     latan_errno status;
     mat *datavar,*xcovar,*xdatacovar,*pbuf;
-    size_t ndata,ndim,npar,Ysize,px_ind;
+    size_t ndata,nxdim,nydim,npar,nsample,Xsize,px_ind;
     size_t i,k,k1,k2;
     bool is_data_cor,is_x_cor,is_xdata_cor;
     int verb_backup;
@@ -1081,8 +1195,10 @@ latan_errno rs_x_data_fit(rs_sample *p, rs_sample * const *x,         \
     verb_backup  = latan_get_verb();
     status       = LATAN_SUCCESS;
     ndata        = fit_data_get_ndata(d);
-    ndim         = fit_data_get_ndim(d);
+    nxdim        = fit_data_get_nxdim(d);
+    nydim        = fit_data_get_nydim(d);
     npar         = fit_data_get_npar(d);
+    nsample      = rs_sample_get_nsample(data[0]);
     is_data_cor  = ((flag & DATA_COR) != 0);
     is_x_cor     = ((flag & X_COR) != 0);
     is_xdata_cor = ((flag & XDATA_COR) != 0);
@@ -1092,49 +1208,47 @@ latan_errno rs_x_data_fit(rs_sample *p, rs_sample * const *x,         \
     xdatacovar   = mat_create(ndata,is_data_cor ? ndata : 1);
 
     /* compute needed variances/covariances from samples */
-    if (is_data_cor)
-    {
-        USTAT(rs_sample_var(datavar,data));
-    }
-    else
-    {
-        USTAT(rs_sample_varp(datavar,data));
-    }
-    USTAT(fit_data_set_data_var(d,datavar));
-    if (is_x_cor)
+    /** data **/
+    for (k1=0;k1<nydim;k1++)
+    for (k2=k1;k2<nydim;k2++)
     {
         if (is_data_cor)
         {
-            for (k1=0;k1<ndim;k1++)
-            {
-                for (k2=k1;k2<ndim;k2++)
-                {
-                    if (use_x_var[k1]&&use_x_var[k2])
-                    {
-                        USTAT(rs_sample_cov(xcovar,x[k1],x[k2]));
-                        USTAT(fit_data_set_x_covar(d,k1,k2,xcovar));
-                    }
-                }
-            }
+            USTAT(rs_sample_cov(datavar,data[k1],data[k2]));
         }
         else
         {
-            for (k1=0;k1<ndim;k1++)
+            USTAT(rs_sample_covp(datavar,data[k1],data[k2]));
+        }
+        USTAT(fit_data_set_y_covar(d,k1,k2,datavar));
+    }
+    for (k=0;k<nydim;k++)
+    {
+        USTAT(fit_data_set_y_k(d,k,rs_sample_pt_cent_val(data[k])));
+    }
+    /** points **/
+    if (is_x_cor)
+    {
+        for (k1=0;k1<nxdim;k1++)
+        for (k2=k1;k2<nxdim;k2++)
+        {
+            if (use_x_var[k1]&&use_x_var[k2])
             {
-                for (k2=k1;k2<ndim;k2++)
+                if (is_data_cor)
                 {
-                    if (use_x_var[k1]&&use_x_var[k2])
-                    {
-                        USTAT(rs_sample_covp(xcovar,x[k1],x[k2]));
-                        USTAT(fit_data_set_x_covar(d,k1,k2,xcovar));
-                    }
+                    USTAT(rs_sample_cov(xcovar,x[k1],x[k2]));
                 }
+                else
+                {
+                    USTAT(rs_sample_covp(xcovar,x[k1],x[k2]));
+                }
+                USTAT(fit_data_set_x_covar(d,k1,k2,xcovar));
             }
         }
     }
     else
     {
-        for (k=0;k<ndim;k++)
+        for (k=0;k<nxdim;k++)
         {
             if (use_x_var[k])
             {
@@ -1143,41 +1257,42 @@ latan_errno rs_x_data_fit(rs_sample *p, rs_sample * const *x,         \
             }
         }
     }
+    /** data/points **/
     if (is_xdata_cor)
     {
-        if (is_data_cor)
+        for (k1=0;k1<nydim;k1++)
+        for (k2=0;k2<nxdim;k2++)
         {
-            for (k=0;k<ndim;k++)
+            if (use_x_var[k])
             {
-                if (use_x_var[k])
+                if (is_data_cor)
                 {
-                    USTAT(rs_sample_cov(xdatacovar,data,x[k]));
-                    USTAT(fit_data_set_xdata_covar(d,k,xdatacovar));
+                    USTAT(rs_sample_cov(xdatacovar,data[k1],x[k2]));
                 }
-            }
-        }
-        else
-        {
-            for (k=0;k<ndim;k++)
-            {
-                if (use_x_var[k])
+                else
                 {
-                    USTAT(rs_sample_covp(xdatacovar,data,x[k]));
-                    USTAT(fit_data_set_xdata_covar(d,k,xdatacovar));
+                    USTAT(rs_sample_covp(xdatacovar,data[k1],x[k2]));
                 }
+                USTAT(fit_data_set_xy_covar(d,k1,k2,xdatacovar));
             }
         }
     }
-    Ysize = get_Ysize(d);
-    pbuf  = mat_create(npar+Ysize,1);
+    Xsize = get_Xsize(d);
+    pbuf  = mat_create(npar+Xsize,1);
     /* central value fit */
     /** setting data and initial parameters **/
-    USTAT(mat_cp(fit_data_pt_data(d),rs_sample_pt_cent_val(data)));
+    /*** p ***/
     USTAT(mat_set_subm(pbuf,rs_sample_pt_cent_val(p),0,0,npar-1,0));
-    px_ind = 0;
-    for (k=0;k<ndim;k++)
+    /*** data ***/
+    for (k=0;k<nydim;k++)
     {
-        USTAT(fit_data_set_x_vec(d,k,rs_sample_pt_cent_val(x[k])));
+        USTAT(fit_data_set_y_k(d,k,rs_sample_pt_cent_val(data[k])));
+    }
+    /*** points ***/
+    px_ind = 0;
+    for (k=0;k<nxdim;k++)
+    {
+        USTAT(fit_data_set_x_k(d,k,rs_sample_pt_cent_val(x[k])));
         if (use_x_var[k])
         {
             USTAT(mat_set_subm(pbuf,rs_sample_pt_cent_val(x[k]),             \
@@ -1195,15 +1310,21 @@ latan_errno rs_x_data_fit(rs_sample *p, rs_sample * const *x,         \
     latan_printf(VERB,"fit: central value chi^2/dof = %e\n",chi2pdof_backup);
     
     /* sample fits */
-    for (i=0;i<rs_sample_get_nsample(data);i++)
+    for (i=0;i<nsample;i++)
     {
         /** setting data and initial parameters **/
-        USTAT(mat_cp(fit_data_pt_data(d),rs_sample_pt_sample(data,i)));
+        /*** p ***/
         USTAT(mat_set_subm(pbuf,rs_sample_pt_cent_val(p),0,0,npar-1,0));
-        px_ind = 0;
-        for (k=0;k<ndim;k++)
+        /*** data ***/
+        for (k=0;k<nydim;k++)
         {
-            USTAT(fit_data_set_x_vec(d,k,rs_sample_pt_sample(x[k],i)));
+            USTAT(fit_data_set_y_k(d,k,rs_sample_pt_sample(data[k],i)));
+        }
+        /*** points ***/
+        px_ind = 0;
+        for (k=0;k<nxdim;k++)
+        {
+            USTAT(fit_data_set_x_k(d,k,rs_sample_pt_sample(x[k],i)));
             if (use_x_var[k])
             {
                 USTAT(mat_set_subm(pbuf,rs_sample_pt_sample(x[k],i),\
@@ -1220,15 +1341,17 @@ latan_errno rs_x_data_fit(rs_sample *p, rs_sample * const *x,         \
         USTAT(data_fit(pbuf,d));
         USTAT(latan_set_verb(verb_backup));
         latan_printf(VERB,"fit: sample %d/%d chi^2/dof = %e\n",(int)i+1,\
-                        (int)rs_sample_get_nsample(data),               \
-                        fit_data_get_chi2pdof(d));
+                     (int)nsample,fit_data_get_chi2pdof(d));
         USTAT(mat_get_subm(rs_sample_pt_sample(p,i),pbuf,0,0,npar-1,0));
     }
     d->chi2pdof = chi2pdof_backup;
-    USTAT(mat_cp(fit_data_pt_data(d),rs_sample_pt_cent_val(data)));
-    for (k=0;k<ndim;k++)
+    for (k=0;k<nydim;k++)
     {
-        USTAT(fit_data_set_x_vec(d,k,rs_sample_pt_cent_val(x[k])));
+        USTAT(fit_data_set_y_k(d,k,rs_sample_pt_cent_val(data[k])));
+    }
+    for (k=0;k<nxdim;k++)
+    {
+        USTAT(fit_data_set_x_k(d,k,rs_sample_pt_cent_val(x[k])));
     }
     
     mat_destroy(datavar);
@@ -1239,7 +1362,7 @@ latan_errno rs_x_data_fit(rs_sample *p, rs_sample * const *x,         \
     return status;
 }
 
-void fit_residual(mat *res, const mat *p, const fit_data *d)
+void fit_residual(mat *res, const fit_data *d, const size_t ky, const mat *p)
 {
     size_t i,ndata;
     double res_i;
@@ -1248,36 +1371,36 @@ void fit_residual(mat *res, const mat *p, const fit_data *d)
     
     for (i=0;i<ndata;i++)
     {
-        res_i = fit_data_get_data(d,i) - fit_data_model_eval(d,i,p);
+        res_i = fit_data_get_y(d,i,ky) - fit_data_model_eval(d,ky,i,p);
         mat_set(res,i,0,res_i);
     }
 }
 
-void fit_partresidual(mat *res, const mat *p, const fit_data *d,\
-                      const mat *x_ex, const size_t k)
+void fit_partresidual(mat *res, const fit_data *d, const size_t ky, \
+                      const mat *x_ex, const size_t kx, const mat *p)
 {
-    size_t i,ndata,ndim;
+    size_t i,ndata,nxdim;
     double res_i;
     mat *x_buf;
     
-    ndim  = fit_data_get_ndim(d);
+    nxdim  = fit_data_get_nxdim(d);
     
-    if (ndim > 1)
+    if (nxdim > 1)
     {
         ndata = fit_data_get_ndata(d);
-        x_buf = mat_create(ndim,1);
+        x_buf = mat_create(nxdim,1);
         for (i=0;i<ndata;i++)
         {
             mat_cp(x_buf,x_ex);
-            mat_set(x_buf,k,0,fit_data_get_x(d,i,k));
-            res_i = fit_data_get_data(d,i) - fit_data_model_eval(d,i,p)\
-                    + fit_data_model_xeval(d,x_buf,p);
+            mat_set(x_buf,kx,0,fit_data_get_x(d,i,kx));
+            res_i = fit_data_get_y(d,i,ky) - fit_data_model_eval(d,ky,i,p)\
+                    + fit_data_model_xeval(d,ky,x_buf,p);
             mat_set(res,i,0,res_i);
         }
         mat_destroy(x_buf);
     }
     else
     {
-        mat_cp(res,fit_data_pt_data(d));
+        fit_data_get_y_k(res,d,ky);
     }
 }

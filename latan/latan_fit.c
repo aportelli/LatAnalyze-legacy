@@ -785,7 +785,6 @@ static void init_chi2(fit_data *d, const int thread, const int nthread)
             if (have_xy_covar)
             {
                 mat_set_subm(d->var_inv,d->y_var_inv,0,0,Ysize-1,Ysize-1);
-                mat_debug(d->var_inv,"Ctmp.dat");
             }
             /*** inversion ***/
             if (fit_data_is_y_correlated(d))
@@ -1324,6 +1323,10 @@ latan_errno rs_x_data_fit(rs_sample *p, rs_sample * const *x,         \
                  chi2(pbuf,d)/((double)fit_data_get_dof(d)));
     /**  fit **/
     USTAT(data_fit(pbuf,d));
+    if (is_xdata_cor)
+    {
+        mat_debug(d->buf[0].lX,"lX.dat");
+    }
     USTAT(mat_get_subm(rs_sample_pt_cent_val(p),pbuf,0,0,npar-1,0));
     chi2pdof_backup = fit_data_get_chi2pdof(d);
     latan_printf(VERB,"fit: central value chi^2/dof = %e\n",chi2pdof_backup);

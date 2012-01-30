@@ -91,13 +91,8 @@ void plot_set_output(plot *p, const strbuf output);
 
 /* plot functions */
 void plot_add_plot(plot *p, const strbuf cmd);
-void plot_add_dat(plot *p, const mat *x, const mat *dat, const strbuf title,\
-                  const strbuf color);
-void plot_add_dat_yerr(plot *p, const mat *x, const mat *dat, const mat *yerr, \
-                       const strbuf title, const strbuf color);
-void plot_add_dat_xyerr(plot *p, const mat *x, const mat *dat, const mat *xerr,\
-                        const mat *yerr, const strbuf title,                   \
-                        const strbuf color);
+void plot_add_dat(plot *p, const mat *x, const mat *dat, const mat *xerr,\
+                  const mat *yerr, const strbuf title, const strbuf color);
 void plot_add_hline(plot *p, const double y, const strbuf style,  \
                     const strbuf color);
 void plot_add_hlineerr(plot *p, const double y, const double err, \
@@ -105,7 +100,7 @@ void plot_add_hlineerr(plot *p, const double y, const double err, \
                        const strbuf color2);
 void plot_add_fit(plot *p, const fit_data *d, const size_t ky, const mat *x_ex,\
                   const size_t kx, const mat *par, const bool do_sub,          \
-                  const unsigned int obj, const strbuf title,                  \
+                  const unsigned int obj,  const strbuf title,                 \
                   const strbuf style, const strbuf pcolor, const strbuf lcolor);
 
 /* plot parsing */

@@ -97,7 +97,8 @@ int main(void)
                1.0/DIS_SEQ_LENGTH*HIST_CONT_NINT/(2.0*GAUSS_HIST_MAX));
     dist_plot = plot_create();
     mat_set_step(x,-GAUSS_HIST_MAX,2.0*GAUSS_HIST_MAX/HIST_CONT_NINT);
-    plot_add_dat(dist_plot,x,hist_cont,"rand_n distribution","rgb \"red\"");
+    plot_add_dat(dist_plot,x,hist_cont,NULL,NULL,"rand_n distribution",\
+                 "rgb \"red\"");
     sprintf(plotcmd,"exp(-(x-%e)**2/(2.0*%e))/%e title \"theoretical distribution\"",\
             GAUSS_MU,SQ(GAUSS_SIG),sqrt(2*C_PI)*GAUSS_SIG);
     plot_add_plot(dist_plot,plotcmd);

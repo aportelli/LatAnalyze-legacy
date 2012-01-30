@@ -276,18 +276,66 @@ void plot_add_plot(plot *p, const strbuf cmd)
     strbufcpy(p->plotbuf[p->nplot-1],cmd);
 }
 
-void plot_add_dat(plot *p, const mat *x, const mat *dat, const strbuf title,\
-                  const strbuf color)
+void plot_add_dat(plot *p, const mat *x, const mat *dat, const mat *xerr,\
+                  const mat *yerr, const strbuf title, const strbuf color)
 {
+    enum
+    {
+        NO_ERR = 0,
+        X_ERR  = 1 << 0,
+        Y_ERR  = 1 << 1
+    };
+    
     FILE* tmpf;
-    strbuf tmpfname, plotcmd, colorcmd;
+    strbuf tmpfname, ucmd, errcmd, plotcmd, colorcmd;
+    unsigned int err_flag;
     size_t i;
     
-    sprintf(tmpfname,"latan_plot_tmp_%lu",(long unsigned)ntmpf);
+    err_flag = NO_ERR;
+    
+    err_flag |= (xerr != NULL) ? X_ERR : NO_ERR;
+    err_flag |= (yerr != NULL) ? Y_ERR : NO_ERR;
+    sprintf(tmpfname,".latan_plot_tmp_%lu",(long unsigned)ntmpf);
     FOPEN_NOERRET(tmpf,tmpfname,"w");
-    for (i=0;i<nrow(dat);i++)
+    if ((err_flag & X_ERR)&&(err_flag & Y_ERR))
     {
-        fprintf(tmpf,"%.10e %.10e\n",mat_get(x,i,0),mat_get(dat,i,0));
+        strbufcpy(ucmd,"1:2:3:4");
+        strbufcpy(errcmd,"w xyerr");
+        for (i=0;i<nrow(dat);i++)
+        {
+            fprintf(tmpf,"%.10e %.10e %.10e %.10e\n",mat_get(x,i,0),\
+                    mat_get(dat,i,0),mat_get(xerr,i,0),             \
+                    mat_get(yerr,i,0));
+        }
+    }
+    else if (err_flag & X_ERR)
+    {
+        strbufcpy(ucmd,"1:2:3");
+        strbufcpy(errcmd,"w xerr");
+        for (i=0;i<nrow(dat);i++)
+        {
+            fprintf(tmpf,"%.10e %.10e %.10e\n",mat_get(x,i,0),mat_get(dat,i,0),\
+                    mat_get(xerr,i,0));
+        }
+    }
+    else if (err_flag & Y_ERR)
+    {
+        strbufcpy(ucmd,"1:2:3");
+        strbufcpy(errcmd,"w yerr");
+        for (i=0;i<nrow(dat);i++)
+        {
+            fprintf(tmpf,"%.10e %.10e %.10e\n",mat_get(x,i,0),mat_get(dat,i,0),\
+                    mat_get(yerr,i,0));
+        }
+    }
+    else
+    {
+        strbufcpy(ucmd,"1:2");
+        strbufcpy(errcmd,"");
+        for (i=0;i<nrow(dat);i++)
+        {
+            fprintf(tmpf,"%.10e %.10e\n",mat_get(x,i,0),mat_get(dat,i,0));
+        }
     }
     fclose(tmpf);
     plot_add_tmpf(p,tmpfname);
@@ -299,64 +347,7 @@ void plot_add_dat(plot *p, const mat *x, const mat *dat, const strbuf title,\
     {
         sprintf(colorcmd,"lc %s",color);
     }
-    sprintf(plotcmd,"'%s' u 1:2 t '%s' lt -1 %s",tmpfname,title,colorcmd);
-    plot_add_plot(p,plotcmd);
-}
-
-void plot_add_dat_yerr(plot *p, const mat *x, const mat *dat, const mat *yerr,\
-                     const strbuf title, const strbuf color)
-{
-    FILE* tmpf;
-    strbuf tmpfname, plotcmd, colorcmd;
-    size_t i;
-    
-    sprintf(tmpfname,"latan_plot_tmp_%lu",(long unsigned)ntmpf);
-    FOPEN_NOERRET(tmpf,tmpfname,"w");
-    for (i=0;i<nrow(dat);i++)
-    {
-        fprintf(tmpf,"%.10e %.10e %.10e\n",mat_get(x,i,0),\
-                mat_get(dat,i,0),mat_get(yerr,i,0));
-    }
-    fclose(tmpf);
-    plot_add_tmpf(p,tmpfname);
-    if (strlen(color) == 0)
-    {
-        strbufcpy(colorcmd,"");
-    }
-    else
-    {
-        sprintf(colorcmd,"lc %s",color);
-    }
-    sprintf(plotcmd,"'%s' u 1:2:3 w yerr t '%s' lt -1 %s",tmpfname,title,\
-            colorcmd);
-    plot_add_plot(p,plotcmd);
-}
-
-void plot_add_dat_xyerr(plot *p, const mat *x, const mat *dat, const mat *xerr,\
-                        const mat *yerr, const strbuf title, const strbuf color)
-{
-    FILE* tmpf;
-    strbuf tmpfname, plotcmd, colorcmd;
-    size_t i;
-    
-    sprintf(tmpfname,"latan_plot_tmp_%lu",(long unsigned)ntmpf);
-    FOPEN_NOERRET(tmpf,tmpfname,"w");
-    for (i=0;i<nrow(dat);i++)
-    {
-        fprintf(tmpf,"%.10e %.10e %.10e %.10e\n",mat_get(x,i,0),\
-                mat_get(dat,i,0),mat_get(xerr,i,0),mat_get(yerr,i,0));
-    }
-    fclose(tmpf);
-    plot_add_tmpf(p,tmpfname);
-    if (strlen(color) == 0)
-    {
-        strbufcpy(colorcmd,"");
-    }
-    else
-    {
-        sprintf(colorcmd,"lc %s",color);
-    }
-    sprintf(plotcmd,"'%s' u 1:2:3:4 w xyerr t '%s' lt -1 %s",tmpfname,title,\
+    sprintf(plotcmd,"'%s' u %s %s t '%s' lt -1 %s",tmpfname,ucmd,errcmd,title,\
             colorcmd);
     plot_add_plot(p,plotcmd);
 }
@@ -384,7 +375,7 @@ void plot_add_hlineerr(plot *p, const double y, const double err,       \
 
 void plot_add_fit(plot *p, const fit_data *d, const size_t ky, const mat *x_ex,\
                   const size_t kx, const mat *par, const bool do_sub,          \
-                  const unsigned int obj, const strbuf title,                  \
+                  const unsigned int obj,  const strbuf title,                 \
                   const strbuf style, const strbuf pcolor, const strbuf lcolor)
 {
     mat *x,*x_err,*y,*y_err,*cor_data;
@@ -428,13 +419,13 @@ void plot_add_fit(plot *p, const fit_data *d, const size_t ky, const mat *x_ex,\
             sprintf(plotcmd,"%s notitle %s %s",plotstr,stcmd,lcolcmd);
             plot_add_plot(p,plotcmd);
         }
-        if (do_sub)
+        if ((obj & PF_DATA)&&(do_sub))
         {
             fit_partresidual(cor_data,d,ky,x_ex,kx,par);
         }
         else
         {
-            mat_cp(cor_data,fit_data_pt_y(d));
+            fit_data_get_y_k(cor_data,d,ky);
         }
     }
     else
@@ -461,11 +452,11 @@ void plot_add_fit(plot *p, const fit_data *d, const size_t ky, const mat *x_ex,\
         }
         if (have_x_err)
         {
-            plot_add_dat_xyerr(p,x,y,x_err,y_err,title,pcolor);
+            plot_add_dat(p,x,y,x_err,y_err,title,pcolor);
         }
         else
         {
-            plot_add_dat_yerr(p,x,y,y_err,title,pcolor);
+            plot_add_dat(p,x,y,NULL,y_err,title,pcolor);
         }
     }
     

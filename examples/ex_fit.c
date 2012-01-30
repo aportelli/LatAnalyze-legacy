@@ -69,7 +69,7 @@ int main(void)
     mat_eqsqrt(var);
     fit_data_get_x_k(x,d,0);
     fit_data_get_y_k(y,d,0);
-    plot_add_dat_yerr(p,x,y,var,"","");
+    plot_add_dat(p,x,y,NULL,var,"","");
     plot_disp(p);
     plot_destroy(p);
     

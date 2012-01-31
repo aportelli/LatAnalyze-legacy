@@ -91,8 +91,15 @@ void plot_set_output(plot *p, const strbuf output);
 
 /* plot functions */
 void plot_add_plot(plot *p, const strbuf cmd);
+void plot_add_point(plot *p, const double x, const double y, const double xerr,\
+                    const double yerr, const strbuf title, const strbuf color);
 void plot_add_dat(plot *p, const mat *x, const mat *dat, const mat *xerr,\
                   const mat *yerr, const strbuf title, const strbuf color);
+#define plot_add_dat_xerr(p,x,dat,xerr,title,color)\
+plot_add_dat(p,x,dat,xerr,NULL,title,color)
+#define plot_add_dat_yerr(p,x,dat,yerr,title,color)\
+plot_add_dat(p,x,dat,NULL,yerr,title,color)
+#define plot_add_dat_xyerr plot_add_dat
 void plot_add_hline(plot *p, const double y, const strbuf style,  \
                     const strbuf color);
 void plot_add_hlineerr(plot *p, const double y, const double err, \

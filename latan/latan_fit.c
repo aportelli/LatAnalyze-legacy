@@ -634,9 +634,125 @@ size_t fit_data_get_dof(const fit_data *d)
 {
     size_t dof;
     
-    dof = fit_data_fit_point_num(d) - fit_data_get_npar(d);
+    dof = fit_data_fit_point_num(d)*fit_data_get_nydim(d)\
+          - fit_data_get_npar(d);
     
     return dof;
+}
+
+/*** set from samples ***/
+latan_errno fit_data_set_covar_from_sample(fit_data *d, rs_sample * const *x,\
+                                           rs_sample * const *data,          \
+                                           const cor_flag flag,              \
+                                           const bool *use_x_var)
+{
+    latan_errno status;
+    mat *datavar,*xcovar,*xdatacovar;
+    size_t ndata,nxdim,nydim;
+    size_t k,k1,k2;
+    bool is_data_cor,is_x_cor,is_xdata_cor;
+    
+    status       = LATAN_SUCCESS;
+    ndata        = fit_data_get_ndata(d);
+    nxdim        = fit_data_get_nxdim(d);
+    nydim        = fit_data_get_nydim(d);
+    is_data_cor  = ((flag & DATA_COR) != 0);
+    is_x_cor     = ((flag & X_COR) != 0)&&(x != NULL);
+    is_xdata_cor = ((flag & XDATA_COR) != 0)&&(x != NULL);
+    
+    datavar      = mat_create(ndata,is_data_cor ? ndata : 1);
+    xcovar       = mat_create(ndata,(is_x_cor&&is_data_cor) ? ndata : 1);
+    xdatacovar   = mat_create(ndata,is_data_cor ? ndata : 1);
+    
+    /* compute needed variances/covariances from samples */
+    /** data **/
+    for (k1=0;k1<nydim;k1++)
+    for (k2=k1;k2<nydim;k2++)
+    {
+        if (is_data_cor)
+        {
+            USTAT(rs_sample_cov(datavar,data[k1],data[k2]));
+        }
+        else
+        {
+            USTAT(rs_sample_covp(datavar,data[k1],data[k2]));
+        }
+        USTAT(fit_data_set_y_covar(d,k1,k2,datavar));
+    }
+    for (k=0;k<nydim;k++)
+    {
+        USTAT(fit_data_set_y_k(d,k,rs_sample_pt_cent_val(data[k])));
+    }
+    /** points **/
+    if (is_x_cor)
+    {
+        for (k1=0;k1<nxdim;k1++)
+        for (k2=k1;k2<nxdim;k2++)
+        {
+            if (use_x_var[k1]&&use_x_var[k2])
+            {
+                if (is_data_cor)
+                {
+                    USTAT(rs_sample_cov(xcovar,x[k1],x[k2]));
+                }
+                else
+                {
+                    USTAT(rs_sample_covp(xcovar,x[k1],x[k2]));
+                }
+                USTAT(fit_data_set_x_covar(d,k1,k2,xcovar));
+            }
+        }
+    }
+    else if (x != NULL)
+    {
+        for (k=0;k<nxdim;k++)
+        {
+            if (use_x_var[k])
+            {
+                USTAT(rs_sample_varp(xcovar,x[k]));
+                USTAT(fit_data_set_x_covar(d,k,k,xcovar));
+            }
+        }
+    }
+    /** data/points **/
+    if (is_xdata_cor)
+    {
+        for (k1=0;k1<nydim;k1++)
+        for (k2=0;k2<nxdim;k2++)
+        {
+            if (use_x_var[k2])
+            {
+                if (is_data_cor)
+                {
+                    USTAT(rs_sample_cov(xdatacovar,data[k1],x[k2]));
+                }
+                else
+                {
+                    USTAT(rs_sample_covp(xdatacovar,data[k1],x[k2]));
+                }
+                USTAT(fit_data_set_xy_covar(d,k1,k2,xdatacovar));
+            }
+        }
+    }
+    
+    /* set data/points to central values */
+    for (k=0;k<nydim;k++)
+    {
+        USTAT(fit_data_set_y_k(d,k,rs_sample_pt_cent_val(data[k])));
+    }
+    if (x != NULL)
+    {
+        for (k=0;k<nxdim;k++)
+        {
+            USTAT(fit_data_set_x_k(d,k,rs_sample_pt_cent_val(x[k])));
+        }
+    }
+    
+    mat_destroy(datavar);
+    mat_destroy(xcovar);
+    mat_destroy(xdatacovar);
+    
+    return status;
 }
 
 /*                          chi2 function                                   */
@@ -1133,78 +1249,14 @@ latan_errno data_fit(mat *p, fit_data *d)
     return status;
 }
 
-latan_errno rs_data_fit(rs_sample *p, rs_sample * const *data, fit_data *d,\
-                        const cor_flag flag)
-{
-    latan_errno status;
-    mat *datavar;
-    size_t ndata,nydim,nsample;
-    size_t i,k,k1,k2;
-    bool is_data_cor;
-    int verb_backup;
-    double chi2pdof_backup;
-        
-    verb_backup = latan_get_verb();
-    status      = LATAN_SUCCESS;
-    ndata       = fit_data_get_ndata(d);
-    nydim       = fit_data_get_nydim(d);
-    nsample     = rs_sample_get_nsample(data[0]);
-    is_data_cor = ((flag & DATA_COR) != 0);
-    
-    datavar     = mat_create(ndata,is_data_cor ? ndata : 1);
-    
-    for (k1=0;k1<nydim;k1++)
-    for (k2=k1;k2<nydim;k2++)
-    {
-        if (is_data_cor)
-        {
-            USTAT(rs_sample_cov(datavar,data[k1],data[k2]));
-        }
-        else
-        {
-            USTAT(rs_sample_covp(datavar,data[k1],data[k2]));
-        }
-        USTAT(fit_data_set_y_covar(d,k1,k2,datavar));
-    }
-    for (k=0;k<nydim;k++)
-    {
-        USTAT(fit_data_set_y_k(d,k,rs_sample_pt_cent_val(data[k])));
-    }
-    USTAT(data_fit(rs_sample_pt_cent_val(p),d));
-    chi2pdof_backup = fit_data_get_chi2pdof(d);
-    latan_printf(VERB,"fit: central value chi^2/dof = %e\n",chi2pdof_backup);
-    for (i=0;i<nsample;i++)
-    {
-        USTAT(mat_cp(rs_sample_pt_sample(p,i),rs_sample_pt_cent_val(p)));
-        for (k=0;k<nydim;k++)
-        {
-            USTAT(fit_data_set_y_k(d,k,rs_sample_pt_sample(data[k],i)));
-        }
-        if (verb_backup != DEBUG)
-        {
-            latan_set_verb(QUIET);
-        }
-        USTAT(data_fit(rs_sample_pt_sample(p,i),d));
-        latan_set_verb(verb_backup);
-        latan_printf(VERB,"fit: sample %d/%d chi^2/dof = %e\n",(int)i+1,\
-                     (int)nsample,fit_data_get_chi2pdof(d));
-    }
-    d->chi2pdof = chi2pdof_backup;
-    
-    mat_destroy(datavar);
-    
-    return status;
-}
-
-latan_errno rs_x_data_fit(rs_sample *p, rs_sample * const *x,         \
+latan_errno rs_data_fit(rs_sample *p, rs_sample * const *x,         \
                           rs_sample * const *data, fit_data *d,       \
                           const cor_flag flag, const bool *use_x_var)
 {
     latan_errno status;
-    mat *datavar,*xcovar,*xdatacovar,*pbuf, *tmp;
+    mat *pbuf;
     size_t ndata,nxdim,nydim,npar,nsample,Xsize,px_ind;
-    size_t i,k,k1,k2;
-    bool is_data_cor,is_x_cor,is_xdata_cor;
+    size_t i,k;
     int verb_backup;
     double chi2pdof_backup;
     
@@ -1215,115 +1267,35 @@ latan_errno rs_x_data_fit(rs_sample *p, rs_sample * const *x,         \
     nydim        = fit_data_get_nydim(d);
     npar         = fit_data_get_npar(d);
     nsample      = rs_sample_get_nsample(data[0]);
-    is_data_cor  = ((flag & DATA_COR) != 0);
-    is_x_cor     = ((flag & X_COR) != 0);
-    is_xdata_cor = ((flag & XDATA_COR) != 0);
     
-    datavar      = mat_create(ndata,is_data_cor ? ndata : 1);
-    xcovar       = mat_create(ndata,(is_x_cor&&is_data_cor) ? ndata : 1);
-    xdatacovar   = mat_create(ndata,is_data_cor ? ndata : 1);
-    tmp          = mat_create(ndata,1);
-
     /* compute needed variances/covariances from samples */
-    /** data **/
-    for (k1=0;k1<nydim;k1++)
-    for (k2=k1;k2<nydim;k2++)
+    fit_data_set_covar_from_sample(d,x,data,flag,use_x_var);
+    Xsize = get_Xsize(d);
+    pbuf  = mat_create(npar+Xsize,1);
+    
+    /* central value fit */
+    /** setting initial parameters **/
+    USTAT(mat_set_subm(pbuf,rs_sample_pt_cent_val(p),0,0,npar-1,0));
+    if (x != NULL)
     {
-        if (is_data_cor)
-        {
-            USTAT(rs_sample_cov(datavar,data[k1],data[k2]));
-        }
-        else
-        {
-            USTAT(rs_sample_covp(datavar,data[k1],data[k2]));
-        }
-        USTAT(fit_data_set_y_covar(d,k1,k2,datavar));
-    }
-    for (k=0;k<nydim;k++)
-    {
-        USTAT(fit_data_set_y_k(d,k,rs_sample_pt_cent_val(data[k])));
-    }
-    /** points **/
-    if (is_x_cor)
-    {
-        for (k1=0;k1<nxdim;k1++)
-        for (k2=k1;k2<nxdim;k2++)
-        {
-            if (use_x_var[k1]&&use_x_var[k2])
-            {
-                if (is_data_cor)
-                {
-                    USTAT(rs_sample_cov(xcovar,x[k1],x[k2]));
-                }
-                else
-                {
-                    USTAT(rs_sample_covp(xcovar,x[k1],x[k2]));
-                }
-                USTAT(fit_data_set_x_covar(d,k1,k2,xcovar));
-            }
-        }
-    }
-    else
-    {
+        px_ind = 0;
         for (k=0;k<nxdim;k++)
         {
             if (use_x_var[k])
             {
-                USTAT(rs_sample_varp(xcovar,x[k]));
-                USTAT(fit_data_set_x_covar(d,k,k,xcovar));
+                USTAT(mat_set_subm(pbuf,rs_sample_pt_cent_val(x[k]),\
+                                   npar+px_ind*ndata,0,             \
+                                   npar+(px_ind+1)*ndata-1,0));
+                px_ind++;
             }
         }
     }
-    /** data/points **/
-    if (is_xdata_cor)
-    {
-        for (k1=0;k1<nydim;k1++)
-        for (k2=0;k2<nxdim;k2++)
-        {
-            if (use_x_var[k2])
-            {
-                if (is_data_cor)
-                {
-                    USTAT(rs_sample_cov(xdatacovar,data[k1],x[k2]));
-                }
-                else
-                {
-                    USTAT(rs_sample_covp(xdatacovar,data[k1],x[k2]));
-                }
-                USTAT(fit_data_set_xy_covar(d,k1,k2,xdatacovar));
-            }
-        }
-    }
-    Xsize = get_Xsize(d);
-    pbuf  = mat_create(npar+Xsize,1);
-    /* central value fit */
-    /** setting data and initial parameters **/
-    /*** p ***/
-    USTAT(mat_set_subm(pbuf,rs_sample_pt_cent_val(p),0,0,npar-1,0));
-    /*** data ***/
-    for (k=0;k<nydim;k++)
-    {
-        USTAT(fit_data_set_y_k(d,k,rs_sample_pt_cent_val(data[k])));
-    }
-    /*** points ***/
-    px_ind = 0;
-    for (k=0;k<nxdim;k++)
-    {
-        USTAT(fit_data_set_x_k(d,k,rs_sample_pt_cent_val(x[k])));
-        if (use_x_var[k])
-        {
-            USTAT(mat_set_subm(pbuf,rs_sample_pt_cent_val(x[k]),             \
-                               npar+px_ind*ndata,0,npar+(px_ind+1)*ndata-1,0));
-            px_ind++;
-        }
-    }
-    
     /** looking at starting chi^2/dof **/
     latan_printf(VERB,"starting chi^2/dof = %f\n",         \
                  chi2(pbuf,d)/((double)fit_data_get_dof(d)));
     /**  fit **/
     USTAT(data_fit(pbuf,d));
-    if (is_xdata_cor)
+    if (((flag & XDATA_COR) != 0)&&(x != NULL))
     {
         mat_debug(d->buf[0].lX,"lX.dat");
     }
@@ -1335,24 +1307,24 @@ latan_errno rs_x_data_fit(rs_sample *p, rs_sample * const *x,         \
     for (i=0;i<nsample;i++)
     {
         /** setting data and initial parameters **/
-        /*** p ***/
         USTAT(mat_set_subm(pbuf,rs_sample_pt_cent_val(p),0,0,npar-1,0));
-        /*** data ***/
         for (k=0;k<nydim;k++)
         {
             USTAT(fit_data_set_y_k(d,k,rs_sample_pt_sample(data[k],i)));
         }
-        /*** points ***/
-        px_ind = 0;
-        for (k=0;k<nxdim;k++)
+        if (x != NULL)
         {
-            USTAT(fit_data_set_x_k(d,k,rs_sample_pt_sample(x[k],i)));
-            if (use_x_var[k])
+            px_ind = 0;
+            for (k=0;k<nxdim;k++)
             {
-                USTAT(mat_set_subm(pbuf,rs_sample_pt_sample(x[k],i),\
-                                   npar+px_ind*ndata,0,             \
-                                   npar+(px_ind+1)*ndata-1,0));
-                px_ind++;
+                USTAT(fit_data_set_x_k(d,k,rs_sample_pt_sample(x[k],i)));
+                if (use_x_var[k])
+                {
+                    USTAT(mat_set_subm(pbuf,rs_sample_pt_sample(x[k],i),\
+                                       npar+px_ind*ndata,0,             \
+                                       npar+(px_ind+1)*ndata-1,0));
+                    px_ind++;
+                }
             }
         }
         /** fit **/
@@ -1371,16 +1343,15 @@ latan_errno rs_x_data_fit(rs_sample *p, rs_sample * const *x,         \
     {
         USTAT(fit_data_set_y_k(d,k,rs_sample_pt_cent_val(data[k])));
     }
-    for (k=0;k<nxdim;k++)
+    if (x != NULL)
     {
-        USTAT(fit_data_set_x_k(d,k,rs_sample_pt_cent_val(x[k])));
+        for (k=0;k<nxdim;k++)
+        {
+            USTAT(fit_data_set_x_k(d,k,rs_sample_pt_cent_val(x[k])));
+        }
     }
     
-    mat_destroy(datavar);
-    mat_destroy(xcovar);
-    mat_destroy(xdatacovar);
     mat_destroy(pbuf);
-    mat_destroy(tmp);
     
     return status;
 }

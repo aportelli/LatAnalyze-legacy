@@ -184,10 +184,7 @@ void fit_data_plot2dstr(strbuf str, const fit_data *d, const size_t ky,\
 /*** dof ***/
 size_t fit_data_get_dof(const fit_data *d);
 
-/* chi2 functions, have min_func type */
-double chi2(mat *var, void *d);
-
-/* fit functions */
+/*** set from samples ***/
 typedef enum
 {
     NO_COR    = 0,
@@ -196,10 +193,17 @@ typedef enum
     XDATA_COR = 1 << 2
 } cor_flag;
 
+latan_errno fit_data_set_covar_from_sample(fit_data *d, rs_sample * const *x,\
+                                           rs_sample * const *data,          \
+                                           const cor_flag flag,              \
+                                           const bool *use_x_var);
+
+/* chi2 functions, have min_func type */
+double chi2(mat *var, void *d);
+
+/* fit functions */
 latan_errno data_fit(mat *p, fit_data *d);
-latan_errno rs_data_fit(rs_sample *p, rs_sample * const *data, fit_data *d,\
-                        const cor_flag flag);
-latan_errno rs_x_data_fit(rs_sample *p, rs_sample * const *x,         \
+latan_errno rs_data_fit(rs_sample *p, rs_sample * const *x,         \
                           rs_sample * const *data, fit_data *d,       \
                           const cor_flag flag, const bool *use_x_var);
 void fit_residual(mat *res, const fit_data *d, const size_t ky, const mat *p);

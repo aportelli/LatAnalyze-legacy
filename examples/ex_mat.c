@@ -96,7 +96,7 @@ int main(void)
     mat_print(a,"%8.2f");
     printf("\n");
     printf("e <- a^(-1)\n");
-    mat_inv(e,a);
+    mat_inv_LU(e,a);
     printf("e =\n");
     mat_print(e,"%8.2f");
     printf("\n");

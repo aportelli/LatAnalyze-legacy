@@ -596,7 +596,7 @@ latan_errno mat_transpose(mat *m, const mat *n)
     return status;
 }
 
-latan_errno mat_inv(mat *m, const mat *n)
+latan_errno mat_inv_LU(mat *m, const mat *n)
 {
     latan_errno status;
     int signum;

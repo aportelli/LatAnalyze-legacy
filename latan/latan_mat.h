@@ -117,8 +117,8 @@ latan_errno mat_sqrt(mat *m, const mat *n);
 latan_errno mat_expp(mat *m, const mat *n);
 
 /** linear algebra **/
-#define mat_eqinv(m) mat_inv(m,m)
-latan_errno mat_inv(mat *m, const mat *n);
+#define mat_eqinv_LU(m) mat_inv_LU(m,m)
+latan_errno mat_inv_LU(mat *m, const mat *n);
 
 __END_DECLS
 

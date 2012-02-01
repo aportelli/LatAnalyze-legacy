@@ -276,16 +276,63 @@ void plot_add_plot(plot *p, const strbuf cmd)
     strbufcpy(p->plotbuf[p->nplot-1],cmd);
 }
 
+enum
+{
+    NO_ERR = 0,
+    X_ERR  = 1 << 0,
+    Y_ERR  = 1 << 1
+};
+
+void plot_add_point(plot *p, const double x, const double y, const double xerr,\
+                    const double yerr, const strbuf title, const strbuf color)
+{
+    strbuf ucmd, echocmd, errcmd, plotcmd, colorcmd;
+    unsigned int err_flag;
+    
+    err_flag = NO_ERR;
+    
+    err_flag |= (xerr > 0.0) ? X_ERR : NO_ERR;
+    err_flag |= (yerr > 0.0) ? Y_ERR : NO_ERR;
+    if ((err_flag & X_ERR)&&(err_flag & Y_ERR))
+    {
+        strbufcpy(ucmd,"1:2:3:4");
+        strbufcpy(errcmd,"w xyerr");
+        sprintf(echocmd,"'< echo %e %e %e %e'",x,y,xerr,yerr);
+    }
+    else if (err_flag & X_ERR)
+    {
+        strbufcpy(ucmd,"1:2:3");
+        strbufcpy(errcmd,"w xerr");
+        sprintf(echocmd,"'< echo %e %e %e'",x,y,xerr);
+    }
+    else if (err_flag & Y_ERR)
+    {
+        strbufcpy(ucmd,"1:2:3");
+        strbufcpy(errcmd,"w yerr");
+        sprintf(echocmd,"'< echo %e %e %e'",x,y,yerr);
+    }
+    else
+    {
+        strbufcpy(ucmd,"1:2");
+        strbufcpy(errcmd,"");
+        sprintf(echocmd,"'< echo %e %e'",x,y);
+    }
+    if (strlen(color) == 0)
+    {
+        strbufcpy(colorcmd,"");
+    }
+    else
+    {
+        sprintf(colorcmd,"lc %s",color);
+    }
+    sprintf(plotcmd,"%s u %s %s t '%s' lt -1 %s",echocmd,ucmd,errcmd,title,\
+            colorcmd);
+    plot_add_plot(p,plotcmd);
+}
+
 void plot_add_dat(plot *p, const mat *x, const mat *dat, const mat *xerr,\
                   const mat *yerr, const strbuf title, const strbuf color)
 {
-    enum
-    {
-        NO_ERR = 0,
-        X_ERR  = 1 << 0,
-        Y_ERR  = 1 << 1
-    };
-    
     FILE* tmpf;
     strbuf tmpfname, ucmd, errcmd, plotcmd, colorcmd;
     unsigned int err_flag;

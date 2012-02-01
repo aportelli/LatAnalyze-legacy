@@ -34,8 +34,9 @@ typedef enum
     LATAN_ENOMEM    = 8,    /* malloc error                         */
     LATAN_EBADLEN   = 19,   /* dimension error                      */
     LATAN_ENOTSQR   = 20,   /* matrix is not square error           */
-    LATAN_ELATSYN   = 33,   /* syntax error                         */
-    LATAN_ESYSTEM   = 34    /* system error                         */
+    LATAN_ENOTSYM   = 33,   /* matrix is not symmetric error        */
+    LATAN_ELATSYN   = 34,   /* syntax error                         */
+    LATAN_ESYSTEM   = 35    /* system error                         */
 } latan_errno;
 
 #ifndef LATAN_ERRNO_DEF

@@ -90,6 +90,7 @@ int main(void)
     mat_assume_sym(e,false);
     
     printf("\n---------- %-30s ----------\n","matrix inversion");
+    printf("*** LU decomposition\n");
     printf("a <- random(-6.0,6.0)\n");
     mat_rand_u(a,-6.0,6.0);
     printf("a =\n");
@@ -105,7 +106,24 @@ int main(void)
     printf("f =\n");
     mat_print(f,"%8.2f");
     printf("\n");
-
+    printf("*** Cholesky decomposition\n");
+    printf("a <- a*t(a)\n");
+    mat_mul(a,a,'n',a,'t');
+    mat_print(a,"%8.2f");
+    printf("\n");
+    printf("a is assumed symmetric\n\n");
+    mat_assume_sym(a,true);
+    printf("e <- a^(-1)\n");
+    mat_inv_symChol(e,a);
+    printf("e =\n");
+    mat_print(e,"%8.2f");
+    printf("\n");
+    printf("f <- e*a\n");
+    mat_mul(f,e,'n',a,'n');
+    printf("f =\n");
+    mat_print(f,"%8.2f");
+    printf("\n");
+    
     mat_destroy(a);
     mat_destroy(b);
     mat_destroy(c);

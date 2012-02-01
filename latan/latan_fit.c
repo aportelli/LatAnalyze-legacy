@@ -906,7 +906,7 @@ static void init_chi2(fit_data *d, const int thread, const int nthread)
             if (fit_data_is_y_correlated(d))
             {
                 mat_debug(d->y_var_inv,"Cd.dat");
-                mat_eqinv_LU(d->y_var_inv);
+                mat_eqinv_symChol(d->y_var_inv);
             }
             else
             {
@@ -987,7 +987,7 @@ static void init_chi2(fit_data *d, const int thread, const int nthread)
                 if (fit_data_is_x_correlated(d))
                 {
                     mat_debug(d->x_var_inv,"Cx.dat");
-                    mat_eqinv_LU(d->x_var_inv);
+                    mat_eqinv_symChol(d->x_var_inv);
                 }
                 else
                 {
@@ -1032,7 +1032,7 @@ static void init_chi2(fit_data *d, const int thread, const int nthread)
                     }
                 }
                 mat_debug(d->var_inv,"C.dat");
-                mat_eqinv_LU(d->var_inv);
+                mat_eqinv_symChol(d->var_inv);
                 latan_printf(DEBUG,"C^-1=\n");
                 if (latan_get_verb() == DEBUG)
                 {

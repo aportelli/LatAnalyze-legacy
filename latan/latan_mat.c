@@ -358,8 +358,11 @@ latan_errno mat_cp(mat *m, const mat *n)
         LATAN_ERROR("matrix copy with dimension mismatch",LATAN_EBADLEN);
     }
     
-    USTAT(gsl_matrix_memcpy(m->data_cpu,n->data_cpu));
-    m->prop_flag = n->prop_flag;
+    if (m != n)
+    {
+        USTAT(gsl_matrix_memcpy(m->data_cpu,n->data_cpu));
+        m->prop_flag = n->prop_flag;
+    }
    
     return status;
 }
@@ -596,43 +599,6 @@ latan_errno mat_transpose(mat *m, const mat *n)
     return status;
 }
 
-latan_errno mat_inv_LU(mat *m, const mat *n)
-{
-    latan_errno status;
-    int signum;
-    mat *LU;
-    size_t i;
-    gsl_permutation *perm;
-    gsl_error_handler_t *error_handler;
-    
-    status = LATAN_SUCCESS;
-    
-    if (!mat_is_square(m))
-    {
-        LATAN_ERROR("cannot invert a non-square matrix",LATAN_ENOTSQR);
-    }
-    
-    LU = mat_create_from_mat(n);
-    error_handler = gsl_set_error_handler(&latan_error);
-    perm = gsl_permutation_alloc(nrow(n));
-    gsl_set_error_handler(error_handler);
-    
-    USTAT(gsl_linalg_LU_decomp(LU->data_cpu,perm,&signum));
-    for (i=0;i<nrow(LU);i++)
-    {
-        if (mat_get(LU,i,i) == 0.0)
-        {
-            LATAN_ERROR("trying to invert a singular matrix",LATAN_EDOM);
-        }
-    }
-    USTAT(gsl_linalg_LU_invert(LU->data_cpu,perm,m->data_cpu));
-    
-    mat_destroy(LU);
-    gsl_permutation_free(perm);
-    
-    return status;
-}
-
 latan_errno mat_eqmulp(mat *m, const mat *n)
 {
     latan_errno status;
@@ -786,4 +752,57 @@ latan_errno mat_expp(mat *m, const mat *n)
     }
     
     return LATAN_SUCCESS;
+}
+
+/*                             linear algebra                                 */
+/******************************************************************************/
+latan_errno mat_inv_LU(mat *m, const mat *n)
+{
+    latan_errno status;
+    int signum;
+    mat *LU;
+    gsl_permutation *perm;
+    gsl_error_handler_t *error_handler;
+    
+    if (!mat_is_square(m))
+    {
+        LATAN_ERROR("cannot invert a non-square matrix",LATAN_ENOTSQR);
+    }
+    
+    status        = LATAN_SUCCESS;
+    error_handler = gsl_set_error_handler(&latan_error);
+    
+    LU   = mat_create_from_mat(n);
+    perm = gsl_permutation_alloc(nrow(n));
+    
+    USTAT(gsl_linalg_LU_decomp(LU->data_cpu,perm,&signum));
+    USTAT(gsl_linalg_LU_invert(LU->data_cpu,perm,m->data_cpu));
+    gsl_set_error_handler(error_handler);
+    
+    mat_destroy(LU);
+    gsl_permutation_free(perm);
+    
+    return status;
+}
+
+latan_errno mat_inv_symChol(mat *m, const mat *n)
+{
+    latan_errno status;
+    gsl_error_handler_t *error_handler;
+    
+    if (!mat_is_assumed_sym(n))
+    {
+        LATAN_ERROR("Cholesky decomposition inverse not valid on a non-symmetric matrix",\
+                    LATAN_ENOTSYM);
+    }
+    
+    status        = LATAN_SUCCESS;
+    error_handler = gsl_set_error_handler(&latan_error);
+    
+    mat_cp(m,n);
+    USTAT(gsl_linalg_cholesky_decomp(m->data_cpu));
+    USTAT(gsl_linalg_cholesky_invert(m->data_cpu));
+    gsl_set_error_handler(error_handler);
+    
+    return status;
 }

@@ -119,6 +119,8 @@ latan_errno mat_expp(mat *m, const mat *n);
 /** linear algebra **/
 #define mat_eqinv_LU(m) mat_inv_LU(m,m)
 latan_errno mat_inv_LU(mat *m, const mat *n);
+#define mat_eqinv_symChol(m) mat_inv_symChol(m,m)
+latan_errno mat_inv_symChol(mat *m, const mat *n);
 
 __END_DECLS
 

@@ -1,6 +1,6 @@
 /* latan_statistics.c, part of LatAnalyze library
  *
- * Copyright (C) 2010, 2011 Antonin Portelli
+ * Copyright (C) 2010, 2011, 2012 Antonin Portelli
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

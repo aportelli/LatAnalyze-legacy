@@ -195,7 +195,6 @@ fit_data *fit_data_create(const size_t ndata, const size_t nxdim,\
             {
                 mat_zero(d->y_covar[sym_rowmaj(k1,k2,nydim)]);
             }
-            
         }
     }
     for (k1=0;k1<nydim;k1++)
@@ -672,12 +671,13 @@ latan_errno fit_data_set_covar_from_sample(fit_data *d, rs_sample * const *x,\
         if (is_data_cor)
         {
             USTAT(rs_sample_cov(datavar,data[k1],data[k2]));
+            USTAT(fit_data_set_y_covar(d,k1,k2,datavar));
         }
-        else
+        else if (k1 == k2)
         {
             USTAT(rs_sample_covp(datavar,data[k1],data[k2]));
+            USTAT(fit_data_set_y_covar(d,k1,k2,datavar));
         }
-        USTAT(fit_data_set_y_covar(d,k1,k2,datavar));
     }
     for (k=0;k<nydim;k++)
     {
@@ -910,13 +910,12 @@ static void init_chi2(fit_data *d, const int thread, const int nthread)
             }
             else
             {
-                for (i=0;i<ndata;i++)
+                for (i=0;i<Ysize;i++)
                 {
                     inv = 1.0/mat_get(d->y_var_inv,i,i);
                     if (gsl_isinf(inv))
                     {
                         strbuf errmsg;
-
                         sprintf(errmsg,"errorless data %lu excluded from fit",\
                                 (long unsigned)i);
                         LATAN_WARNING(errmsg,LATAN_EDOM);

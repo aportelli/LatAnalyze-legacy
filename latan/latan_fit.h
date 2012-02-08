@@ -103,6 +103,8 @@ typedef struct fid_data_s
     /* data/point covariance matrix */
     mat **xy_covar;
     bool *have_xy_covar;
+    /* correlation filter */
+    mat *cor_filter;
     /* inverse variance matrix */
     mat *var_inv;
     /* is everything ready to perform a fit ? */
@@ -169,6 +171,11 @@ void fit_data_fit_range(fit_data *d, size_t start, size_t end, bool fit);
 void fit_data_fit_region(fit_data *d, double **xb);
 bool fit_data_is_fit_point(const fit_data *d, size_t i);
 size_t fit_data_fit_point_num(const fit_data *d);
+
+/*** correlation filter ***/
+latan_errno fit_data_set_data_cor(fit_data *d, const size_t i, const size_t j,\
+                                  bool is_cor);
+bool fit_data_is_data_cor(const fit_data *d, const size_t i, const size_t j);
 
 /*** fit model ***/
 latan_errno fit_data_set_model(fit_data *d, const fit_model *model,\

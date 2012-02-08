@@ -132,13 +132,14 @@ fit_data *fit_data_create(const size_t ndata, const size_t nxdim,\
     MALLOC_ERRVAL(d->to_fit,bool*,ndata,NULL);
     MALLOC_ERRVAL(d->have_x_covar,bool *,nxdim,NULL);
     MALLOC_ERRVAL(d->have_xy_covar,bool *,nxdim,NULL);
-    d->x         = mat_create(nxdim,ndata);
-    d->x_covar   = mat_ar_create(nxdim*(nxdim+1)/2,ndata,ndata);
-    d->y         = mat_create(nydim,ndata);
-    d->y_covar   = mat_ar_create(nydim*(nydim+1)/2,ndata,ndata);
-    d->y_var_inv = mat_create(ndata*nydim,ndata*nydim);
+    d->x          = mat_create(nxdim,ndata);
+    d->x_covar    = mat_ar_create(nxdim*(nxdim+1)/2,ndata,ndata);
+    d->y          = mat_create(nydim,ndata);
+    d->y_covar    = mat_ar_create(nydim*(nydim+1)/2,ndata,ndata);
+    d->y_var_inv  = mat_create(ndata*nydim,ndata*nydim);
     mat_assume_sym(d->y_var_inv,true);
-    d->xy_covar  = mat_ar_create(nxdim*nydim,ndata,ndata);
+    d->xy_covar   = mat_ar_create(nxdim*nydim,ndata,ndata);
+    d->cor_filter = mat_create(ndata,ndata);
 
     d->ndata           = ndata;
     d->nxdim           = nxdim;
@@ -202,6 +203,7 @@ fit_data *fit_data_create(const size_t ndata, const size_t nxdim,\
     {
         mat_zero(d->xy_covar[rowmaj(k1,k2,nydim,nxdim)]);
     }
+    mat_cst(d->cor_filter,1.0);
 
     return d;
 }
@@ -222,6 +224,7 @@ void fit_data_destroy(fit_data *d)
     mat_ar_destroy(d->y_covar,d->nydim*(d->nydim+1)/2);
     mat_destroy(d->y_var_inv);
     mat_ar_destroy(d->xy_covar,d->nydim*d->nxdim);
+    mat_destroy(d->cor_filter);
     if (d->var_inv != NULL)
     {
         mat_destroy(d->var_inv);
@@ -582,6 +585,34 @@ size_t fit_data_fit_point_num(const fit_data *d)
     return nfitpt;
 }
 
+latan_errno fit_data_set_data_cor(fit_data *d, const size_t i, const size_t j,\
+                                  bool is_cor)
+{
+    if (i == j) 
+    {
+        LATAN_ERROR("cannot uncorrelate a point with itself",LATAN_EINVAL);
+    }
+    
+    d->is_inverted      = false;   
+    if (is_cor)
+    {
+        mat_set(d->cor_filter,i,j,1.0);
+        mat_set(d->cor_filter,j,i,1.0);
+    }
+    else
+    {
+        mat_set(d->cor_filter,i,j,0.0);
+        mat_set(d->cor_filter,j,i,0.0);
+    }
+    
+    return LATAN_SUCCESS;
+}
+
+bool fit_data_is_data_cor(const fit_data *d, const size_t i, const size_t j)
+{
+    return (mat_get(d->cor_filter,i,j) >= 0.5);
+}
+
 /*** model ***/
 latan_errno fit_data_set_model(fit_data *d, const fit_model *model,\
                                void *model_param)
@@ -889,11 +920,12 @@ static void init_chi2(fit_data *d, const int thread, const int nthread)
             for (k2=k1;k2<nydim;k2++)
             {
                 ind = sym_rowmaj(k1,k2,nydim);
-                mat_set_subm(d->y_var_inv,d->y_covar[ind],k1*ndata,k2*ndata,\
+                mat_mulp(tmp_covar,d->y_covar[ind],d->cor_filter);
+                mat_set_subm(d->y_var_inv,tmp_covar,k1*ndata,k2*ndata,\
                              (k1+1)*ndata-1,(k2+1)*ndata-1);
                 if (k1 != k2)
                 {
-                    mat_transpose(tmp_covar,d->y_covar[ind]);
+                    mat_eqtranspose(tmp_covar);
                     mat_set_subm(d->y_var_inv,tmp_covar,k2*ndata,k1*ndata,\
                                  (k2+1)*ndata-1,(k1+1)*ndata-1);
                 }
@@ -957,14 +989,15 @@ static void init_chi2(fit_data *d, const int thread, const int nthread)
                             if (fit_data_have_x_covar(d,k2))
                             {
                                 ind = sym_rowmaj(k1,k2,nxdim);
-                                mat_set_subm(d->x_var_inv,d->x_covar[ind],\
+                                mat_mulp(tmp_covar,d->x_covar[ind],\
+                                         d->cor_filter);
+                                mat_set_subm(d->x_var_inv,tmp_covar,      \
                                              px_ind1*ndata,px_ind2*ndata, \
                                              (px_ind1+1)*ndata-1,         \
                                              (px_ind2+1)*ndata-1);
                                 if (k1 != k2)
                                 {
-                                    mat_transpose(tmp_covar,\
-                                                  d->x_covar[ind]);
+                                    mat_eqtranspose(tmp_covar);
                                     mat_set_subm(d->x_var_inv,tmp_covar,\
                                                  px_ind2*ndata,px_ind1*ndata, \
                                                  (px_ind2+1)*ndata-1,         \
@@ -1019,12 +1052,14 @@ static void init_chi2(fit_data *d, const int thread, const int nthread)
                         ind = rowmaj(k1,k2,nydim,nxdim);
                         if (d->have_xy_covar[k2])
                         {
-                            mat_set_subm(d->var_inv,d->xy_covar[ind],k1*ndata,\
-                                         px_ind*ndata+Ysize,(k1+1)*ndata-1,   \
+                            mat_mulp(tmp_covar,d->xy_covar[ind],d->cor_filter);
+                            mat_set_subm(d->var_inv,tmp_covar,k1*ndata,    \
+                                         px_ind*ndata+Ysize,(k1+1)*ndata-1,\
                                          (px_ind+1)*ndata+Ysize-1);
-                            mat_transpose(tmp_covar,d->xy_covar[ind]);
-                            mat_set_subm(d->var_inv,tmp_covar,px_ind*ndata+Ysize,\
-                                         k1*ndata,(px_ind+1)*ndata+Ysize-1,      \
+                            mat_eqtranspose(tmp_covar);
+                            mat_set_subm(d->var_inv,tmp_covar,             \
+                                         px_ind*ndata+Ysize,k1*ndata,      \
+                                         (px_ind+1)*ndata+Ysize-1,         \
                                          (k1+1)*ndata-1);
                             px_ind++;
                         }

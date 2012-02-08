@@ -112,7 +112,7 @@ int get_nfile(const strbuf manifestfname)
     field = NULL;
     
     BEGIN_FOR_LINE_TOK(field,manifestfname," \t",nf,lc)
-    if (field[0][0] != '#')
+    if ((nf>0)&&(field[0][0] != '#'))
     {
         nfile++;
     }
@@ -125,19 +125,14 @@ latan_errno get_firstfname(strbuf fname, const strbuf manifestfname)
 {
     strbuf *field;
     int lc,nf;
-    bool isfirst;
     
-    isfirst = true;
     field   = NULL;
     
     BEGIN_FOR_LINE_TOK(field,manifestfname," \t",nf,lc)
-    if (field[0][0] != '#')
+    if ((nf>0)&&(field[0][0] != '#'))
     {
-       if (isfirst)
-       {
-           strbufcpy(fname,field[0]);
-           break;
-       }
+        strbufcpy(fname,field[0]);
+        break;
     }
     END_FOR_LINE_TOK(field)
     

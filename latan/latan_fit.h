@@ -89,6 +89,7 @@ typedef struct fid_data_s
     size_t nxdim;
     size_t nydim;
     size_t npar;
+    size_t ndpar;
     /* point matrices */
     mat *x;
     mat **x_covar;
@@ -119,6 +120,8 @@ typedef struct fid_data_s
     bool save_chi2pdof;
     chi2_buf *buf;
     int nbuf;
+    /* sample counter */
+    size_t s;
 } fit_data;
 
 /** allocation **/
@@ -132,6 +135,8 @@ size_t fit_data_get_ndata(const fit_data *d);
 size_t fit_data_get_nydim(const fit_data *d);
 size_t fit_data_get_nxdim(const fit_data *d);
 size_t fit_data_get_npar(const fit_data *d);
+size_t fit_data_get_ndumbpar(const fit_data *d);
+void fit_data_set_ndumbpar(fit_data *d, const size_t ndpar);
 
 /*** chi^2 ***/
 void fit_data_save_chi2pdof(fit_data *d, bool save);
@@ -183,7 +188,7 @@ bool fit_data_is_data_cor(const fit_data *d, const size_t i, const size_t j);
 /*** fit model ***/
 latan_errno fit_data_set_model(fit_data *d, const fit_model *model,\
                                void *model_param);
-void fit_data_set_model_param(fit_data *d, void *model_param);
+const void * fit_data_pt_model_param(const fit_data *d);
 double fit_data_model_xeval(const fit_data *d, const size_t k, const mat *x,\
                             const mat *p);
 double fit_data_model_eval(const fit_data *d, const size_t k, const size_t i,\
@@ -193,6 +198,9 @@ void fit_data_plot2dstr(strbuf str, const fit_data *d, const size_t ky,\
 
 /*** dof ***/
 size_t fit_data_get_dof(const fit_data *d);
+
+/*** sample counter ***/
+size_t fit_data_get_sample_counter(const fit_data *d);
 
 /*** set from samples ***/
 typedef enum

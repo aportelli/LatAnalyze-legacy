@@ -35,6 +35,8 @@ static size_t sym_rowmaj(const size_t i, const size_t j, const size_t dim);
 static double zero(mat *p, void *vd);
 static size_t get_Xsize(const fit_data *d);
 static void init_chi2(fit_data *d, const int thread, const int nthread);
+static void set_X_Y(mat* X, mat *Y, mat *x_buf, const mat *p, \
+                    const fit_data *d);
 static double chi2_base(mat *p, void *vd);
 
 /*                          fit model structure                             */
@@ -159,6 +161,7 @@ fit_data *fit_data_create(const size_t ndata, const size_t nxdim,\
     d->model           = NULL;
     d->model_param     = NULL;
     d->npar            = 0;
+    d->ndpar           = 0;
     d->x_var_inv       = NULL;
     d->is_x_correlated = false;
     for (k=0;k<nxdim;k++)
@@ -181,6 +184,7 @@ fit_data *fit_data_create(const size_t ndata, const size_t nxdim,\
     d->save_chi2pdof = true;
     d->buf           = NULL;
     d->nbuf          = 0;
+    d->s             = 0;
 
     for (k1=0;k1<nxdim;k1++)
     {
@@ -282,7 +286,17 @@ size_t fit_data_get_npar(const fit_data *d)
     return d->npar;
 }
 
-/*** chi2 value ***/
+size_t fit_data_get_ndumbpar(const fit_data *d)
+{
+    return d->ndpar;
+}
+
+void fit_data_set_ndumbpar(fit_data *d, const size_t ndpar)
+{
+    d->ndpar = ndpar;
+}
+
+/*** chi^2 ***/
 void fit_data_save_chi2pdof(fit_data *d, bool save)
 {
     d->save_chi2pdof = save;
@@ -647,6 +661,11 @@ latan_errno fit_data_set_model(fit_data *d, const fit_model *model,\
     return LATAN_SUCCESS;
 }
 
+const void * fit_data_pt_model_param(const fit_data *d)
+{
+    return d->model_param;
+}
+
 double fit_data_model_xeval(const fit_data *d, const size_t k, const mat *x,\
                             const mat *p)
 {
@@ -683,9 +702,15 @@ size_t fit_data_get_dof(const fit_data *d)
     size_t dof;
     
     dof = fit_data_fit_point_num(d)*fit_data_get_nydim(d)\
-          - fit_data_get_npar(d);
+          - fit_data_get_npar(d) + fit_data_get_ndumbpar(d);
     
     return dof;
+}
+
+/*** sample counter ***/
+size_t fit_data_get_sample_counter(const fit_data *d)
+{
+    return d->s;
 }
 
 /*** set from samples ***/
@@ -832,7 +857,47 @@ static size_t get_Xsize(const fit_data *d)
     fclose(f_);\
 }
     
-/*** (re)allocate chi2 buffers and invert variance matrices ***/
+/* chi^2 function :
+ * ----------------
+ * 
+ * chi^2 is defined this way :
+ *
+ * chi^2 = t(lX)*C^-1*lX  (t = transposition)
+ *
+ * where lX is the column vector defined by blocks :
+ *
+ *      (                    )    i    : index for the data
+ *      ( X = f(q_i,p) - d_i )    k    : index for the dimension
+ *      (                    )    d    : data
+ * lX = ( .................. )    x    : points
+ *      (                    )    f    : model
+ *      ( Y =  q_ik - x_ik   )    p    : fit parameters
+ *      (                    )    q_ik : x_ik if you don't consider x covariance
+ *                                       on dimension k, an additional fit
+ *                                       parameter else
+ *
+ * lX have size ndata + Ysize, where Ysize depends on how many covariance
+ * relations you have between dimensions (it is given by the get_Ysize
+ * function).
+ * C is the covariance matrix defined by blocks :
+ *
+ *      (                .                 )  i  : line data index
+ *      (    <d_i*d_j>   .   <x_jl*d_i>    )  j  : column data index
+ *      (                .                 )  k  : line dimension index
+ *      ( ................................ )  l  : column dimension index
+ *      (                .                 )
+ *      (   <x_ik*d_j>   .  <x_ik*x_jl>    )  for the blocks involving x,
+ *      (                .                 )  dimension major order indexing is
+ *                                            used
+ *
+ * CRITICALLY CALLED FUNCTION
+ * chi2 is heavily called during one call of minimize function,
+ * optimization is done using vector/matrix views from GSL, matrix buffers
+ * in fit_data structure, and BLAS operations
+ * 
+ */
+
+/* (re)allocate chi2 buffers and compute C^-1 */
 static void init_chi2(fit_data *d, const int thread, const int nthread)
 {
     mat *tmp_covar;
@@ -841,9 +906,9 @@ static void init_chi2(fit_data *d, const int thread, const int nthread)
     size_t ind,ndata,nydim,nxdim,lXsize,Ysize,Xsize,px_ind,px_ind1,px_ind2;
     double inv;
     bool have_xy_covar;
-
+    
 #ifdef _OPENMP
-    #pragma omp critical
+#pragma omp critical
 #endif
     {
         tmp_covar      = NULL;
@@ -886,10 +951,10 @@ static void init_chi2(fit_data *d, const int thread, const int nthread)
         else if (Xsize > 0)
         {
             if ((d->buf[thread].is_xpart_alloc\
-                &&((nrow(d->buf[thread].X)  != Xsize)\
-                ||(nrow(d->buf[thread].CxX) != Xsize) \
-                ||(nrow(d->buf[thread].lX)  != lXsize)\
-                ||(nrow(d->buf[thread].ClX) != lXsize)))
+                 &&((nrow(d->buf[thread].X)  != Xsize)\
+                    ||(nrow(d->buf[thread].CxX) != Xsize) \
+                    ||(nrow(d->buf[thread].lX)  != lXsize)\
+                    ||(nrow(d->buf[thread].ClX) != lXsize)))
                 ||(!d->buf[thread].is_xpart_alloc))
             {
                 if (d->buf[thread].is_xpart_alloc)
@@ -935,19 +1000,19 @@ static void init_chi2(fit_data *d, const int thread, const int nthread)
             mat_zero(d->y_var_inv);
             /*** building y variance matrix by blocks ***/
             for (k1=0;k1<nydim;k1++)
-            for (k2=k1;k2<nydim;k2++)
-            {
-                ind = sym_rowmaj(k1,k2,nydim);
-                mat_mulp(tmp_covar,d->y_covar[ind],d->cor_filter);
-                mat_set_subm(d->y_var_inv,tmp_covar,k1*ndata,k2*ndata,\
-                             (k1+1)*ndata-1,(k2+1)*ndata-1);
-                if (k1 != k2)
+                for (k2=k1;k2<nydim;k2++)
                 {
-                    mat_eqtranspose(tmp_covar);
-                    mat_set_subm(d->y_var_inv,tmp_covar,k2*ndata,k1*ndata,\
-                                 (k2+1)*ndata-1,(k1+1)*ndata-1);
+                    ind = sym_rowmaj(k1,k2,nydim);
+                    mat_mulp(tmp_covar,d->y_covar[ind],d->cor_filter);
+                    mat_set_subm(d->y_var_inv,tmp_covar,k1*ndata,k2*ndata,\
+                                 (k1+1)*ndata-1,(k2+1)*ndata-1);
+                    if (k1 != k2)
+                    {
+                        mat_eqtranspose(tmp_covar);
+                        mat_set_subm(d->y_var_inv,tmp_covar,k2*ndata,k1*ndata,\
+                                     (k2+1)*ndata-1,(k1+1)*ndata-1);
+                    }
                 }
-            }
             if (have_xy_covar)
             {
                 mat_set_subm(d->var_inv,d->y_var_inv,0,0,Ysize-1,Ysize-1);
@@ -1098,79 +1163,17 @@ static void init_chi2(fit_data *d, const int thread, const int nthread)
     }
 }
 
-/* chi^2 function :
- * ----------------
- * 
- * chi^2 is defined this way :
- *
- * chi^2 = t(lX)*C*lX  (t = transposition)
- *
- * where lX is the column vector defined by blocks :
- *
- *      (                    )    i    : index for the data
- *      ( X = f(q_i,p) - d_i )    k    : index for the dimension
- *      (                    )    d    : data
- * lX = ( .................. )    x    : points
- *      (                    )    f    : model
- *      ( Y =  q_ik - x_ik   )    p    : fit parameters
- *      (                    )    q_ik : x_ik if you don't consider x covariance
- *                                       on dimension k, an additional fit
- *                                       parameter else
- *
- * lX have size ndata + Ysize, where Ysize depends on how many covariance
- * relations you have between dimensions (it is given by the get_Ysize
- * function).
- * C is the inverse of the covariance matrix defined by blocks :
- *
- *      (                .                 )  i  : line data index
- *      (    <d_i*d_j>   .   <x_jl*d_i>    )  j  : column data index
- *      (                .                 )  k  : line dimension index
- *      ( ................................ )  l  : column dimension index
- *      (                .                 )
- *      (   <x_ik*d_j>   .  <x_ik*x_jl>    )  for the blocks involving x,
- *      (                .                 )  dimension major order indexing is
- *                                            used
- *
- * CRITICALLY CALLED FUNCTION
- * chi2 is heavily called during one call of minimize function,
- * optimization is done using vector/matrix views from GSL, matrix buffers
- * in fit_data structure, and BLAS operations
- * 
- */
-double chi2(mat *p, void *vd)
+/* set X and Y */
+static void set_X_Y(mat* X, mat *Y, mat *x_buf, const mat *p, const fit_data *d)
 {
-    fit_data *d;
-    int nthread,thread;
     size_t ndata,nxdim,nydim,npar,px_ind;
     size_t i,k;
-    mat *x,*Y,*CyY,*Cy,*X,*CxX,*Cx,*lX,*ClX,*C;
-    double res,buf,eval;
+    double buf,eval;
     
-    d       = (fit_data *)vd;
     ndata   = fit_data_get_ndata(d);
     nxdim   = fit_data_get_nxdim(d);
     nydim   = fit_data_get_nydim(d);
     npar    = fit_data_get_npar(d);
-#ifdef _OPENMP
-    nthread = omp_get_num_threads();
-    thread  = omp_get_thread_num();
-#else
-    nthread = 1;
-    thread  = 0;
-#endif
-
-    /* buffers and inverse variance matrices initialization */
-    init_chi2(d,thread,nthread);
-    x   = d->buf[thread].x;
-    Y   = d->buf[thread].Y;
-    CyY = d->buf[thread].CyY;
-    Cy  = d->y_var_inv;
-    X   = d->buf[thread].X;
-    CxX = d->buf[thread].CxX;
-    Cx  = d->x_var_inv;
-    lX  = d->buf[thread].lX;
-    ClX = d->buf[thread].ClX;
-    C   = d->var_inv;
 
     /* setting X and Y in case of covariance in x */
     if (fit_data_have_x_var(d))
@@ -1192,17 +1195,17 @@ double chi2(mat *p, void *vd)
                     {
                         buf = fit_data_get_x(d,i,k);
                     }
-                    mat_set(x,k,0,buf);
+                    mat_set(x_buf,k,0,buf);
                 }
                 for (k=0;k<nydim;k++)
                 {
-                    eval = fit_model_eval(d->model,k,x,p,d->model_param);
+                    eval = fit_model_eval(d->model,k,x_buf,p,d->model_param);
                     mat_set(Y,k*ndata+i,0,eval - fit_data_get_y(d,i,k));
                 }
             }
             else
             {
-
+                
                 for (k=0;k<nxdim;k++)
                 {
                     if (fit_data_have_x_covar(d,k))
@@ -1240,7 +1243,41 @@ double chi2(mat *p, void *vd)
             }
         }
     }
+}
+
+/* compute t(lX)*C^-1*lX */
 static double chi2_base(mat *p, void *vd)
+{
+    fit_data *d;
+    int nthread,thread;
+    mat *x,*Y,*CyY,*Cy,*X,*CxX,*Cx,*lX,*ClX,*C;
+    double res,buf;
+    
+    d       = (fit_data *)vd;
+#ifdef _OPENMP
+    nthread = omp_get_num_threads();
+    thread  = omp_get_thread_num();
+#else
+    nthread = 1;
+    thread  = 0;
+#endif
+
+    /* buffers and inverse variance matrices initialization */
+    init_chi2(d,thread,nthread);
+    x   = d->buf[thread].x;
+    Y   = d->buf[thread].Y;
+    CyY = d->buf[thread].CyY;
+    Cy  = d->y_var_inv;
+    X   = d->buf[thread].X;
+    CxX = d->buf[thread].CxX;
+    Cx  = d->x_var_inv;
+    lX  = d->buf[thread].lX;
+    ClX = d->buf[thread].ClX;
+    C   = d->var_inv;
+
+    /* setting X and Y */
+    set_X_Y(X,Y,x,p,d);
+    
     /* setting lX and computing chi^2 in case of data/x covariance */
     if (fit_data_have_xy_covar(d))
     {
@@ -1333,6 +1370,7 @@ latan_errno rs_data_fit(rs_sample *p, rs_sample * const *x,         \
     pbuf  = mat_create(npar+Xsize,1);
     
     /* central value fit */
+    d->s = 0;
     /** setting initial parameters **/
     USTAT(mat_set_subm(pbuf,rs_sample_pt_cent_val(p),0,0,npar-1,0));
     if (x != NULL)
@@ -1365,6 +1403,7 @@ latan_errno rs_data_fit(rs_sample *p, rs_sample * const *x,         \
     /* sample fits */
     for (i=0;i<nsample;i++)
     {
+        (d->s)++;
         /** setting data and initial parameters **/
         USTAT(mat_set_subm(pbuf,rs_sample_pt_cent_val(p),0,0,npar-1,0));
         for (k=0;k<nydim;k++)

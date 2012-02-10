@@ -32,8 +32,10 @@
 static size_t rowmaj(const size_t i, const size_t j, const size_t dim1,\
                      const size_t dim2);
 static size_t sym_rowmaj(const size_t i, const size_t j, const size_t dim);
+static double zero(mat *p, void *vd);
 static size_t get_Xsize(const fit_data *d);
 static void init_chi2(fit_data *d, const int thread, const int nthread);
+static double chi2_base(mat *p, void *vd);
 
 /*                          fit model structure                             */
 /****************************************************************************/
@@ -121,6 +123,16 @@ static size_t sym_rowmaj(const size_t i, const size_t j, const size_t dim)
     return ind;
 }
 
+static double zero(mat *p, void *vd)
+{
+    void *dumb;
+    
+    dumb = p;
+    dumb = vd;
+    
+    return 0.0;
+}
+
 /** allocation **/
 fit_data *fit_data_create(const size_t ndata, const size_t nxdim,\
                           const size_t nydim)
@@ -164,6 +176,7 @@ fit_data *fit_data_create(const size_t ndata, const size_t nxdim,\
     }
     d->var_inv       = NULL;
     d->is_inverted   = false;
+    d->chi2_ext      = &zero;
     d->chi2pdof      = -1.0;
     d->save_chi2pdof = true;
     d->buf           = NULL;
@@ -278,6 +291,11 @@ void fit_data_save_chi2pdof(fit_data *d, bool save)
 double fit_data_get_chi2pdof(const fit_data *d)
 {
     return d->chi2pdof;
+}
+
+void fit_data_set_chi2_ext(fit_data *d, min_func *f)
+{
+    d->chi2_ext = f;
 }
 
 /*** data ***/
@@ -1222,6 +1240,7 @@ double chi2(mat *p, void *vd)
             }
         }
     }
+static double chi2_base(mat *p, void *vd)
     /* setting lX and computing chi^2 in case of data/x covariance */
     if (fit_data_have_xy_covar(d))
     {
@@ -1244,6 +1263,12 @@ double chi2(mat *p, void *vd)
     }
     
     return res;
+}
+
+/* compute the total chi^2 (with an eventual custom extension) */
+double chi2(mat *p, void *vd)
+{    
+    return chi2_base(p,vd) + ((fit_data *)vd)->chi2_ext(p,vd);
 }
 
 /*                          fit functions                                   */

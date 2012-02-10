@@ -21,6 +21,7 @@
 #define LATAN_FIT_H_
 
 #include <latan/latan_globals.h>
+#include <latan/latan_minimizer.h>
 #include <latan/latan_statistics.h>
 
 #ifndef MAX_YDIM
@@ -112,7 +113,8 @@ typedef struct fid_data_s
     /* fit model */
     fit_model const *model;
     void *model_param;
-    /* buffers for chi^2 computation */
+    /* chi^2 */
+    min_func *chi2_ext;
     double chi2pdof;
     bool save_chi2pdof;
     chi2_buf *buf;
@@ -131,9 +133,10 @@ size_t fit_data_get_nydim(const fit_data *d);
 size_t fit_data_get_nxdim(const fit_data *d);
 size_t fit_data_get_npar(const fit_data *d);
 
-/*** chi2 value ***/
+/*** chi^2 ***/
 void fit_data_save_chi2pdof(fit_data *d, bool save);
 double fit_data_get_chi2pdof(const fit_data *d);
+void fit_data_set_chi2_ext(fit_data *d, min_func *f);
 
 /*** data ***/
 void fit_data_set_y(fit_data *d, const size_t i, const size_t k,\
@@ -206,7 +209,7 @@ latan_errno fit_data_set_covar_from_sample(fit_data *d, rs_sample * const *x,\
                                            const bool *use_x_var);
 
 /* chi2 functions, have min_func type */
-double chi2(mat *var, void *d);
+double chi2(mat *p, void *vd);
 
 /* fit functions */
 latan_errno data_fit(mat *p, fit_data *d);

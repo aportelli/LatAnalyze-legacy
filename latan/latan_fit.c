@@ -181,6 +181,7 @@ fit_data *fit_data_create(const size_t ndata, const size_t nxdim,\
     d->is_inverted   = false;
     d->chi2_ext      = &zero;
     d->chi2pdof      = -1.0;
+    d->chi2_comp     = NULL;
     d->save_chi2pdof = true;
     d->buf           = NULL;
     d->nbuf          = 0;
@@ -246,6 +247,10 @@ void fit_data_destroy(fit_data *d)
     {
         mat_destroy(d->var_inv);
     }
+    if (d->chi2_comp != NULL)
+    {
+        mat_destroy(d->chi2_comp);
+    }
     for(i=0;i<d->nbuf;i++)
     {
         mat_destroy(d->buf[i].x);
@@ -310,6 +315,11 @@ double fit_data_get_chi2pdof(const fit_data *d)
 void fit_data_set_chi2_ext(fit_data *d, min_func *f)
 {
     d->chi2_ext = f;
+}
+
+latan_errno fit_data_get_chi2_comp(mat *comp, const fit_data *d)
+{
+    return mat_cp(comp,d->chi2_comp);
 }
 
 /*** data ***/
@@ -972,6 +982,7 @@ static void init_chi2(fit_data *d, const int thread, const int nthread)
             }
             
         }
+        
         /* (re)allocating global inverse variance matrix if necessary */
         if (have_xy_covar)
         {
@@ -991,6 +1002,18 @@ static void init_chi2(fit_data *d, const int thread, const int nthread)
                 d->is_inverted = false;
             }
         }
+        
+        /* (re)allocating vector for chi^2 composition if necessary */
+        if (d->chi2_comp == NULL)
+        {
+            d->chi2_comp = mat_create(Xsize+Ysize+2,1);
+        }
+        else if (nrow(d->chi2_comp) != Xsize+Ysize+2)
+        {
+            mat_destroy(d->chi2_comp);
+            d->chi2_comp = mat_create(Xsize+Ysize+2,1);
+        }
+        
         /* inverting covariance matrices if necessary */
         if (!d->is_inverted)
         {
@@ -1308,6 +1331,73 @@ double chi2(mat *p, void *vd)
     return chi2_base(p,vd) + ((fit_data *)vd)->chi2_ext(p,vd);
 }
 
+/* compute chi^2 composition */
+latan_errno chi2_get_comp(mat *comp, mat *p, fit_data *d)
+{
+    int nthread,thread;
+    size_t Ysize,Xsize;
+    size_t i;
+    double base,uncor,el;
+    mat *x,*Y,*CyY,*Cy,*X,*CxX,*Cx,*lX,*ClX,*C;
+    
+    Ysize = d->ndata*d->nydim;
+    Xsize = get_Xsize(d);
+    
+    if (nrow(comp) != Xsize + Ysize + 2)
+    {
+        LATAN_ERROR("wrong result matrix dimensions",LATAN_EBADLEN);
+    }
+    
+    /* compute base chi^2 */
+    base = chi2_base(p,d);
+    
+    /* compute ext chi^2 */
+    mat_set(comp,Xsize+Ysize+1,0,d->chi2_ext(p,d));
+    
+    /* compute diagonal chi^2 elements */
+#ifdef _OPENMP
+    nthread = omp_get_num_threads();
+    thread  = omp_get_thread_num();
+#else
+    nthread = 1;
+    thread  = 0;
+#endif
+    /** buffers and inverse variance matrices initialization **/
+    init_chi2(d,thread,nthread);
+    x   = d->buf[thread].x;
+    Y   = d->buf[thread].Y;
+    CyY = d->buf[thread].CyY;
+    Cy  = d->y_var_inv;
+    X   = d->buf[thread].X;
+    CxX = d->buf[thread].CxX;
+    Cx  = d->x_var_inv;
+    lX  = d->buf[thread].lX;
+    ClX = d->buf[thread].ClX;
+    C   = d->var_inv;
+    /** setting X and Y **/
+    set_X_Y(X,Y,x,p,d);
+    /** diagonal y elements **/
+    uncor = 0.0;
+    for (i=0;i<Ysize;i++)
+    {
+        el     = fabs(mat_get(Y,i,0))*sqrt(mat_get(d->y_var_inv,i,i));
+        uncor += el;
+        mat_set(comp,i,0,el);
+    }
+    /** diagonal x elements **/
+    for (i=0;i<Xsize;i++)
+    {
+        el     = fabs(mat_get(X,i,0))*sqrt(mat_get(d->x_var_inv,i,i));
+        uncor += el;
+        mat_set(comp,i+Ysize,0,el);
+    }
+    
+    /* compute correlation contribution */
+    mat_set(comp,Xsize+Ysize,0,base-uncor);
+    
+    return LATAN_SUCCESS;
+}
+
 /*                          fit functions                                   */
 /****************************************************************************/
 latan_errno data_fit(mat *p, fit_data *d)
@@ -1340,6 +1430,7 @@ latan_errno data_fit(mat *p, fit_data *d)
     if (d->save_chi2pdof)
     {
         d->chi2pdof = DRATIO(chi2_min,fit_data_get_dof(d));
+        chi2_get_comp(d->chi2_comp,p,d);
     }
     
     return status;
@@ -1350,7 +1441,7 @@ latan_errno rs_data_fit(rs_sample *p, rs_sample * const *x,         \
                           const cor_flag flag, const bool *use_x_var)
 {
     latan_errno status;
-    mat *pbuf;
+    mat *pbuf,*comp_backup;
     size_t ndata,nxdim,nydim,npar,nsample,Xsize,px_ind;
     size_t i,k;
     int verb_backup;
@@ -1364,10 +1455,12 @@ latan_errno rs_data_fit(rs_sample *p, rs_sample * const *x,         \
     npar         = fit_data_get_npar(d);
     nsample      = rs_sample_get_nsample(data[0]);
     
+    Xsize       = get_Xsize(d);
+    pbuf        = mat_create(npar+Xsize,1);
+    comp_backup = mat_create(Xsize+ndata*nydim+2,1);
+    
     /* compute needed variances/covariances from samples */
     fit_data_set_covar_from_sample(d,x,data,flag,use_x_var);
-    Xsize = get_Xsize(d);
-    pbuf  = mat_create(npar+Xsize,1);
     
     /* central value fit */
     d->s = 0;
@@ -1398,6 +1491,7 @@ latan_errno rs_data_fit(rs_sample *p, rs_sample * const *x,         \
     }
     USTAT(mat_get_subm(rs_sample_pt_cent_val(p),pbuf,0,0,npar-1,0));
     chi2pdof_backup = fit_data_get_chi2pdof(d);
+    fit_data_get_chi2_comp(comp_backup,d);
     latan_printf(VERB,"fit: central value chi^2/dof = %e\n",chi2pdof_backup);
     
     /* sample fits */
@@ -1437,6 +1531,7 @@ latan_errno rs_data_fit(rs_sample *p, rs_sample * const *x,         \
         USTAT(mat_get_subm(rs_sample_pt_sample(p,i),pbuf,0,0,npar-1,0));
     }
     d->chi2pdof = chi2pdof_backup;
+    mat_cp(d->chi2_comp,comp_backup);
     for (k=0;k<nydim;k++)
     {
         USTAT(fit_data_set_y_k(d,k,rs_sample_pt_cent_val(data[k])));
@@ -1450,6 +1545,7 @@ latan_errno rs_data_fit(rs_sample *p, rs_sample * const *x,         \
     }
     
     mat_destroy(pbuf);
+    mat_destroy(comp_backup);
     
     return status;
 }

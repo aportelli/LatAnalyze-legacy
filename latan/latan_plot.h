@@ -55,6 +55,8 @@ typedef struct
 {
     size_t nplot;       /* number of plot commands the buffer*/
     strbuf *plotbuf;    /* buffer of plot commands */
+    size_t nhead;       /* number of head commands */
+    strbuf *headbuf;    /* buffer of head commands */
     strbuf *tmpfname;   /* names of the temporary files opened for this plot */
     strbuf title;       /* title of the plot */
     strbuf term;        /* output terminal of the plot */
@@ -91,6 +93,7 @@ void plot_set_output(plot *p, const strbuf output);
 
 /* plot functions */
 void plot_add_plot(plot *p, const strbuf cmd);
+void plot_add_head(plot *p, const strbuf cmd);
 void plot_add_point(plot *p, const double x, const double y, const double xerr,\
                     const double yerr, const strbuf title, const strbuf color);
 void plot_add_dat(plot *p, const mat *x, const mat *dat, const mat *xerr,\

@@ -160,19 +160,21 @@ plot *plot_create(void)
     
     MALLOC_ERRVAL(p,plot *,1,NULL);
     
-    p->nplot = 0;
-    p->plotbuf = NULL;
+    p->nplot    = 0;
+    p->plotbuf  = NULL;
+    p->nhead    = 0;
+    p->headbuf  = NULL;
     p->tmpfname = NULL;
     strbufcpy(p->title,"");
     strbufcpy(p->term,DEFTERM);
     strbufcpy(p->output,"");
     p->scale = AUTO;
-    p->log = NOLOG;
-    p->xmin = 0.0;
-    p->xmax = 0.0;
+    p->log   = NOLOG;
+    p->xmin  = 0.0;
+    p->xmax  = 0.0;
     strbufcpy(p->xlabel,"");
-    p->ymin = 0.0;
-    p->ymax = 0.0;
+    p->ymin  = 0.0;
+    p->ymax  = 0.0;
     strbufcpy(p->ylabel,"");
     
     return p;
@@ -274,6 +276,13 @@ void plot_add_plot(plot *p, const strbuf cmd)
     (p->nplot)++;
     REALLOC_NOERRET(p->plotbuf,p->plotbuf,strbuf*,p->nplot);
     strbufcpy(p->plotbuf[p->nplot-1],cmd);
+}
+
+void plot_add_head(plot *p, const strbuf cmd)
+{
+    (p->nhead)++;
+    REALLOC_NOERRET(p->headbuf,p->headbuf,strbuf*,p->nhead);
+    strbufcpy(p->headbuf[p->nhead-1],cmd);
 }
 
 enum
@@ -565,6 +574,10 @@ latan_errno plot_parse(FILE* outstr, const plot *p)
     gnuplot_cmd(outstr,"set title '%s'",p->title);
     gnuplot_cmd(outstr,"set xlabel '%s'",p->xlabel);
     gnuplot_cmd(outstr,"set ylabel '%s'",p->ylabel);
+    for (i=0;i<p->nhead;i++)
+    {
+        gnuplot_cmd(outstr,p->headbuf[i]);
+    }
     for (i=0;i<p->nplot;i++)
     {
         if (i == 0)

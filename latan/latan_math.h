@@ -30,8 +30,13 @@
 
 __BEGIN_DECLS
 
+/* binomial coefficients */
 unsigned int binomial(const unsigned int n, const unsigned int p);
+
+/* discrete central derivative */
 latan_errno finite_diff(mat *ddat, const mat *dat);
+
+/* row major order indexing */
 size_t coord_to_rowmaj(const size_t *x, const size_t *dim, const size_t ndim);
 void rowmaj_to_coord(size_t *x, const size_t *dim, const size_t ndim,\
                      const size_t ind);

@@ -9,12 +9,12 @@
 
 #define GENTEST_SEQ_LENGTH 25
 #define GENTEST_SAVE_STEP 9
-#define DIS_SEQ_LENGTH 1000000
+#define DIS_SEQ_LENGTH 10000
 #define DICE_NFACE 6
 #define GAUSS_MU 0.0
 #define GAUSS_SIG 1.0
 #define GAUSS_HIST_MAX 5.0
-#define HIST_CONT_NINT 500
+#define HIST_CONT_NINT 100
 
 int main(void)
 {
@@ -82,7 +82,8 @@ int main(void)
     printf("distribution :\n");
     for (f=0;f<DICE_NFACE;f++)
     {
-        printf("face %d\t: %f%%\n",f+1,DRATIO(hist_dice[f],DIS_SEQ_LENGTH)*100.0);
+        printf("face %d\t: %f%%\n",f+1,DRATIO(hist_dice[f],\
+               DIS_SEQ_LENGTH)*100.0);
     }
     printf("-- NORMAL DISTRIBUTION\n");
     printf("-- Generating %d gaussian numbers with mean %.2f and width %.2f...\n",\

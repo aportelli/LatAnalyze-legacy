@@ -24,8 +24,9 @@
 #include <latan/latan_rand.h>
 #include <gsl/gsl_cblas.h>
 #include <gsl/gsl_errno.h>
-#include <gsl/gsl_permutation.h>
 #include <gsl/gsl_linalg.h>
+#include <gsl/gsl_permutation.h>
+#include <gsl/gsl_sort.h>
 #include <latan/latan_io.h>
 
 /*                              allocation                                  */
@@ -121,6 +122,11 @@ size_t ncol(const mat *m)
     return m->data_cpu->size2;
 }
 
+size_t nel(const mat *m)
+{
+    return nrow(m)*ncol(m);
+}
+
 double mat_get(const mat *m, const size_t i, const size_t j)
 {
     if ((i>=nrow(m))||(j>=ncol(m)))
@@ -131,6 +137,18 @@ double mat_get(const mat *m, const size_t i, const size_t j)
     return gsl_matrix_get(m->data_cpu,i,j);
 }
 
+double mat_get_rm(const mat* m, const size_t ind)
+{
+    size_t x[2],dim[2];
+    
+    dim[0] = nrow(m);
+    dim[1] = ncol(m);
+    
+    rowmaj_to_coord(x,dim,2,ind);
+    
+    return mat_get(m,x[0],x[1]);
+}
+
 void mat_set(mat *m, const size_t i, const size_t j, const double val)
 {
     if ((i>=nrow(m))||(j>=ncol(m)))
@@ -139,6 +157,17 @@ void mat_set(mat *m, const size_t i, const size_t j, const double val)
     }
     
     gsl_matrix_set(m->data_cpu,i,j,val);
+}
+
+void mat_set_rm(mat *m, const size_t ind, const double val)
+{
+    size_t x[2],dim[2];
+    
+    dim[0] = nrow(m);
+    dim[1] = ncol(m);
+    
+    rowmaj_to_coord(x,dim,2,ind);
+    mat_set(m,x[0],x[1],val);
 }
 
 latan_errno mat_get_subm(mat *m, const mat *n, const size_t k1,           \
@@ -315,6 +344,38 @@ bool mat_is_vector(const mat *m)
 bool mat_is_assumed_sym(const mat *m)
 {
     return ((m->prop_flag & MAT_SYM) != 0);
+}
+
+/*                                 sort                                     */
+/****************************************************************************/
+void mat_get_sind(size_t *sind, const mat *m)
+{
+    bool create_m_buf;
+    mat *m_buf;
+    const mat *m_pt;
+    
+    /* create buffers if matrix is a submatrix */
+    create_m_buf = (ncol(m) != m->data_cpu->tda);
+    if (create_m_buf)
+    {
+        m_buf = mat_create_from_mat(m);
+        m_pt  = m_buf;
+        LATAN_WARNING("matrix to sort is a submatrix, buffer created",\
+                      LATAN_EINVAL);
+    }
+    else
+    {
+        m_pt  = m;
+    }
+    
+    /* sort */
+    gsl_sort_index(sind,m_pt->data_cpu->data,1,nel(m_pt));
+    
+    /* deallocation */
+    if (create_m_buf)
+    {
+        mat_destroy(m_buf);
+    }
 }
 
 /*                              operations                                  */

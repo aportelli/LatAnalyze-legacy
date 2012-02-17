@@ -60,8 +60,11 @@ void mat_ar_destroy(mat **m, const size_t nmat);
 /** access **/
 size_t nrow(const mat *m);
 size_t ncol(const mat *m);
+size_t nel(const mat *m);
 double mat_get(const mat *m, const size_t i, const size_t j);
+double mat_get_rm(const mat* m, const size_t ind);
 void mat_set(mat *m, const size_t i, const size_t j, const double val);
+void mat_set_rm(mat *m, const size_t ind, const double val);
 latan_errno mat_get_subm(mat *m, const mat *n, const size_t k1,           \
                          const size_t l1, const size_t k2, const size_t l2);
 latan_errno mat_set_subm(mat *m, const mat *n, const size_t k1,           \
@@ -84,6 +87,9 @@ bool mat_is_row_vector(const mat *m);
 bool mat_is_col_vector(const mat *m);
 bool mat_is_vector(const mat *m);
 bool mat_is_assumed_sym(const mat *m);
+
+/** sort **/
+void mat_get_sind(size_t *sind, const mat *m);
 
 /** operations **/
 void mat_zero(mat *m);

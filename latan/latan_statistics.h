@@ -32,8 +32,9 @@ typedef latan_errno rs_func(mat *res, mat **dat, const size_t ndat,\
                             const size_t sampno, void *param);
 
 /* elementary estimators */
-double mat_elsum(mat *m);
-double mat_elmean(mat *m);
+double mat_elsum(const mat *m);
+double mat_elmean(const mat *m);
+
 latan_errno mat_mean(mat *mean, mat **m, const size_t size);
 latan_errno mat_cov(mat *cov, mat **m, mat **n, const size_t size);
 latan_errno mat_cov_m(mat *cov, mat **m, mat **n, const size_t size,\
@@ -45,6 +46,16 @@ latan_errno mat_covp_m(mat *cov, mat **m, mat **n, const size_t size,\
                        mat *m_mean, mat *n_mean);
 #define mat_varp(var,m,size) mat_covp(var,m,m,size)
 #define mat_varp_m(var,m,size,mean) mat_covp_m(var,m,m,size,mean,mean)
+
+/* percentiles */
+double ar_percentile(const double *data, const double *w, const size_t *sind,\
+                     const size_t ndata, const double p);
+double mat_elpercentile_with_sind(const mat *m, const mat *w,       \
+                                  const size_t *sind, const double p);
+double mat_elpercentile(const mat *m, const mat *w, const double p);
+
+/* confidence interval */
+double conf_int(double ci[2], const mat *m, const mat *w, const double nsig);
 
 /* data binning */
 latan_errno mat_ar_bin(mat **bindat, mat **dat, const size_t ndat,\

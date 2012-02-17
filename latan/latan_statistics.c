@@ -24,6 +24,8 @@
 #include <latan/latan_io.h>
 #include <gsl/gsl_histogram.h>
 #include <gsl/gsl_errno.h>
+#include <gsl/gsl_sf.h>
+#include <gsl/gsl_sort_double.h>
 
 static latan_errno resample_bootstrap(mat *cent_val, mat **sample,         \
                                       const size_t nboot, mat **dat,       \
@@ -39,7 +41,7 @@ static latan_errno resample_jackknife(mat *cent_val, mat **sample,         \
 
 /*                      elementary estimators                               */
 /****************************************************************************/
-double mat_elsum(mat *m)
+double mat_elsum(const mat *m)
 {
     size_t i,j;
     double sum;
@@ -54,11 +56,11 @@ double mat_elsum(mat *m)
     return sum;
 }
 
-double mat_elmean(mat *m)
+double mat_elmean(const mat *m)
 {
     double mean;
     
-    mean = mat_elsum(m)/((double)(nrow(m)*ncol(m)));
+    mean = mat_elsum(m)/((double)(nel(m)));
     
     return mean;
 }
@@ -181,6 +183,154 @@ latan_errno mat_covp_m(mat *cov, mat **m, mat **n, const size_t size,\
     mat_ar_destroy(nc,size);
 
     return status;
+}
+
+/*                               percentiles                                */
+/****************************************************************************/
+double ar_percentile(const double *data, const double *w, const size_t *sind,\
+                     const size_t ndata, const double p)
+{
+    double w_totsum, w_psum, w_i, p_i, p_im1, res;
+    bool have_res;
+    size_t i;
+    
+    if ((p < 0.0)||(p > 100.0))
+    {
+        LATAN_WARNING("percentile is outside the [0,100] range",LATAN_EINVAL);
+    }
+    
+    /* compute percentile                             */
+    /* (cf. http://en.wikipedia.org/wiki/Percentile ) */
+    if (w == NULL)
+    {
+        w_totsum = (double)(ndata);
+        w_psum   = 1.0;
+    }
+    else
+    {
+        w_totsum = 0.0;
+        for (i=0;i<ndata;i++)
+        {
+            w_totsum += w[i];
+        }
+        w_psum = w[sind[0]];
+    }
+    p_i = (100.0/w_totsum)*w_psum*0.5;
+    if (p < p_i)
+    {
+        res = data[sind[0]];
+    }
+    else
+    {
+        have_res = false;
+        p_im1    = p_i;
+        for (i=1;i<ndata;i++)
+        {
+            w_i     = (w == NULL) ? 1.0 : w[sind[i]];
+            w_psum += w_i;
+            p_i     = (100.0/w_totsum)*(w_psum-0.5*w_i);
+            if ((p >= p_im1)&&(p < p_i))
+            {
+                res      = data[sind[i-1]]+(p-p_im1)/(p_i-p_im1)\
+                           *(data[sind[i]]-data[sind[i-1]]);
+                have_res = true;
+                break;
+            }
+        }
+        if (!have_res)
+        {
+            res = data[sind[ndata-1]];
+        }
+    }
+    
+    return res;
+}
+
+double mat_elpercentile_with_sind(const mat *m, const mat *w,       \
+                                  const size_t *sind, const double p)
+{
+    mat *m_buf,*w_buf;
+    const mat *m_pt, *w_pt;
+    bool create_m_buf,create_w_buf;
+    double *m_ar,*w_ar;
+    double res;
+    
+    /* create buffers if matrices are submatrices */
+    create_m_buf = (ncol(m) != m->data_cpu->tda);
+    create_w_buf = (w == NULL) ? false : (ncol(w) != w->data_cpu->tda);
+    if (create_m_buf)
+    {
+        m_buf = mat_create_from_mat(m);
+        m_pt  = m_buf;
+        LATAN_WARNING("buffer created for data matrix",LATAN_EINVAL);
+    }
+    else
+    {
+        m_pt  = m;
+    }
+    if (create_w_buf)
+    {
+        w_buf = mat_create_from_mat(w);
+        w_pt  = w_buf;
+        LATAN_WARNING("buffer created for weight matrix",LATAN_EINVAL);
+    }
+    else
+    {
+        w_pt  = w;
+    }
+    
+    /* compute percentile */
+    m_ar = m_pt->data_cpu->data;
+    w_ar = (w == NULL) ? NULL : w_pt->data_cpu->data;
+    res  = ar_percentile(m_ar,w_ar,sind,nel(m_pt),p);
+    
+    /* deallocation */
+    if (create_m_buf)
+    {
+        mat_destroy(m_buf);
+    }
+    if (create_w_buf)
+    {
+        mat_destroy(w_buf);
+    }
+    
+    return res;
+}
+
+double mat_elpercentile(const mat *m, const mat *w, const double p)
+{
+    size_t *sind;
+    double res;
+    
+    MALLOC(sind,size_t *,nel(m));
+    
+    mat_get_sind(sind,m);
+    res = mat_elpercentile_with_sind(m,w,sind,p);
+    
+    FREE(sind);
+    
+    return res;
+}
+
+/*                            confidence interval                           */
+/****************************************************************************/
+double conf_int(double ci[2], const mat *m, const mat *w, const double nsig)
+{
+    double cl,pl,pr;
+    size_t *sind;
+    
+    MALLOC(sind,size_t *,nel(m));
+    
+    mat_get_sind(sind,m);
+    cl    = gsl_sf_erf(nsig/sqrt(2.0));
+    pl    = 50.0*(1.0-cl);
+    pr    = 50.0*(1.0+cl);
+    ci[0] = mat_elpercentile_with_sind(m,w,sind,pl);
+    ci[1] = mat_elpercentile_with_sind(m,w,sind,pr);
+    
+    FREE(sind);
+    
+    return cl;
 }
 
 /*                              data binning                                */

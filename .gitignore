@@ -11,7 +11,7 @@ examples/ex_io
 examples/ex_mat
 examples/ex_min
 examples/ex_rand
-examples/ex_rand.rand
+examples/ex_rand.seed
 examples/ex_plot
 examples/ex_stat
 utils/latan_create_rg_state

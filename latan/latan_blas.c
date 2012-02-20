@@ -131,6 +131,26 @@ latan_errno latan_blas_ddot(const mat *x, const mat *y, double *res)
     return status;
 }
 
+double latan_blas_dnrm2(const mat *x)
+{
+    gsl_vector_view x_vview;
+    
+    if (mat_is_row_vector(x))
+    {
+        x_vview = gsl_matrix_row(x->data_cpu,0);
+    }
+    else if (mat_is_col_vector(x))
+    {
+        x_vview = gsl_matrix_column(x->data_cpu,0);
+    }
+    else
+    {
+        LATAN_ERROR_VAL("vector operation on matrix",LATAN_EBADLEN,GSL_NAN);
+    }
+    
+    return gsl_blas_dnrm2(&(x_vview.vector));
+}
+
 /*                              level 2                                     */
 /****************************************************************************/
 latan_errno latan_blas_dgemv(const char opA, const double alpha,            \

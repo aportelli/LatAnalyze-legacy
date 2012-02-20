@@ -24,6 +24,7 @@
 
 /* level 1 */
 latan_errno latan_blas_ddot(const mat *x, const mat *y, double *res);
+double      latan_blas_dnrm2(const mat *x);
 
 /* level 2 */
 latan_errno latan_blas_dgemv(const char opA, const double alpha,            \

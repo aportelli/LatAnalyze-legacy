@@ -1380,14 +1380,14 @@ latan_errno chi2_get_comp(mat *comp, mat *p, fit_data *d)
     uncor = 0.0;
     for (i=0;i<Ysize;i++)
     {
-        el     = fabs(mat_get(Y,i,0))*sqrt(mat_get(d->y_var_inv,i,i));
+        el     = mat_get(Y,i,0)*sqrt(mat_get(d->y_var_inv,i,i));
         uncor += el;
         mat_set(comp,i,0,el);
     }
     /** diagonal x elements **/
     for (i=0;i<Xsize;i++)
     {
-        el     = fabs(mat_get(X,i,0))*sqrt(mat_get(d->x_var_inv,i,i));
+        el     = mat_get(X,i,0)*sqrt(mat_get(d->x_var_inv,i,i));
         uncor += el;
         mat_set(comp,i+Ysize,0,el);
     }

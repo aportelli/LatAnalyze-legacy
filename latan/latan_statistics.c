@@ -338,21 +338,21 @@ double conf_int(double ci[2], const mat *m, const mat *w, const double nsig)
 latan_errno mat_ar_bin(mat **bindat, mat **dat, const size_t ndat,\
                        const size_t binsize)
 {
-    size_t nbindat;
     size_t i;
+    size_t q,r;
     latan_errno status;
     
-    if (ndat % binsize != 0)
-    {
-        LATAN_ERROR("bin size is not a divider of data number",LATAN_EBADLEN);
-    }
-    
-    nbindat = ndat/binsize;
     status = LATAN_SUCCESS;
+    q      = ndat/binsize;
+    r      = ndat%binsize;
     
-    for (i=0;i<nbindat;i++)
+    for (i=0;i<q;i++)
     {
         USTAT(mat_mean(bindat[i],dat+i*binsize,binsize));
+    }
+    if (r != 0)
+    {
+        USTAT(mat_mean(bindat[q],dat+q*binsize,r));
     }
     
     return status;

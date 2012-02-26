@@ -116,7 +116,7 @@ typedef struct fid_data_s
     void *model_param;
     /* chi^2 */
     min_func *chi2_ext;
-    double chi2pdof;
+    double chi2_val;
     mat *chi2_comp;
     bool save_chi2pdof;
     chi2_buf *buf;
@@ -140,10 +140,12 @@ size_t fit_data_get_ndumbpar(const fit_data *d);
 void fit_data_set_ndumbpar(fit_data *d, const size_t ndpar);
 
 /*** chi^2 ***/
-void fit_data_save_chi2pdof(fit_data *d, bool save);
+void fit_data_save_chi2(fit_data *d, bool save);
+double fit_data_get_chi2(const fit_data *d);
 double fit_data_get_chi2pdof(const fit_data *d);
 void fit_data_set_chi2_ext(fit_data *d, min_func *f);
 latan_errno fit_data_get_chi2_comp(mat *comp, const fit_data *d);
+double fit_data_get_pvalue(const fit_data *d);
 
 /*** data ***/
 void fit_data_set_y(fit_data *d, const size_t i, const size_t k,\

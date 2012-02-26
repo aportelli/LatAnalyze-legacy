@@ -23,6 +23,7 @@
 #include <latan/latan_io.h>
 #include <latan/latan_math.h>
 #include <latan/latan_minimizer.h>
+#include <gsl/gsl_cdf.h>
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_vector.h>
@@ -180,7 +181,7 @@ fit_data *fit_data_create(const size_t ndata, const size_t nxdim,\
     d->var_inv       = NULL;
     d->is_inverted   = false;
     d->chi2_ext      = &zero;
-    d->chi2pdof      = -1.0;
+    d->chi2_val      = -1.0;
     d->chi2_comp     = NULL;
     d->save_chi2pdof = true;
     d->buf           = NULL;
@@ -302,14 +303,19 @@ void fit_data_set_ndumbpar(fit_data *d, const size_t ndpar)
 }
 
 /*** chi^2 ***/
-void fit_data_save_chi2pdof(fit_data *d, bool save)
+void fit_data_save_chi2(fit_data *d, bool save)
 {
     d->save_chi2pdof = save;
 }
 
+double fit_data_get_chi2(const fit_data *d)
+{
+    return d->chi2_val;
+}
+
 double fit_data_get_chi2pdof(const fit_data *d)
 {
-    return d->chi2pdof;
+    return d->chi2_val/((double)fit_data_get_dof(d));
 }
 
 void fit_data_set_chi2_ext(fit_data *d, min_func *f)
@@ -320,6 +326,16 @@ void fit_data_set_chi2_ext(fit_data *d, min_func *f)
 latan_errno fit_data_get_chi2_comp(mat *comp, const fit_data *d)
 {
     return mat_cp(comp,d->chi2_comp);
+}
+
+double fit_data_get_pvalue(const fit_data *d)
+{
+    double chi2_val,ddof;
+    
+    chi2_val = fit_data_get_chi2(d);
+    ddof     = ((double)fit_data_get_dof(d));
+    
+    return gsl_cdf_chisq_Q(chi2_val,ddof);
 }
 
 /*** data ***/
@@ -1429,7 +1445,7 @@ latan_errno data_fit(mat *p, fit_data *d)
     status = minimize(p,&chi2_min,&chi2,d);
     if (d->save_chi2pdof)
     {
-        d->chi2pdof = DRATIO(chi2_min,fit_data_get_dof(d));
+        d->chi2_val = chi2_min;
         chi2_get_comp(d->chi2_comp,p,d);
     }
     
@@ -1445,7 +1461,7 @@ latan_errno rs_data_fit(rs_sample *p, rs_sample * const *x,         \
     size_t ndata,nxdim,nydim,npar,nsample,Xsize,px_ind;
     size_t i,k;
     int verb_backup;
-    double chi2pdof_backup;
+    double chi2_backup;
     
     verb_backup  = latan_get_verb();
     status       = LATAN_SUCCESS;
@@ -1455,15 +1471,14 @@ latan_errno rs_data_fit(rs_sample *p, rs_sample * const *x,         \
     npar         = fit_data_get_npar(d);
     nsample      = rs_sample_get_nsample(data[0]);
     
+    /* compute needed variances/covariances from samples */
+    fit_data_set_covar_from_sample(d,x,data,flag,use_x_var);    
     Xsize       = get_Xsize(d);
+
+    /* central value fit */
+    d->s        = 0;
     pbuf        = mat_create(npar+Xsize,1);
     comp_backup = mat_create(Xsize+ndata*nydim+2,1);
-    
-    /* compute needed variances/covariances from samples */
-    fit_data_set_covar_from_sample(d,x,data,flag,use_x_var);
-    
-    /* central value fit */
-    d->s = 0;
     /** setting initial parameters **/
     USTAT(mat_set_subm(pbuf,rs_sample_pt_cent_val(p),0,0,npar-1,0));
     if (x != NULL)
@@ -1490,9 +1505,10 @@ latan_errno rs_data_fit(rs_sample *p, rs_sample * const *x,         \
         mat_debug(d->buf[0].lX,"lX.dat");
     }
     USTAT(mat_get_subm(rs_sample_pt_cent_val(p),pbuf,0,0,npar-1,0));
-    chi2pdof_backup = fit_data_get_chi2pdof(d);
+    chi2_backup = fit_data_get_chi2(d);
     fit_data_get_chi2_comp(comp_backup,d);
-    latan_printf(VERB,"fit: central value chi^2/dof = %e\n",chi2pdof_backup);
+    latan_printf(VERB,"fit: central value chi^2/dof = %e -- p-value = %e\n",\
+                 fit_data_get_chi2pdof(d),fit_data_get_pvalue(d));
     
     /* sample fits */
     for (i=0;i<nsample;i++)
@@ -1530,7 +1546,7 @@ latan_errno rs_data_fit(rs_sample *p, rs_sample * const *x,         \
                      (int)nsample,fit_data_get_chi2pdof(d));
         USTAT(mat_get_subm(rs_sample_pt_sample(p,i),pbuf,0,0,npar-1,0));
     }
-    d->chi2pdof = chi2pdof_backup;
+    d->chi2_val = chi2_backup;
     mat_cp(d->chi2_comp,comp_backup);
     for (k=0;k<nydim;k++)
     {

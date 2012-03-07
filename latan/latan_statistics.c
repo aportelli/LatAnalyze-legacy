@@ -201,12 +201,7 @@ double ar_percentile(const double *data, const double *w, const size_t *sind,\
     
     /* compute percentile                             */
     /* (cf. http://en.wikipedia.org/wiki/Percentile ) */
-    if (w == NULL)
-    {
-        w_totsum = (double)(ndata);
-        w_psum   = 1.0;
-    }
-    else
+    if (w)
     {
         w_totsum = 0.0;
         for (i=0;i<ndata;i++)
@@ -214,6 +209,11 @@ double ar_percentile(const double *data, const double *w, const size_t *sind,\
             w_totsum += w[i];
         }
         w_psum = w[sind[0]];
+    }
+    else
+    {
+        w_totsum = (double)(ndata);
+        w_psum   = 1.0;
     }
     p_i = (100.0/w_totsum)*w_psum*0.5;
     if (p < p_i)
@@ -226,7 +226,14 @@ double ar_percentile(const double *data, const double *w, const size_t *sind,\
         p_im1    = p_i;
         for (i=1;i<ndata;i++)
         {
-            w_i     = (w == NULL) ? 1.0 : w[sind[i]];
+            if (w)
+            {
+                w_i = w[sind[i]];
+            }
+            else
+            {
+                w_i = 1.0;
+            }
             w_psum += w_i;
             p_i     = (100.0/w_totsum)*(w_psum-0.5*w_i);
             if ((p >= p_im1)&&(p < p_i))
@@ -257,7 +264,14 @@ double mat_elpercentile_with_sind(const mat *m, const mat *w,       \
     
     /* create buffers if matrices are submatrices */
     create_m_buf = (ncol(m) != m->data_cpu->tda);
-    create_w_buf = (w == NULL) ? false : (ncol(w) != w->data_cpu->tda);
+    if (w)
+    {
+        create_w_buf = (ncol(w) != w->data_cpu->tda);
+    }
+    else
+    {
+        create_w_buf = false;
+    }
     if (create_m_buf)
     {
         m_buf = mat_create_from_mat(m);
@@ -281,7 +295,14 @@ double mat_elpercentile_with_sind(const mat *m, const mat *w,       \
     
     /* compute percentile */
     m_ar = m_pt->data_cpu->data;
-    w_ar = (w == NULL) ? NULL : w_pt->data_cpu->data;
+    if (w)
+    {
+        w_ar = w_pt->data_cpu->data;
+    }
+    else
+    {
+        w_ar = NULL;
+    }
     res  = ar_percentile(m_ar,w_ar,sind,nel(m_pt),p);
     
     /* deallocation */

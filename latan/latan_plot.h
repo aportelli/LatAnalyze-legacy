@@ -30,17 +30,9 @@
 #define DEFTERM "x11"
 #endif
 
+__BEGIN_DECLS
+
 /* flags */
-#define AUTO 0
-#define MANUAL 1
-#define XMANUAL 2
-#define YMANUAL 3
-
-#define NOLOG 0
-#define XLOG 1
-#define YLOG 2
-#define XYLOG 3
-
 enum
 {
     PF_NOTHING = 0,
@@ -48,7 +40,9 @@ enum
     PF_FIT     = 1 << 1
 };
 
-__BEGIN_DECLS
+/* function types */
+typedef double univar_func(const double x, void *param);
+typedef double mulvar_func(const mat *x, void *param);
 
 /* the plot structure */
 typedef struct 
@@ -61,8 +55,8 @@ typedef struct
     strbuf title;       /* title of the plot */
     strbuf term;        /* output terminal of the plot */
     strbuf output;      /* output file of the plot */
-    int scale;          /* scale mode of the plot */
-    int log;            /* logarithmic mode of the axis */
+    unsigned int scale; /* scale mode of the plot */
+    unsigned int log;   /* logarithmic mode of the axis */
     double xmin;        /* lower bound of x axis */
     double xmax;        /* upper bound of x axis */
     strbuf xlabel;      /* label of the x axis */
@@ -94,27 +88,50 @@ void plot_set_output(plot *p, const strbuf output);
 /* plot functions */
 void plot_add_plot(plot *p, const strbuf cmd);
 void plot_add_head(plot *p, const strbuf cmd);
-void plot_add_point(plot *p, const double x, const double y, const double xerr,\
-                    const double yerr, const strbuf title, const strbuf color);
+void plot_add_datpoint(plot *p, const double x, const double y,\
+                       const double xerr, const double yerr,   \
+                       const strbuf title, const strbuf color);
 void plot_add_dat(plot *p, const mat *x, const mat *dat, const mat *xerr,\
                   const mat *yerr, const strbuf title, const strbuf color);
+void plot_add_points(plot *p, const mat *x, const mat *y,const strbuf title,\
+                     const strbuf color, const strbuf style);
+#define plot_add_line(p,x,y,tit,col) plot_add_points(p,x,y,tit,col,"lines")
+void plot_add_func(plot *p, univar_func *f, void *f_param, const double xmin,\
+                   const double xmax, const size_t npt, const strbuf title,  \
+                   const strbuf color);
+void plot_add_parfunc(plot *p, mulvar_func *f, const mat *x_0, const size_t i,\
+                      void *f_param, const double xmin, const double xmax,    \
+                      const size_t npt, const strbuf title, const strbuf color);
+void plot_add_model(plot *p, model_func *f, const mat *x_0, const size_t j, \
+                    const mat *par, void *f_param, const double xmin,       \
+                    const double xmax, const size_t npt, const strbuf title,\
+                    const strbuf color);
+void plot_add_histogram(plot *p, const mat *hist, const double xmin,\
+                        const double xmax, const double w_tot,      \
+                        const bool do_normalize, const strbuf title,\
+                        const strbuf color);
 #define plot_add_dat_xerr(p,x,dat,xerr,title,color)\
 plot_add_dat(p,x,dat,xerr,NULL,title,color)
 #define plot_add_dat_yerr(p,x,dat,yerr,title,color)\
 plot_add_dat(p,x,dat,NULL,yerr,title,color)
 #define plot_add_dat_xyerr plot_add_dat
-void plot_add_hline(plot *p, const double y, const strbuf style,  \
-                    const strbuf color);
-void plot_add_hlineerr(plot *p, const double y, const double err, \
-                       const strbuf style, const strbuf color1,   \
-                       const strbuf color2);
+void plot_add_hline(plot *p, const double y, const strbuf color);
+void plot_add_hlineerr(plot *p, const double y, const double err,\
+                       const strbuf color);
+void plot_add_vline(plot *p, const double x, const strbuf color);
+void plot_add_vlineaerr(plot *p, const double x, const double xerr[2],\
+                        const strbuf color);
+void plot_add_vlineerr(plot *p, const double x, const double xerr,\
+                       const strbuf color);
 void plot_add_fit(plot *p, const fit_data *d, const size_t ky, const mat *x_ex,\
-                  const size_t kx, const mat *par, const bool do_sub,          \
-                  const unsigned int obj,  const strbuf title,                 \
-                  const strbuf style, const strbuf pcolor, const strbuf lcolor);
+                  const size_t kx, const mat *par, const double xmin,          \
+                  const double xmax, const size_t npt, const bool do_sub,      \
+                  const unsigned int obj,  const strbuf dat_title,             \
+                  const strbuf fit_title, const strbuf dat_color,              \
+                  const strbuf fit_color);
 
 /* plot parsing */
-latan_errno plot_parse(FILE* outstr, const plot *p);
+void plot_parse(FILE* outstr, const plot *p);
 #define plot_print(p) plot_parse(stdout,p);
 latan_errno plot_disp(const plot *p);
 

@@ -21,6 +21,21 @@
 
 #include <latan/latan_plot.h>
 #include <latan/latan_includes.h>
+#include <latan/latan_math.h>
+
+enum
+{
+    AUTO    = 0,
+    XMANUAL = 1 << 0,
+    YMANUAL = 1 << 1
+};
+
+enum
+{
+    NOLOG = 0,
+    XLOG  = 1 << 0,
+    YLOG  = 1 << 1
+};
 
 static char * gnuplot_get_program_path(const char *pname);
 static void gnuplot_cmd(FILE *ctrl, const char *cmd, ...);
@@ -51,10 +66,7 @@ static size_t ntmpf = 0;
     {\
         LATAN_ERROR("cannot find DISPLAY variable: is it set ?",LATAN_ESYSTEM);\
     }\
-    if (gnuplot_get_program_path(GNUPLOT_CMD) == NULL)\
-    {\
-        LATAN_ERROR("cannot find gnuplot in your PATH",LATAN_ESYSTEM);\
-    }\
+    gnuplot_get_program_path(GNUPLOT_CMD);\
     sprintf(cmd,"%s %s",GNUPLOT_CMD,GNUPLOT_CMD_ARGS);\
     ctrl = popen(cmd,"w");\
     if (ctrl == NULL)\
@@ -112,12 +124,12 @@ static char * gnuplot_get_program_path(const char *pname)
     } 
     else
     {
-        fprintf(stderr, "PATH variable not set\n");
+        LATAN_ERROR_VAL("PATH variable not set",LATAN_ESYSTEM,NULL);
     }
     /* If the buffer is still empty, the command was not found */
     if (buf[0] == 0)
     {
-        return NULL;
+        LATAN_ERROR_VAL("cannot find gnuplot in your PATH",LATAN_ESYSTEM,NULL);
     }
     /* Otherwise truncate the command name to yield path only */
     lg = (int)(strlen(buf) - 1);
@@ -184,6 +196,7 @@ void plot_destroy(plot *p)
 {
     size_t i;
     
+    FREE(p->headbuf);
     FREE(p->plotbuf);
     for (i=0;i<ntmpf;i++)
     {
@@ -203,25 +216,25 @@ void plot_set_scale_auto(plot *p)
 void plot_set_scale_manual(plot *p, const double xmin, const double xmax,\
                            const double ymin, const double ymax)
 {
-    p->scale = MANUAL;
-    p->xmin = xmin;
-    p->xmax = xmax;
-    p->ymin = ymin;
-    p->ymax = ymax;
+    p->scale = XMANUAL|YMANUAL;
+    p->xmin  = xmin;
+    p->xmax  = xmax;
+    p->ymin  = ymin;
+    p->ymax  = ymax;
 }
 
 void plot_set_scale_xmanual(plot *p, const double xmin, const double xmax)
 {
     p->scale = XMANUAL;
-    p->xmin = xmin;
-    p->xmax = xmax;
+    p->xmin  = xmin;
+    p->xmax  = xmax;
 }
 
 void plot_set_scale_ymanual(plot *p, const double ymin, const double ymax)
 {
     p->scale = YMANUAL;
-    p->ymin = ymin;
-    p->ymax = ymax;
+    p->ymin  = ymin;
+    p->ymax  = ymax;
 }
 
 void plot_set_scale_lin(plot *p)
@@ -241,7 +254,7 @@ void plot_set_scale_ylog(plot *p)
 
 void plot_set_scale_xylog(plot *p)
 {
-    p->log = XYLOG;
+    p->log = XLOG|YLOG;
 }
 
 void plot_set_title(plot *p, const strbuf title)
@@ -292,8 +305,9 @@ enum
     Y_ERR  = 1 << 1
 };
 
-void plot_add_point(plot *p, const double x, const double y, const double xerr,\
-                    const double yerr, const strbuf title, const strbuf color)
+void plot_add_datpoint(plot *p, const double x, const double y, \
+                       const double xerr,const double yerr,     \
+                       const strbuf title, const strbuf color)
 {
     strbuf ucmd, echocmd, errcmd, plotcmd, colorcmd;
     unsigned int err_flag;
@@ -408,72 +422,254 @@ void plot_add_dat(plot *p, const mat *x, const mat *dat, const mat *xerr,\
     plot_add_plot(p,plotcmd);
 }
 
-void plot_add_hline(plot *p, const double y, const strbuf style,\
-                    const strbuf color)
+void plot_add_points(plot *p, const mat *x, const mat *y, const strbuf title,\
+                     const strbuf color, const strbuf style)
 {
-    strbuf plotcmd;
-
-    sprintf(plotcmd,"%.10e lt %s lc %s notitle",y,style,color);
+    FILE* tmpf;
+    strbuf tmpfname, plotcmd, colorcmd;
+    size_t i;
+    
+    sprintf(tmpfname,".latan_plot_tmp_%lu",(long unsigned)ntmpf);
+    FOPEN_NOERRET(tmpf,tmpfname,"w");
+    for (i=0;i<nrow(y);i++)
+    {
+        fprintf(tmpf,"%.10e %.10e\n",mat_get(x,i,0),mat_get(y,i,0));
+    }
+    fclose(tmpf);
+    plot_add_tmpf(p,tmpfname);
+    plot_add_tmpf(p,tmpfname);
+    if (strlen(color) == 0)
+    {
+        strbufcpy(colorcmd,"");
+    }
+    else
+    {
+        sprintf(colorcmd,"lc %s",color);
+    }
+    sprintf(plotcmd,"'%s' u 1:2 t '%s' lt -1 %s w %s",tmpfname,title,\
+            colorcmd,style);
     plot_add_plot(p,plotcmd);
 }
 
-void plot_add_hlineerr(plot *p, const double y, const double err,       \
-                       const strbuf style, const strbuf color1, \
-                       const strbuf color2)
+void plot_add_func(plot *p, univar_func *f, void *f_param, const double xmin,\
+                   const double xmax, const size_t npt, const strbuf title,  \
+                   const strbuf color)
 {
-    strbuf plotcmd;
+    mat *x,*y;
+    size_t i;
+    double x_i,y_i;
     
-    sprintf(plotcmd,"%.10e lc %s with filledcurve y1=%.10e notitle",\
-            y+err,color2,y-err);
+    x = mat_create(npt,1);
+    y = mat_create(npt,1);
+    
+    for (i=0;i<npt;i++)
+    {
+        x_i = xmin + (xmax-xmin)*DRATIO(i,npt-1);
+        y_i = f(x_i,f_param);
+        mat_set(x,i,0,x_i);
+        mat_set(y,i,0,y_i);
+    }
+    plot_add_line(p,x,y,title,color);
+    
+    mat_destroy(x);
+    mat_destroy(y);
+}
+
+void plot_add_parfunc(plot *p, mulvar_func *f, const mat *x_0, const size_t j,\
+                      void *f_param, const double xmin, const double xmax,    \
+                      const size_t npt, const strbuf title, const strbuf color)
+{
+    mat *x,*y,*X;
+    size_t i;
+    double x_i,y_i;
+    
+    x = mat_create(npt,1);
+    y = mat_create(npt,1);
+    X = mat_create_from_mat(x_0);
+    
+    for (i=0;i<npt;i++)
+    {
+        x_i = xmin + (xmax-xmin)*DRATIO(i,npt-1);
+        mat_set(X,j,0,x_i);
+        y_i = f(X,f_param);
+        mat_set(x,i,0,x_i);
+        mat_set(y,i,0,y_i);
+    }
+    plot_add_line(p,x,y,title,color);
+    
+    mat_destroy(x);
+    mat_destroy(y);
+    mat_destroy(X);
+}
+
+void plot_add_model(plot *p, model_func *f, const mat *x_0, const size_t j, \
+                    const mat *par, void *f_param, const double xmin,       \
+                    const double xmax, const size_t npt, const strbuf title,\
+                    const strbuf color)
+{
+    mat *x,*y,*X;
+    size_t i;
+    double x_i,y_i;
+    
+    x = mat_create(npt,1);
+    y = mat_create(npt,1);
+    X = mat_create_from_mat(x_0);
+    
+    for (i=0;i<npt;i++)
+    {
+        x_i = xmin + (xmax-xmin)*DRATIO(i,npt-1);
+        mat_set(X,j,0,x_i);
+        y_i = f(X,par,f_param);
+        mat_set(x,i,0,x_i);
+        mat_set(y,i,0,y_i);
+    }
+    plot_add_line(p,x,y,title,color);
+    
+    mat_destroy(x);
+    mat_destroy(y);
+    mat_destroy(X);
+}
+
+void plot_add_histogram(plot *p, const mat *hist, const double xmin,\
+                        const double xmax, const double w_tot,      \
+                        const bool do_normalize, const strbuf title,\
+                        const strbuf color)
+{
+    mat *nhist,*x;
+    double dnbin;
+    
+    nhist = mat_create_from_mat(hist);
+    x     = mat_create_from_dim(hist);
+    
+    dnbin = (double)nrow(hist);
+    
+    mat_set_step(x,xmin,(xmax-xmin)/dnbin);
+    if (do_normalize)
+    {
+        mat_eqmuls(nhist,dnbin/(w_tot*(xmax-xmin)));
+    }
+    plot_add_points(p,x,nhist,title,color,"steps");
+    
+    mat_destroy(nhist);
+    mat_destroy(x);
+}
+
+void plot_add_hline(plot *p, const double y, const strbuf color)
+{
+    strbuf plotcmd,colorcmd;
+
+    if (strlen(color) == 0)
+    {
+        strbufcpy(colorcmd,"");
+    }
+    else
+    {
+        sprintf(colorcmd,"lc %s",color);
+    }
+    sprintf(plotcmd,"%.10e lt -1 %s notitle",y,colorcmd);
     plot_add_plot(p,plotcmd);
-    plot_add_hline(p,y,style,color1);
+}
+
+void plot_add_hlineerr(plot *p, const double y, const double err,\
+                       const strbuf color)
+{
+    strbuf plotcmd,colorcmd;
+    
+    if (strlen(color) == 0)
+    {
+        strbufcpy(colorcmd,"");
+    }
+    else
+    {
+        sprintf(colorcmd,"lc %s",color);
+    }
+    sprintf(plotcmd,"%.10e %s w filledcurve y1=%.10e fs transparent solid 0.25 noborder notitle",\
+            y+err,colorcmd,y-err);
+    plot_add_plot(p,plotcmd);
+    plot_add_hline(p,y,color);
+}
+
+void plot_add_vline(plot *p, const double x, const strbuf color)
+{
+    strbuf plotcmd,colorcmd;
+    
+    if (!(p->scale & YMANUAL))
+    {
+        LATAN_WARNING("vertical line will not work without manual y-scale setting",\
+                      LATAN_EINVAL);
+    }
+    
+    if (strlen(color) == 0)
+    {
+        strbufcpy(colorcmd,"");
+    }
+    else
+    {
+        sprintf(colorcmd,"lc %s",color);
+    }
+    sprintf(plotcmd,"sprintf(\"< printf ' %e %%e\\n%e %%e\\n'\",ymin,ymax) lt -1 %s w lines notitle",\
+            x,x,colorcmd);
+    plot_add_plot(p,plotcmd);
+}
+
+void plot_add_vlineaerr(plot *p, const double x, const double xerr[2],\
+                        const strbuf color)
+{
+    strbuf plotcmd,colorcmd;
+    
+    if (strlen(color) == 0)
+    {
+        strbufcpy(colorcmd,"");
+    }
+    else
+    {
+        sprintf(colorcmd,"lc %s",color);
+    }
+    sprintf(plotcmd,"sprintf(\"< printf ' %e %%e\\n%e %%e\\n%e %%e\\n%e %%e\\n%e %%e\\n'\",ymin,ymax,ymax,ymin,ymin) %s w filledcurve fs transparent solid 0.25 noborder notitle",x-xerr[0],x-xerr[0],x+xerr[1],x+xerr[1],x-xerr[0],colorcmd);
+    plot_add_plot(p,plotcmd);
+    plot_add_vline(p,x,color);
+}
+
+void plot_add_vlineerr(plot *p, const double x, const double xerr,\
+                       const strbuf color)
+{
+    double xerr_a[2];
+    
+    xerr_a[0] = xerr;
+    xerr_a[1] = xerr;
+    
+    plot_add_vlineaerr(p,x,xerr_a,color);
 }
 
 void plot_add_fit(plot *p, const fit_data *d, const size_t ky, const mat *x_ex,\
-                  const size_t kx, const mat *par, const bool do_sub,          \
-                  const unsigned int obj,  const strbuf title,                 \
-                  const strbuf style, const strbuf pcolor, const strbuf lcolor)
+                  const size_t kx, const mat *par, const double xmin,          \
+                  const double xmax, const size_t npt, const bool do_sub,      \
+                  const unsigned int obj,  const strbuf dat_title,             \
+                  const strbuf fit_title, const strbuf dat_color,              \
+                  const strbuf fit_color)
 {
     mat *x,*x_err,*y,*y_err,*cor_data;
     bool have_x_err;
-    size_t npt,ndata;
+    size_t nfitpt,ndata;
     size_t i,j;
-    strbuf plotstr,plotcmd,lcolcmd,stcmd;
     
-    npt        = fit_data_fit_point_num(d);
+    nfitpt        = fit_data_fit_point_num(d);
     ndata      = fit_data_get_ndata(d);
     j          = 0;
     have_x_err = fit_data_have_x_covar(d,kx);
     
-    x          = mat_create(npt,1);
-    y          = mat_create(npt,1);
-    x_err      = mat_create(npt,1);
-    y_err      = mat_create(npt,1);
+    x          = mat_create(nfitpt,1);
+    y          = mat_create(nfitpt,1);
+    x_err      = mat_create(nfitpt,1);
+    y_err      = mat_create(nfitpt,1);
     cor_data   = mat_create(ndata,1);
 
     if (par != NULL)
     {
         if (obj & PF_FIT)
         {
-            fit_data_plot2dstr(plotstr,d,ky,x_ex,kx,par);
-            if (strlen(lcolor) == 0)
-            {
-                strbufcpy(lcolcmd,"");
-            }
-            else
-            {
-                sprintf(lcolcmd,"lc %s",lcolor);
-            }
-            if (strlen(style) == 0)
-            {
-                strbufcpy(stcmd,"");
-            }
-            else
-            {
-                sprintf(stcmd,"lt %s",style);
-            }
-            sprintf(plotcmd,"%s notitle %s %s",plotstr,stcmd,lcolcmd);
-            plot_add_plot(p,plotcmd);
+            plot_add_model(p,d->model->func[ky],x_ex,kx,par,d->model_param,\
+                           xmin,xmax,npt,fit_title,fit_color);
         }
         if ((obj & PF_DATA)&&(do_sub))
         {
@@ -508,11 +704,11 @@ void plot_add_fit(plot *p, const fit_data *d, const size_t ky, const mat *x_ex,\
         }
         if (have_x_err)
         {
-            plot_add_dat(p,x,y,x_err,y_err,title,pcolor);
+            plot_add_dat(p,x,y,x_err,y_err,dat_title,dat_color);
         }
         else
         {
-            plot_add_dat(p,x,y,NULL,y_err,title,pcolor);
+            plot_add_dat(p,x,y,NULL,y_err,dat_title,dat_color);
         }
     }
     
@@ -525,7 +721,7 @@ void plot_add_fit(plot *p, const fit_data *d, const size_t ky, const mat *x_ex,\
 
 /*                              plot parsing                                */
 /****************************************************************************/
-latan_errno plot_parse(FILE* outstr, const plot *p)
+void plot_parse(FILE* outstr, const plot *p)
 {
     strbuf begin, end;
     size_t i;
@@ -535,41 +731,25 @@ latan_errno plot_parse(FILE* outstr, const plot *p)
     {
         gnuplot_cmd(outstr,"set output '%s'",p->output);
     }
-    switch (p->scale)
+    gnuplot_cmd(outstr,"xmin=%e",p->xmin);
+    gnuplot_cmd(outstr,"xmax=%e",p->xmax);
+    gnuplot_cmd(outstr,"ymin=%e",p->ymin);
+    gnuplot_cmd(outstr,"ymax=%e",p->ymax);
+    if (p->scale & XMANUAL)
     {
-        case AUTO:
-            break;
-        case MANUAL:
-            gnuplot_cmd(outstr,"set xrange [%f:%f]",p->xmin,p->xmax);
-            gnuplot_cmd(outstr,"set yrange [%f:%f]",p->ymin,p->ymax);
-            break;
-        case XMANUAL:
-            gnuplot_cmd(outstr,"set xrange [%f:%f]",p->xmin,p->xmax);
-            break;
-        case YMANUAL:
-            gnuplot_cmd(outstr,"set yrange [%f:%f]",p->ymin,p->ymax);
-            break;
-        default:
-            LATAN_ERROR("plot scale mode unknow",LATAN_EINVAL);
-            break;
+        gnuplot_cmd(outstr,"set xrange [xmin:xmax]");
     }
-    switch (p->log)
+    if (p->scale & YMANUAL)
     {
-        case NOLOG:
-            gnuplot_cmd(outstr,"set nolog xy");
-            break;
-        case XLOG:
-            gnuplot_cmd(outstr,"set log x");
-            break;
-        case YLOG:
-            gnuplot_cmd(outstr,"set log y");
-            break;
-        case XYLOG:
-            gnuplot_cmd(outstr,"set log xy");
-            break;
-        default:
-            LATAN_ERROR("plot log mode unknow",LATAN_EINVAL);
-            break;
+        gnuplot_cmd(outstr,"set yrange [ymin:ymax]");
+    }
+    if (p->log & XLOG)
+    {
+        gnuplot_cmd(outstr,"set log x");
+    }
+    if (p->log & YLOG)
+    {
+        gnuplot_cmd(outstr,"set log y");
     }
     gnuplot_cmd(outstr,"set title '%s'",p->title);
     gnuplot_cmd(outstr,"set xlabel '%s'",p->xlabel);
@@ -598,20 +778,17 @@ latan_errno plot_parse(FILE* outstr, const plot *p)
         }
         gnuplot_cmd(outstr,"%s%s%s",begin,p->plotbuf[i],end);
     }
-    
-    return LATAN_SUCCESS;
 }
 
 latan_errno plot_disp(const plot *p)
 {
-    latan_errno status;
     FILE* ctrl;
     
     GNUPLOT_OPEN(ctrl);
     
-    status = plot_parse(ctrl,p);
+    plot_parse(ctrl,p);
     
     GNUPLOT_CLOSE(ctrl);
                         
-    return status;
+    return LATAN_SUCCESS;
 }

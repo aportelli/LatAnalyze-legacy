@@ -52,7 +52,7 @@ using namespace Minuit2;
 class Minuit2MinFunc: public FCNBase
 {
 public:
-    Minuit2MinFunc(min_func *init_f, void *init_param, size_t ndim);
+    Minuit2MinFunc(min_func *init_f, void *init_param);
     ~Minuit2MinFunc(void);
     
     virtual double operator()(const vector<double>& v_var) const;
@@ -60,32 +60,34 @@ public:
     
 private:
     min_func *f;
-    mat *x_buf;
     void *param;
 };
 
-Minuit2MinFunc::Minuit2MinFunc(min_func *init_f, void *init_param, size_t ndim)
+Minuit2MinFunc::Minuit2MinFunc(min_func *init_f, void *init_param)
 {
     f            = init_f;
-    x_buf        = mat_create(ndim,1);
     param        = init_param;
 }
 
 Minuit2MinFunc::~Minuit2MinFunc(void)
 {
-    mat_destroy(x_buf);
 }
 
 double Minuit2MinFunc::operator()(const vector<double>& v_x) const 
 {
     size_t i;
     double res;
+    mat *x_buf;
+    
+    x_buf = mat_create(v_x.size(),1);
     
     for (i=0;i<nrow(x_buf);i++)
     {
         mat_set(x_buf,i,0,v_x[i]);
     }
     res = f(x_buf,param);
+    
+    mat_destroy(x_buf);
     
     return res;
 }
@@ -116,7 +118,7 @@ latan_errno minimize_minuit2(mat *x, double *f_min, min_func *f, void *param)
         Init_x.Add(name,mat_get(x,i,0),fabs(mat_get(x,i,0))*INIT_RERROR);
     }
 
-    Minuit2MinFunc F(f,param,ndim);
+    Minuit2MinFunc F(f,param);
     MnMigrad Migrad(F,Init_x,STRATEGY);
     MnSimplex Simplex(F,Init_x,STRATEGY);
     switch (minimizer_get_alg())
@@ -147,6 +149,14 @@ latan_errno minimize_minuit2(mat *x, double *f_min, min_func *f, void *param)
     }
     *f_min = Min.Fval();
           
+    latan_printf(DEBUG,"(MINUIT) Minimizer call :\n");
+    if (latan_get_verb() == DEBUG)
+    {
+        cout << "--------------------------------------------------------";
+        cout << Min;
+        cout << "--------------------------------------------------------";
+        cout << endl;
+    }
     latan_printf(DEBUG,"(MINUIT) Scan around last position :\n");
     if (latan_get_verb() == DEBUG)
     {
@@ -165,14 +175,7 @@ latan_errno minimize_minuit2(mat *x, double *f_min, min_func *f, void *param)
         cout << "--------------------------------------------------------";
         cout << endl;
     }
-    latan_printf(DEBUG,"(MINUIT) Minimizer call :\n");
-    if (latan_get_verb() == DEBUG)
-    {
-        cout << "--------------------------------------------------------";
-        cout << Min;
-        cout << "--------------------------------------------------------";
-        cout << endl;
-    }
+    
     
     return status;
 }

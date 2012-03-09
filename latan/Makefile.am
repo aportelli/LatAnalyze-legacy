@@ -34,6 +34,7 @@ liblatan_la_SOURCES =       \
 	latan_plot.c            \
 	latan_rand.c            \
 	latan_statistics.c      \
+    latan_tabfunc.c         \
 	latan_xml.h             \
 	latan_xml.c             \
 	../config.h             \
@@ -54,6 +55,7 @@ liblatan_la_HEADERS =       \
 	latan_nunits.h          \
 	latan_plot.h            \
 	latan_statistics.h      \
+    latan_tabfunc.h         \
 	latan_rand.h			
 liblatan_la_CFLAGS = $(COM_CFLAGS)
 liblatan_la_CXXFLAGS = $(COM_CXXFLAGS)

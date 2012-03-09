@@ -33,15 +33,12 @@ __BEGIN_DECLS
 /* fit model structure */
 typedef double model_func(const mat *x, const mat *p, void *model_param);
 typedef size_t npar_func(void *model_param);
-typedef void plot2dstr_func(strbuf str, const size_t kx, const mat *x,\
-                            const mat *p, void *model_param);
 
 typedef struct
 {
     strbuf name;
     model_func *func[MAX_YDIM];
     npar_func *npar;
-    plot2dstr_func *plot2dstr[MAX_YDIM];
     size_t nxdim;
     size_t nydim;
 } fit_model;
@@ -63,9 +60,6 @@ void fit_model_get_name(strbuf name, const fit_model *model);
 size_t fit_model_get_npar(const fit_model *model, void *model_param);
 double fit_model_eval(const fit_model *model, const size_t k, const mat *x,\
                       const mat *p, void *model_param);
-void fit_model_plot2dstr(strbuf str, const fit_model *model, const size_t kx,\
-                         const size_t ky, const mat *x, const mat *p,        \
-                         void *model_param);
 
 /* fit data structure */
 /** chi^2 buffer **/
@@ -197,8 +191,6 @@ double fit_data_model_xeval(const fit_data *d, const size_t k, const mat *x,\
                             const mat *p);
 double fit_data_model_eval(const fit_data *d, const size_t k, const size_t i,\
                            const mat *p);
-void fit_data_plot2dstr(strbuf str, const fit_data *d, const size_t ky,\
-                        const mat *x, const size_t kx, const mat *p);
 
 /*** dof ***/
 size_t fit_data_get_dof(const fit_data *d);

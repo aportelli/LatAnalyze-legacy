@@ -86,13 +86,6 @@ double fit_model_eval(const fit_model *model, const size_t k, const mat *x,\
     return res;
 }
 
-void fit_model_plot2dstr(strbuf str, const fit_model *model, const size_t kx,\
-                         const size_t ky, const mat *x, const mat *p,        \
-                         void *model_param)
-{
-    model->plot2dstr[ky](str,kx,x,p,model_param);
-}
-
 /*                          fit data structure                              */
 /****************************************************************************/
 static size_t rowmaj(const size_t i, const size_t j, const size_t dim1,\
@@ -714,12 +707,6 @@ double fit_data_model_eval(const fit_data *d, const size_t k, const size_t i,\
     res          = fit_data_model_xeval(d,k,&x_i,p);
     
     return res;
-}
-
-void fit_data_plot2dstr(strbuf str, const fit_data *d, const size_t ky,\
-                        const mat *x, const size_t kx, const mat *p)
-{
-    fit_model_plot2dstr(str,d->model,kx,ky,x,p,d->model_param);
 }
 
 /*** dof ***/

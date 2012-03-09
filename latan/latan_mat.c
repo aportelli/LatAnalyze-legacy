@@ -302,16 +302,9 @@ void mat_reset_assump(mat *m)
     m->prop_flag = MAT_GEN;
 }
 
-void mat_assume_sym(mat *m, const bool is_sym)
+void mat_assume(mat *m, const mat_flag flag)
 {
-    if (is_sym)
-    {
-        m->prop_flag |= MAT_SYM;
-    }
-    else if (m->prop_flag & MAT_SYM)
-    {
-        m->prop_flag -= MAT_SYM;
-    }
+    m->prop_flag |= flag;
 }
 
 /*                              tests                                       */
@@ -341,9 +334,9 @@ bool mat_is_vector(const mat *m)
     return ((nrow(m) == 1)||(ncol(m) == 1));
 }
 
-bool mat_is_assumed_sym(const mat *m)
+bool mat_is_assumed(const mat *m, const mat_flag flag)
 {
-    return ((m->prop_flag & MAT_SYM) != 0);
+    return ((m->prop_flag & flag) != 0);
 }
 
 /*                                 sort                                     */
@@ -539,9 +532,10 @@ latan_errno mat_mul(mat *m, const mat *n, const char opn, const mat *o,\
     
     status             = LATAN_SUCCESS;
     have_duplicate_arg = ((m == n)||(m == o));
-    need_tbuf          = (mat_is_assumed_sym(n)&&((opo != 'n')&&(opo != 'N'))\
+    need_tbuf          = (mat_is_assumed(n,MAT_SYM)    \
+                         &&((opo != 'n')&&(opo != 'N'))\
                          &&(!mat_is_vector(o)));
-    need_tbuf          = need_tbuf||(mat_is_assumed_sym(o)\
+    need_tbuf          = need_tbuf||(mat_is_assumed(o,MAT_SYM)\
                          &&((opn != 'n')&&(opn != 'N'))&&(!mat_is_vector(n)));
     need_tbuf          = need_tbuf&&(!mat_is_square(m));
     buf                = NULL;
@@ -571,7 +565,7 @@ latan_errno mat_mul(mat *m, const mat *n, const char opn, const mat *o,\
     }
     else if (mat_is_vector(pt))
     {
-        if (mat_is_assumed_sym(n))
+        if (mat_is_assumed(n,MAT_SYM))
         {
             USTAT(latan_blas_dsymv('u',1.0,n,o,0.0,pt));
         }
@@ -582,7 +576,7 @@ latan_errno mat_mul(mat *m, const mat *n, const char opn, const mat *o,\
     }
     else
     {
-        if (mat_is_assumed_sym(n))
+        if (mat_is_assumed(n,MAT_SYM))
         {
             if ((opo != 'n')&&(opo != 'N'))
             {
@@ -597,7 +591,7 @@ latan_errno mat_mul(mat *m, const mat *n, const char opn, const mat *o,\
                 USTAT(latan_blas_dsymm('l','u',1.0,n,o,0.0,pt));
             }
         }
-        else if (mat_is_assumed_sym(o))
+        else if (mat_is_assumed(o,MAT_SYM))
         {
             if ((opn != 'n')&&(opn != 'N'))
             {
@@ -823,22 +817,19 @@ latan_errno mat_inv_LU(mat *m, const mat *n)
     int signum;
     mat *LU;
     gsl_permutation *perm;
-    gsl_error_handler_t *error_handler;
     
     if (!mat_is_square(m))
     {
         LATAN_ERROR("cannot invert a non-square matrix",LATAN_ENOTSQR);
     }
     
-    status        = LATAN_SUCCESS;
-    error_handler = gsl_set_error_handler(&latan_error);
+    status = LATAN_SUCCESS;
     
     LU   = mat_create_from_mat(n);
     perm = gsl_permutation_alloc(nrow(n));
     
     USTAT(gsl_linalg_LU_decomp(LU->data_cpu,perm,&signum));
     USTAT(gsl_linalg_LU_invert(LU->data_cpu,perm,m->data_cpu));
-    gsl_set_error_handler(error_handler);
     
     mat_destroy(LU);
     gsl_permutation_free(perm);
@@ -849,21 +840,87 @@ latan_errno mat_inv_LU(mat *m, const mat *n)
 latan_errno mat_inv_symChol(mat *m, const mat *n)
 {
     latan_errno status;
-    gsl_error_handler_t *error_handler;
     
-    if (!mat_is_assumed_sym(n))
+    if (!(mat_is_assumed(n,MAT_SYM)&&mat_is_assumed(n,MAT_POS)))
     {
-        LATAN_ERROR("Cholesky decomposition inverse not valid on a non-symmetric matrix",\
+        LATAN_ERROR("Cholesky decomposition inverse is only valid for a positive definite symmetric matrix",\
                     LATAN_ENOTSYM);
     }
     
     status        = LATAN_SUCCESS;
-    error_handler = gsl_set_error_handler(&latan_error);
     
     mat_cp(m,n);
     USTAT(gsl_linalg_cholesky_decomp(m->data_cpu));
     USTAT(gsl_linalg_cholesky_invert(m->data_cpu));
-    gsl_set_error_handler(error_handler);
     
     return status;
 }
+
+latan_errno mat_pseudoinv(mat *m, const mat *n)
+{
+    latan_errno status;
+    mat *U,*V,*S,*VSinv;
+    gsl_vector_view Sv;
+    gsl_vector *work;
+    size_t nsv,nsv_cut;
+    size_t i;
+    double tol;
+    
+    if ((nrow(m) != ncol(n))||(ncol(m) != nrow(n)))
+    {
+        LATAN_ERROR("matrix and pseudo-inverse matrix dimension mismatch",\
+                    LATAN_EBADLEN);
+    }
+    
+    status   = LATAN_SUCCESS;
+    nsv      = ncol(n);
+    
+    U     = mat_create_from_mat(n);
+    V     = mat_create(nsv,nsv);
+    S     = mat_create(nsv,nsv);
+    VSinv = mat_create(nsv,nsv);
+    Sv    = gsl_matrix_diagonal(S->data_cpu);
+    work  = gsl_vector_alloc(nsv);
+    
+    mat_zero(S);
+    USTAT(gsl_linalg_SV_decomp(U->data_cpu,V->data_cpu,&(Sv.vector),work));
+    tol     = MAX(nrow(n),ncol(n))*mat_get(S,0,0)*DBL_EPSILON;
+    nsv_cut = 0;
+    latan_printf(DEBUG,"singular values :\n");
+    for (i=0;i<nsv;i++)
+    {
+        latan_printf(DEBUG,"S_%d= %e\n",(int)i,mat_get(S,i,i));
+        if (mat_get(S,i,i) > tol)
+        {
+            mat_set(S,i,i,1.0/mat_get(S,i,i));
+        }
+        else
+        {
+            mat_set(S,i,i,0.0);
+            nsv_cut++;
+        }
+    }
+    if (nsv_cut > 0)
+    {
+        latan_printf(VERB,"SVD: %d singular value(s) eliminated over %d\n",\
+                     (int)nsv_cut,(int)nsv);
+    }
+    USTAT(mat_mul(VSinv,V,'n',S,'n'));
+    if (mat_is_assumed(n,MAT_SYM)&&mat_is_assumed(n,MAT_POS))
+    {
+        USTAT(mat_mul(m,VSinv,'n',V,'t'));
+    }
+    else
+    {
+        USTAT(mat_mul(m,VSinv,'n',U,'t'));
+    }
+    
+    mat_destroy(U);
+    mat_destroy(V);
+    mat_destroy(S);
+    mat_destroy(VSinv);
+    gsl_vector_free(work);
+    
+    return status;
+}
+

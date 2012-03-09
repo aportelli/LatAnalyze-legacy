@@ -26,11 +26,12 @@
 __BEGIN_DECLS
 
 /* definition of the matrix type */
-enum
+typedef enum
 {
-    MAT_GEN = 0,      /* general matrix   */
-    MAT_SYM = 1 << 0  /* symmetric matrix */
-};
+    MAT_GEN = 0,      /* general matrix    */
+    MAT_SYM = 1 << 0, /* symmetric matrix  */
+    MAT_POS = 1 << 1  /* positive spectrum */
+} mat_flag;
 
 typedef struct 
 {
@@ -78,7 +79,7 @@ latan_errno mat_set_from_ar(mat *m, const double *ar);
 double mat_get_min(const mat *m);
 double mat_get_max(const mat *m);
 void mat_reset_assump(mat *m);
-void mat_assume_sym(mat *m, const bool is_sym);
+void mat_assume(mat *m, const mat_flag flag);
 
 /** tests **/
 bool mat_is_samedim(const mat *m, const mat *n);
@@ -86,7 +87,7 @@ bool mat_is_square(const mat *m);
 bool mat_is_row_vector(const mat *m);
 bool mat_is_col_vector(const mat *m);
 bool mat_is_vector(const mat *m);
-bool mat_is_assumed_sym(const mat *m);
+bool mat_is_assumed(const mat *m, const mat_flag flag);
 
 /** sort **/
 void mat_get_sind(size_t *sind, const mat *m);
@@ -127,6 +128,8 @@ latan_errno mat_expp(mat *m, const mat *n);
 latan_errno mat_inv_LU(mat *m, const mat *n);
 #define mat_eqinv_symChol(m) mat_inv_symChol(m,m)
 latan_errno mat_inv_symChol(mat *m, const mat *n);
+#define mat_eqpseudoinv(m) mat_pseudoinv(m,m);
+latan_errno mat_pseudoinv(mat *m, const mat *n);
 
 __END_DECLS
 

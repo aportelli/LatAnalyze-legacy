@@ -29,7 +29,8 @@ int main(void)
     j = mat_create(3,1);
     
     randgen_init(12);
-
+    latan_set_verb(VERB);
+    
     printf("---------- %-30s ----------\n","matrix product");
     printf("b =\n");
     mat_print(b,"%8.2f");
@@ -61,7 +62,7 @@ int main(void)
     mat_print(e,"%8.2f");
     printf("\n");
     printf("e is assumed symmetric\n\n");
-    mat_assume_sym(e,true);
+    mat_assume(e,MAT_SYM);
     printf("j <- e*b\n");
     mat_mul(j,e,'n',b,'t');
     mat_print(j,"%8.2f");
@@ -87,7 +88,7 @@ int main(void)
     mat_print(i,"%8.2f");
     printf("\n");
     printf("e is not assumed symmetric anymore\n");
-    mat_assume_sym(e,false);
+    mat_reset_assump(e);
     
     printf("\n---------- %-30s ----------\n","matrix inversion");
     printf("*** LU decomposition\n");
@@ -106,13 +107,27 @@ int main(void)
     printf("f =\n");
     mat_print(f,"%8.2f");
     printf("\n");
+    printf("*** pseudo-inverse with good-conditioned matrix\n");
+    printf("a =\n");
+    mat_print(a,"%8.2f");
+    printf("\n");
+    printf("e <- a^+\n");
+    mat_pseudoinv(e,a);
+    printf("e =\n");
+    mat_print(e,"%8.2f");
+    printf("\n");
+    printf("f <- e*a\n");
+    mat_mul(f,e,'n',a,'n');
+    printf("f =\n");
+    mat_print(f,"%8.2f");
+    printf("\n");
     printf("*** Cholesky decomposition\n");
     printf("a <- a*t(a)\n");
     mat_mul(a,a,'n',a,'t');
     mat_print(a,"%8.2f");
     printf("\n");
     printf("a is assumed symmetric\n\n");
-    mat_assume_sym(a,true);
+    mat_assume(a,MAT_SYM);
     printf("e <- a^(-1)\n");
     mat_inv_symChol(e,a);
     printf("e =\n");

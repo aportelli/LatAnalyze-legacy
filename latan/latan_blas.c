@@ -254,7 +254,7 @@ latan_errno latan_blas_dsymv(const char uploA, const double alpha,          \
     {
         LATAN_ERROR("symmetric matrix is not square",LATAN_ENOTSQR);
     }
-    if (!mat_is_assumed_sym(A))
+    if (!mat_is_assumed(A,MAT_SYM))
     {
         LATAN_WARNING("matrix is not declared symmetric",LATAN_EINVAL);
     }
@@ -322,7 +322,7 @@ latan_errno latan_blas_dsymm(const char side, const char uploA,             \
     {
         LATAN_ERROR("symmetric matrix is not square",LATAN_ENOTSQR);
     }
-    if (!mat_is_assumed_sym(A))
+    if (!mat_is_assumed(A,MAT_SYM))
     {
         LATAN_WARNING("matrix is not declared symmetric",LATAN_EINVAL);
     }

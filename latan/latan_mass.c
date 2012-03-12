@@ -369,7 +369,7 @@ latan_errno fit_data_mass_fit_tune(fit_data *d, mat *fit_init, mat *prop,\
     switch (parity)
     {
         case EVEN:
-            pref = fabs(mat_get(prop,nt/8,0)*exp((int)(nt)*mem/8));
+            pref = log(fabs(mat_get(prop,nt/8,0)*exp((int)(nt)*mem/8)));
             break;
         case ODD:
             pref = fabs(mat_get(prop,nt/2,0));

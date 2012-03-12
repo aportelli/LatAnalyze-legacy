@@ -57,6 +57,8 @@
 #define NU_M_K_m_ERR        0.016                   /* MeV */
 #define NU_M_K_iso          494.2                   /* MeV */
 #define NU_M_K_iso_ERR      0.5                     /* MeV */
+#define NU_M_K              NU_M_K_iso
+#define NU_M_K_ERR          NU_M_K_iso_ERR
 #define NU_M_Kchi           486.3733                /* MeV */
 #define NU_M_Kchi_ERR       0.01                    /* MeV */ /* TODO : real error */
 

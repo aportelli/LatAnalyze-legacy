@@ -93,14 +93,12 @@ int main(void)
         mat_set(rseq,i,0,rand_n(GAUSS_MU,GAUSS_SIG));
     }
     printf("-- Making sequence histogram...\n");
-    histogram(hist_cont,rseq,-GAUSS_HIST_MAX,GAUSS_HIST_MAX,HIST_CONT_NINT);
-    mat_eqmuls(hist_cont,\
-               1.0/DIS_SEQ_LENGTH*HIST_CONT_NINT/(2.0*GAUSS_HIST_MAX));
+    histogram(hist_cont,rseq,NULL,-GAUSS_HIST_MAX,GAUSS_HIST_MAX,\
+              HIST_CONT_NINT);
     dist_plot = plot_create();
-    mat_set_step(x,-GAUSS_HIST_MAX,2.0*GAUSS_HIST_MAX/HIST_CONT_NINT);
-    plot_add_dat(dist_plot,x,hist_cont,NULL,NULL,"rand_n distribution",\
-                 "rgb \"red\"");
-    sprintf(plotcmd,"exp(-(x-%e)**2/(2.0*%e))/%e title \"theoretical distribution\"",\
+    plot_add_histogram(dist_plot,hist_cont,-GAUSS_HIST_MAX,GAUSS_HIST_MAX,\
+                       DIS_SEQ_LENGTH,true,"rand_n distribution","rgb 'red'");
+    sprintf(plotcmd,"exp(-(x-%e)**2/(2.0*%e))/%e t 'theoretical distribution'",\
             GAUSS_MU,SQ(GAUSS_SIG),sqrt(2*C_PI)*GAUSS_SIG);
     plot_add_plot(dist_plot,plotcmd);
     plot_disp(dist_plot);

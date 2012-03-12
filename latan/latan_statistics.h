@@ -65,8 +65,8 @@ latan_errno mat_ar_bin(mat **bindat, mat **dat, const size_t ndat,\
                        const size_t binsize);
 
 /* histogram */
-latan_errno histogram(mat *hist, mat *data, const double xmin,\
-                      const double xmax, const size_t nint);
+latan_errno histogram(mat *hist, const mat *data, const mat* w,\
+                      const double xmin, const double xmax, const size_t nint);
 
 /* resampled sample type */
 typedef struct

@@ -389,29 +389,34 @@ latan_errno mat_ar_bin(mat **bindat, mat **dat, const size_t ndat,\
 
 /*                              histogram                                   */
 /****************************************************************************/
-latan_errno histogram(mat *hist, mat *data, const double xmin,\
-                      const double xmax, const size_t nint)
+latan_errno histogram(mat *hist, const mat *data, const mat* w,\
+                      const double xmin, const double xmax, const size_t nbin)
 {
     size_t i;
     gsl_histogram *gsl_hist;
-    gsl_error_handler_t *error_handler;
+    double w_i;
     
-    
-    if (nrow(hist) != nint)
+    if (nrow(hist) != nbin)
     {
-        LATAN_ERROR("histogram matrix row number do not match number of histogram intervals",\
+        LATAN_ERROR("histogram matrix row number do not match number of histogram bins",\
                     LATAN_EBADLEN);
     }
     
-    error_handler = gsl_set_error_handler(&latan_error);
-    gsl_hist = gsl_histogram_alloc(nint);
-    gsl_set_error_handler(error_handler);
+    gsl_hist = gsl_histogram_alloc(nbin);
+
     mat_zero(hist);
-    
     gsl_histogram_set_ranges_uniform(gsl_hist,xmin,xmax);
     for (i=0;i<nrow(data);i++)
     {
-        gsl_histogram_increment(gsl_hist,mat_get(data,i,0));
+        if (w)
+        {
+            w_i = mat_get(w,i,0);
+        }
+        else
+        {
+            w_i = 1.0;
+        }
+        gsl_histogram_accumulate(gsl_hist,mat_get(data,i,0),w_i);
     }
     mat_set_from_ar(hist,gsl_hist->bin);
     

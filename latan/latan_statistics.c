@@ -22,6 +22,7 @@
 #include <latan/latan_math.h>
 #include <latan/latan_rand.h>
 #include <latan/latan_io.h>
+#include <gsl/gsl_cdf.h>
 #include <gsl/gsl_histogram.h>
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_sf.h>
@@ -331,6 +332,13 @@ double mat_elpercentile(const mat *m, const mat *w, const double p)
     FREE(sind);
     
     return res;
+}
+
+/*                               chi^2 p-value                              */
+/****************************************************************************/
+double chi2_pvalue(const double chi2_val, const size_t ndof)
+{
+    return gsl_cdf_chisq_Q(chi2_val,(double)ndof);
 }
 
 /*                            confidence interval                           */

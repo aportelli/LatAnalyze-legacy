@@ -57,6 +57,9 @@ double mat_elpercentile(const mat *m, const mat *w, const double p);
 /* confidence interval */
 double conf_int(double ci[2], const mat *m, const mat *w, const double nsig);
 
+/* chi^2 p-value */
+double chi2_pvalue(const double chi2, const size_t ndof);
+
 /* data binning */
 latan_errno mat_ar_bin(mat **bindat, mat **dat, const size_t ndat,\
                        const size_t binsize);

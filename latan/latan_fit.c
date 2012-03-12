@@ -23,7 +23,7 @@
 #include <latan/latan_io.h>
 #include <latan/latan_math.h>
 #include <latan/latan_minimizer.h>
-#include <gsl/gsl_cdf.h>
+#include <latan/latan_statistics.h>
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_vector.h>
@@ -323,12 +323,7 @@ latan_errno fit_data_get_chi2_comp(mat *comp, const fit_data *d)
 
 double fit_data_get_pvalue(const fit_data *d)
 {
-    double chi2_val,ddof;
-    
-    chi2_val = fit_data_get_chi2(d);
-    ddof     = ((double)fit_data_get_dof(d));
-    
-    return gsl_cdf_chisq_Q(chi2_val,ddof);
+    return chi2_pvalue(fit_data_get_chi2(d),fit_data_get_dof(d));
 }
 
 /*** data ***/

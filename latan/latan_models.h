@@ -25,13 +25,13 @@
 
 /* 1D models */
 /** 1D polynomial models **/
-extern const fit_model fm_const;
+extern fit_model fm_const;
 
 /** exponential decay **/
-extern const fit_model fm_expdec;
+extern fit_model fm_expdec;
 
 /** hyperbolic cosine **/
-extern const fit_model fm_cosh;
+extern fit_model fm_cosh;
 
 /* 2D models */
 

@@ -35,7 +35,7 @@ static double fm_const_func(const mat *X, const mat *p, void *nothing)
 }
 
 
-const fit_model fm_const =
+fit_model fm_const =
 {
     "y(x) = p0",
     {&fm_const_func},
@@ -50,16 +50,14 @@ static double fm_expdec_func(const mat *x, const mat *p, void *nothing)
     double res;
     
     nothing = NULL;
-    res = mat_get(p,1,0)*exp(-mat_get(p,0,0)*mat_get(x,0,0));
+    res = exp(-mat_get(p,0,0)*mat_get(x,0,0)+mat_get(p,1,0));
     
     return res;
 }
 
+fit_model fm_expdec = 
 {
-
-const fit_model fm_expdec = 
-{
-    "y(x) = p1*exp(-p0*x)",
+    "y(x) = exp(-p0*x+p1)",
     {&fm_expdec_func},
     &npar_2,
     1,
@@ -77,7 +75,7 @@ static double fm_cosh_func(const mat *x, const mat *p, void *nothing)
     return res;
 }
 
-const fit_model fm_cosh =
+fit_model fm_cosh =
 {
     "y(x) = p1*cosh(p0*x)",
     {&fm_cosh_func},

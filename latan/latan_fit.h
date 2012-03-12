@@ -65,7 +65,7 @@ double fit_model_eval(const fit_model *model, const size_t k, const mat *x,\
 /** chi^2 buffer **/
 typedef struct chi2_buf_s
 {
-    mat *x;
+    mat *x_f;
     mat *Y;
     mat *CyY;
     mat *X;
@@ -73,6 +73,7 @@ typedef struct chi2_buf_s
     mat *lX;
     mat *ClX;
     bool is_xpart_alloc;
+    bool is_ypart_alloc;
 } chi2_buf;
 
 /** the main structure **/
@@ -106,7 +107,7 @@ typedef struct fid_data_s
     /* is everything ready to perform a fit ? */
     bool is_inverted;
     /* fit model */
-    fit_model const *model;
+    fit_model *model;
     void *model_param;
     /* chi^2 */
     min_func *chi2_ext;
@@ -144,9 +145,9 @@ double fit_data_get_pvalue(const fit_data *d);
 /*** data ***/
 void fit_data_set_y(fit_data *d, const size_t i, const size_t k,\
                     const double y_ik);
-latan_errno fit_data_set_y_k(fit_data *d, const size_t i, const mat *y_i);
+latan_errno fit_data_set_y_k(fit_data *d, const size_t i, const mat *y_k);
 double fit_data_get_y(const fit_data *d, const size_t i, const size_t k);
-latan_errno fit_data_get_y_k(mat *y_i, const fit_data *d, const size_t i);
+latan_errno fit_data_get_y_k(mat *y_k, const fit_data *d, const size_t k);
 mat * fit_data_pt_y(const fit_data *d);
 latan_errno fit_data_set_y_covar(fit_data *d, const size_t k1,  \
                                  const size_t k2, const mat *var);
@@ -162,7 +163,7 @@ void fit_data_set_x(fit_data *d, const size_t i, const size_t k,\
                     const double x_ik);
 latan_errno fit_data_set_x_k(fit_data *d, const size_t i, const mat *x_i);
 double fit_data_get_x(const fit_data *d, const size_t i, const size_t k);
-latan_errno fit_data_get_x_k(mat *x, const fit_data *d, const size_t i);
+latan_errno fit_data_get_x_k(mat *x_k, const fit_data *d, const size_t k);
 mat * fit_data_pt_x(const fit_data *d);
 latan_errno fit_data_set_x_covar(fit_data *d, const size_t k1,  \
                                  const size_t k2, const mat *var);
@@ -184,7 +185,7 @@ latan_errno fit_data_set_data_cor(fit_data *d, const size_t i, const size_t j,\
 bool fit_data_is_data_cor(const fit_data *d, const size_t i, const size_t j);
 
 /*** fit model ***/
-latan_errno fit_data_set_model(fit_data *d, const fit_model *model,\
+latan_errno fit_data_set_model(fit_data *d, fit_model *model,\
                                void *model_param);
 const void * fit_data_pt_model_param(const fit_data *d);
 double fit_data_model_xeval(const fit_data *d, const size_t k, const mat *x,\
@@ -213,7 +214,7 @@ latan_errno fit_data_set_covar_from_sample(fit_data *d, rs_sample * const *x,\
                                            const bool *use_x_var);
 
 /* chi2 function */
-double chi2(mat *p, void *vd);
+double chi2(const mat *p, void *vd);
 latan_errno chi2_get_comp(mat *comp, mat *p, fit_data *d);
 
 /* fit functions */

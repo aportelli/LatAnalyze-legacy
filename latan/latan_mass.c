@@ -308,7 +308,7 @@ latan_errno fit_data_mass_fit_tune(fit_data *d, mat *fit_init, mat *prop,\
     size_t p,t;
     double shift,mem,pref;
     strbuf ranges,buf;
-    const fit_model *model;
+    fit_model *model;
     
     nt    = nrow(em) + 2;
     ntmax = (parity == EVEN) ? nt/2 : nt-2;

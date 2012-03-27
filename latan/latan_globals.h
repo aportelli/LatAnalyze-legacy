@@ -170,6 +170,10 @@ void latan_printf(const int verb, const strbuf fmt, ...);
 /* string operations */
 char * strbufcpy(strbuf a, const strbuf b);
 
+/* NaN */
+double latan_nan(void);
+bool   latan_isnan(const double x);
+
 __END_DECLS
 
 #endif

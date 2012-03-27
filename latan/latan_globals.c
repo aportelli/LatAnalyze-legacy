@@ -34,6 +34,8 @@ static latan_env env =
     QUIET               \
 };
 
+/*                         LatAnalyze environment access                      */
+/******************************************************************************/
 void latan_get_name(strbuf name)
 {
     strbufcpy(name,env.name);
@@ -61,6 +63,8 @@ latan_errno latan_set_verb(const int verb)
     return LATAN_SUCCESS;
 }
 
+/*                        LatAnalyze message function                         */
+/******************************************************************************/
 void latan_printf(const int verb, const strbuf fmt, ...)
 {
     va_list args;
@@ -87,6 +91,8 @@ void latan_printf(const int verb, const strbuf fmt, ...)
     }
 }
 
+/*                           string operations                                */
+/******************************************************************************/
 char * strbufcpy(strbuf a, const strbuf b)
 {
     char *pt;
@@ -95,3 +101,16 @@ char * strbufcpy(strbuf a, const strbuf b)
     
     return pt;
 }
+
+/*                                NaN                                         */
+/******************************************************************************/
+double latan_nan(void)
+{
+    return GSL_NAN;
+}
+
+bool   latan_isnan(const double x)
+{
+    return gsl_isnan(x);
+}
+

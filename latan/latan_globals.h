@@ -65,11 +65,6 @@ __END_DECLS
 /* error handling */
 #include <latan/latan_error.h>
 
-/* matrices */
-#ifdef LATAN_ERRNO_DEF
-#include <latan/latan_mat.h>
-#endif
-
 /* memory allocation */
 #define MALLOC(pt,typ,size)\
 {\

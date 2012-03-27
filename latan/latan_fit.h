@@ -21,6 +21,7 @@
 #define LATAN_FIT_H_
 
 #include <latan/latan_globals.h>
+#include <latan/latan_mat.h>
 #include <latan/latan_minimizer.h>
 #include <latan/latan_statistics.h>
 

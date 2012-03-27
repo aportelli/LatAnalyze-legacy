@@ -21,6 +21,7 @@
 #define LATAN_STATISTICS_H_
 
 #include <latan/latan_globals.h>
+#include <latan/latan_mat.h>
 #include <latan/latan_rand.h>
 
 #define BOOT 0

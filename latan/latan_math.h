@@ -21,6 +21,7 @@
 #define LATAN_MATH_H_
 
 #include <latan/latan_globals.h>
+#include <latan/latan_mat.h>
 
 #define SQ(x) ((x)*(x))
 #define DRATIO(a,b) (((double)(a))/((double)(b)))

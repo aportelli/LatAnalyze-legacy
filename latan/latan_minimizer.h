@@ -21,6 +21,7 @@
 #define LATAN_MINIMIZER_H_
 
 #include <latan/latan_globals.h>
+#include <latan/latan_mat.h>
 
 __BEGIN_DECLS
 

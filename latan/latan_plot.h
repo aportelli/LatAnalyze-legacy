@@ -22,6 +22,7 @@
 
 #include <latan/latan_globals.h>
 #include <latan/latan_fit.h>
+#include <latan/latan_mat.h>
 
 /* system dependant gnuplot terminal setting */
 #ifdef __APPLE__

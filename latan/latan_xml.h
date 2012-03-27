@@ -22,6 +22,7 @@
 
 #include <latan/latan_globals.h>
 #include <latan/latan_hadron.h>
+#include <latan/latan_mat.h>
 #include <latan/latan_statistics.h>
 #include <libxml/parser.h>
 #include <libxml/threads.h>

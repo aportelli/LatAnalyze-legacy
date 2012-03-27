@@ -21,6 +21,7 @@
 #define	LATAN_BLAS_H_
 
 #include <latan/latan_globals.h>
+#include <latan/latan_mat.h>
 
 /* level 1 */
 latan_errno latan_blas_ddot(const mat *x, const mat *y, double *res);

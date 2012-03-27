@@ -886,16 +886,17 @@ latan_errno mat_pseudoinv(mat *m, const mat *n)
     USTAT(gsl_linalg_SV_decomp(U->data_cpu,V->data_cpu,&(Sv.vector),work));
     tol     = MAX(nrow(n),ncol(n))*mat_get(S,0,0)*DBL_EPSILON;
     nsv_cut = 0;
-    latan_printf(DEBUG,"singular values :\n");
+    latan_printf(DEBUG1,"singular values :\n");
     for (i=0;i<nsv;i++)
     {
-        latan_printf(DEBUG,"S_%d= %e\n",(int)i,mat_get(S,i,i));
         if (mat_get(S,i,i) > tol)
         {
+            latan_printf(DEBUG1,"S_%d= %e\n",(int)i,mat_get(S,i,i));
             mat_set(S,i,i,1.0/mat_get(S,i,i));
         }
         else
         {
+            latan_printf(DEBUG1,"S_%d= %e (eliminated)\n",(int)i,mat_get(S,i,i));
             mat_set(S,i,i,0.0);
             nsv_cut++;
         }

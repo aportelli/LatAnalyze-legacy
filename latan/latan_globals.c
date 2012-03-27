@@ -70,7 +70,7 @@ void latan_printf(const int verb, const strbuf fmt, ...)
     {
         latan_get_name(name);
         latan_get_version(version);
-        if (verb == DEBUG)
+        if (verb >= DEBUG1)
         {
             strbufcpy(debug," - DEBUG");
         }

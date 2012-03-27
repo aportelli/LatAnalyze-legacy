@@ -210,12 +210,12 @@ latan_errno minimize_gsl(mat *x, double *f_min, min_func *f, void *param)
         {
             break;
         }
-        latan_printf(DEBUG,"------ iteration %d\n",iter);
+        latan_printf(DEBUG2,"------ iteration %d\n",iter);
         if (need_df)
         {
             status = gsl_multimin_test_gradient(minimizer_fdf->gradient,\
                                                 FDF_CVG_PREC);
-            latan_printf(DEBUG,"f(x)= %10.6f gradf(x)= %10.4e\n",\
+            latan_printf(DEBUG2,"f(x)= %10.6f gradf(x)= %10.4e\n",\
                          minimizer_fdf->f,                       \
                          gsl_blas_dnrm2(minimizer_fdf->gradient));
             gsl_vector_memcpy(gsl_x,minimizer_fdf->x);
@@ -223,12 +223,12 @@ latan_errno minimize_gsl(mat *x, double *f_min, min_func *f, void *param)
         else
         {
             status = gsl_multimin_test_size(minimizer_f->size,F_CVG_PREC);
-            latan_printf(DEBUG,"f(x)= %10.6f size= %10.4e\n",minimizer_f->fval,\
+            latan_printf(DEBUG2,"f(x)= %10.6f size= %10.4e\n",minimizer_f->fval,\
                          minimizer_f->size);
             gsl_vector_memcpy(gsl_x,minimizer_f->x);
         }
         gsl_vector_mul(gsl_x,gf_param.scale);
-        if (latan_get_verb() == DEBUG)
+        if (latan_get_verb() == DEBUG2)
         {
             strbufcpy(x_dump,"");
             for (i=0;i<n;i++)
@@ -238,7 +238,7 @@ latan_errno minimize_gsl(mat *x, double *f_min, min_func *f, void *param)
                 strcat(x_dump,buf);
             }
         }
-        latan_printf(DEBUG,"%s\n",x_dump);
+        latan_printf(DEBUG2,"%s\n",x_dump);
     } while ((status == (latan_errno)GSL_CONTINUE) && (iter <= max_iteration));
     if (status)
     {

@@ -49,7 +49,7 @@ int main(void)
         fit_data_set_y(d,i,0,buf);
     }
     fit_data_fit_all_points(d,true);
-    latan_set_verb(DEBUG);
+    latan_set_verb(DEBUG1);
     for (alg=0;alg<NMINALG;alg++)
     {
         mat_set(fit_param,0,0,0.3);

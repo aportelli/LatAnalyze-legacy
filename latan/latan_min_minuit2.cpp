@@ -134,7 +134,7 @@ latan_errno minimize_minuit2(mat *x, double *f_min, min_func *f, void *param)
                         LATAN_EINVAL);
             break;
     }
-    latan_printf(DEBUG,"(MINUIT) Minimizing...\n");
+    latan_printf(DEBUG2,"(MINUIT) Minimizing...\n");
     FunctionMinimum Min = (*Minimizer)();
     if (!Min.IsValid())
     {
@@ -149,16 +149,16 @@ latan_errno minimize_minuit2(mat *x, double *f_min, min_func *f, void *param)
     }
     *f_min = Min.Fval();
           
-    latan_printf(DEBUG,"(MINUIT) Minimizer call :\n");
-    if (latan_get_verb() == DEBUG)
+    latan_printf(DEBUG2,"(MINUIT) Minimizer call :\n");
+    if (latan_get_verb() == DEBUG2)
     {
         cout << "--------------------------------------------------------";
         cout << Min;
         cout << "--------------------------------------------------------";
         cout << endl;
     }
-    latan_printf(DEBUG,"(MINUIT) Scan around last position :\n");
-    if (latan_get_verb() == DEBUG)
+    latan_printf(DEBUG2,"(MINUIT) Scan around last position :\n");
+    if (latan_get_verb() == DEBUG2)
     {
         vector<pair<double, double> > ScanRes;
         MnPlot Plot;

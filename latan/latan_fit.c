@@ -897,6 +897,14 @@ static void set_var_subm(mat *var, const mat *subm, const size_t k1,\
     }
 }
 
+#define mat_debug(m,fname)\
+{\
+    FILE *f_;\
+    f_=fopen(fname,"w");\
+    mat_dump(f_,m,"% .15e");\
+    fclose(f_);\
+}
+
 /** variance matrix inversion **/
 static void pseudoinvert_var(mat *var, const bool is_corr)
 {
@@ -912,7 +920,6 @@ static void pseudoinvert_var(mat *var, const bool is_corr)
     {
         sig = var;
     }
-    
     for (i=0;i<nrow(var);i++)
     {
         inv = 1.0/mat_get(var,i,i);
@@ -949,14 +956,6 @@ static void pseudoinvert_var(mat *var, const bool is_corr)
     {
         mat_destroy(sig);
     }
-}
-
-#define mat_debug(m,fname)\
-{\
-    FILE *f_;\
-    f_=fopen(fname,"w");\
-    mat_dump(f_,m,"% .15e");\
-    fclose(f_);\
 }
     
 /* chi^2 function :
@@ -1153,11 +1152,16 @@ static void init_chi2(fit_data *d, const int thread, const int nthread)
                 mat_set_subm(d->var_inv,d->y_var_inv,0,0,Ysize-1,Ysize-1);
             }
             /*** inversion ***/
-            pseudoinvert_var(d->y_var_inv,fit_data_is_y_correlated(d));
-            latan_printf(DEBUG,"Cd^-1=\n");
-            if (latan_get_verb() == DEBUG)
+            latan_printf(DEBUG1,"Cd=\n");
+            if (latan_get_verb() == DEBUG1)
             {
-                mat_print(d->y_var_inv,"%6.1e");
+                mat_print(d->y_var_inv,"% 10e");
+            }
+            pseudoinvert_var(d->y_var_inv,fit_data_is_y_correlated(d));
+            latan_printf(DEBUG1,"Cd^-1=\n");
+            if (latan_get_verb() == DEBUG1)
+            {
+                mat_print(d->y_var_inv,"% 10e");
             }
             /** inverting x variance matrix **/
             if (fit_data_have_x_var(d)||have_xy_covar)
@@ -1210,11 +1214,16 @@ static void init_chi2(fit_data *d, const int thread, const int nthread)
                                  lXsize-1,lXsize-1);
                 }
                 /*** inversion ***/
-                pseudoinvert_var(d->x_var_inv,fit_data_is_x_correlated(d));
-                latan_printf(DEBUG,"Cx^-1=\n");
-                if (latan_get_verb() == DEBUG)
+                latan_printf(DEBUG1,"Cx=\n");
+                if (latan_get_verb() == DEBUG1)
                 {
-                    mat_print(d->x_var_inv,"% 6.1e");
+                    mat_print(d->x_var_inv,"% 10e");
+                }
+                pseudoinvert_var(d->x_var_inv,fit_data_is_x_correlated(d));
+                latan_printf(DEBUG1,"Cx^-1=\n");
+                if (latan_get_verb() == DEBUG1)
+                {
+                    mat_print(d->x_var_inv,"% 10e");
                 }
                 
             }
@@ -1239,11 +1248,16 @@ static void init_chi2(fit_data *d, const int thread, const int nthread)
                         }
                     }
                 }
-                pseudoinvert_var(d->var_inv,true);
-                latan_printf(DEBUG,"C^-1=\n");
-                if (latan_get_verb() == DEBUG)
+                latan_printf(DEBUG1,"C=\n");
+                if (latan_get_verb() == DEBUG1)
                 {
-                    mat_print(d->var_inv,"% 6.1e");
+                    mat_print(d->var_inv,"% 10e");
+                }
+                pseudoinvert_var(d->var_inv,true);
+                latan_printf(DEBUG1,"C^-1=\n");
+                if (latan_get_verb() == DEBUG1)
+                {
+                    mat_print(d->var_inv,"% 10e");
                 }
             }
             d->is_inverted = true;
@@ -1549,7 +1563,7 @@ latan_errno rs_data_fit(rs_sample *p, rs_sample * const *x,         \
     USTAT(mat_get_subm(rs_sample_pt_cent_val(p),pbuf,0,0,npar-1,0));
     chi2_backup = fit_data_get_chi2(d);
     fit_data_get_chi2_comp(comp_backup,d);
-    latan_printf(DEBUG,"fit: central value chi^2/dof = %e -- p-value = %e\n",\
+    latan_printf(VERB,"fit: central value chi^2/dof = %e -- p-value = %e\n",\
                  fit_data_get_chi2pdof(d),fit_data_get_pvalue(d));
     
     /* sample fits */
@@ -1586,15 +1600,33 @@ latan_errno rs_data_fit(rs_sample *p, rs_sample * const *x,         \
             }
         }
         /** fit **/
-        if (verb_backup != DEBUG)
+        if (verb_backup != DEBUG2)
         {
             USTAT(latan_set_verb(QUIET));
         }
         USTAT(data_fit(pbuf,d));
         USTAT(latan_set_verb(verb_backup));
-        latan_printf(DEBUG,"fit: sample %d/%d chi^2/dof = %e\n",(int)s+1,\
+        if (latan_get_verb() == VERB)
+        {
+            printf("[");
+            for (i=0;i<60*(s+1)/nsample;i++)
+            {
+                printf("=");
+            }
+            for (i=60*(s+1)/nsample;i<60;i++)
+            {
+                printf(" ");
+            }
+            printf("]  %d/%d\r",(int)s+1,(int)nsample);
+            fflush(stdout);
+        }
+        latan_printf(DEBUG2,"fit: sample %d/%d chi^2/dof = %e\n",(int)s+1,\
                      (int)nsample,fit_data_get_chi2pdof(d));
         USTAT(mat_get_subm(rs_sample_pt_sample(p,s),pbuf,0,0,npar-1,0));
+    }
+    if (latan_get_verb() == VERB)
+    {
+        printf("\n");
     }
     d->chi2_val = chi2_backup;
     mat_cp(d->chi2_comp,comp_backup);

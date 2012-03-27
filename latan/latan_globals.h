@@ -50,9 +50,10 @@ typedef char strbuf[STRING_LENGTH];
 __END_DECLS
 
 /* verbosity flags */
-#define QUIET 0
-#define VERB 1
-#define DEBUG 2
+#define QUIET  0
+#define VERB   1
+#define DEBUG1 2
+#define DEBUG2 3
 
 /* parity flags */
 #define EVEN 0

@@ -244,7 +244,7 @@ plat *search_plat(size_t *nplat, mat *data, mat *sigdata,\
             }
             plat_ar[cplat].mean += mat_get(data,i,0);
             plat_ar[cplat].sig  += SQ(mat_get(data,i,0));
-            latan_printf(DEBUG,                                                \
+            latan_printf(DEBUG1,                                                \
                          "%i ]%.10e,%.10e[ val = %e aerr = %e rerr = %.2f%%\n",\
                          i,inf1,sup1,mat_get(data,i,0),mat_get(sigdata,i,0),   \
                          re1*100.0);
@@ -264,7 +264,7 @@ plat *search_plat(size_t *nplat, mat *data, mat *sigdata,\
             plat_ar[cplat].mean += mat_get(data,j,0);
             plat_ar[cplat].sig  += SQ(mat_get(data,j,0));
             plat_ar[cplat].end   = j;
-            latan_printf(DEBUG,
+            latan_printf(DEBUG1,
                          "%i ]%.10e,%.10e[ val = %e aerr = %e rerr = %.2f%%\n",\
                          j,mat_get(data,j,0)-nsig*mat_get(sigdata,j,0),        \
                          mat_get(data,j,0)+nsig*mat_get(sigdata,j,0),          \

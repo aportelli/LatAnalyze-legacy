@@ -558,8 +558,7 @@ latan_errno rs_sample_cov(mat *cov, const rs_sample *s, const rs_sample *t)
                     LATAN_EBADLEN);
     }
     
-    status = mat_cov_m(cov,s->sample,t->sample,s->nsample,\
-                       s->cent_val,t->cent_val);
+    status = mat_cov(cov,s->sample,t->sample,s->nsample);
     
     return status;
 }
@@ -574,8 +573,7 @@ latan_errno rs_sample_covp(mat *cov, const rs_sample *s, const rs_sample *t)
                     LATAN_EBADLEN);
     }
     
-    status = mat_covp_m(cov,s->sample,t->sample,s->nsample,\
-                        s->cent_val,t->cent_val);
+    status = mat_covp(cov,s->sample,t->sample,s->nsample);
     
     return status;
 }

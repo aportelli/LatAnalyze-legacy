@@ -206,7 +206,7 @@ latan_errno mat_save_ascii(const strbuf fname, const char mode, const mat *m,\
 }
 
 latan_errno mat_load_dim_ascii(size_t dim[2], const strbuf fname,\
-                               const strbuf name)
+                               const strbuf name __dumb)
 {
     int thread,nf,lc,ec;
     int i;
@@ -220,7 +220,6 @@ latan_errno mat_load_dim_ascii(size_t dim[2], const strbuf fname,\
     thread = 0;
 #endif
     field    = NULL;
-    name     = NULL;
     ec       = 0;
     got_ncol = false;
     dim[0]   = 0;
@@ -280,7 +279,7 @@ latan_errno mat_load_dim_ascii(size_t dim[2], const strbuf fname,\
     return LATAN_SUCCESS;
 }
 
-latan_errno mat_load_ascii(mat *m, const strbuf fname, const strbuf name)
+latan_errno mat_load_ascii(mat *m, const strbuf fname, const strbuf name __dumb)
 {
     int thread,nf,lc,j,jmod,nc;
     int i;
@@ -294,7 +293,6 @@ latan_errno mat_load_ascii(mat *m, const strbuf fname, const strbuf name)
     thread = 0;
 #endif
     field    = NULL;
-    name     = NULL;
     j        = 0;
     got_ncol = false;
     nc       = 0;
@@ -492,7 +490,7 @@ latan_errno prop_save_ascii(strbuf fname, const char mode, mat *prop,\
                             const strbuf channel,                    \
                             const quark_no q1, const quark_no q2,    \
                             const ss_no source, const ss_no sink,    \
-                            const strbuf name)
+                            const strbuf name __dumb)
 {
     strbuf source_id,sink_id;
     int thread;
@@ -502,7 +500,6 @@ latan_errno prop_save_ascii(strbuf fname, const char mode, mat *prop,\
 #else
     thread = 0;
 #endif
-    name     = NULL;
 
     ascii_open_file_buf(fname,mode);
     ss_id_get(source_id,source);
@@ -550,7 +547,7 @@ latan_errno randgen_save_state_ascii(const strbuf fname, const char mode,   \
 }
 
 latan_errno randgen_load_state_ascii(rg_state state, const strbuf fname,\
-                                     const strbuf name)
+                                     const strbuf name __dumb)
 {
     int thread,nf,lc;
     int i,j;
@@ -562,7 +559,6 @@ latan_errno randgen_load_state_ascii(rg_state state, const strbuf fname,\
     thread = 0;
 #endif
     field    = NULL;
-    name     = NULL;
     j        = 0;
 
     ascii_open_file_buf(fname,'r');
@@ -645,7 +641,7 @@ latan_errno rs_sample_save_ascii(const strbuf fname, const char mode,\
 }
 
 latan_errno rs_sample_load_nrow_ascii(size_t *nr, const strbuf fname,\
-                                      const strbuf name)
+                                      const strbuf name __dumb)
 {
     int thread,nf,lc,sec,nsample;
     int i;
@@ -659,7 +655,6 @@ latan_errno rs_sample_load_nrow_ascii(size_t *nr, const strbuf fname,\
     thread = 0;
 #endif
     field       = NULL;
-    name        = NULL;
     sec         = 0;
     got_nsample = false;
     nsample     = 0;
@@ -719,7 +714,7 @@ latan_errno rs_sample_load_nrow_ascii(size_t *nr, const strbuf fname,\
 }
 
 latan_errno rs_sample_load_nsample_ascii(size_t *nsample, const strbuf fname,\
-                                         const strbuf name)
+                                         const strbuf name __dumb)
 {
     int thread,nf,lc,buf;
     strbuf *field;
@@ -729,8 +724,7 @@ latan_errno rs_sample_load_nsample_ascii(size_t *nsample, const strbuf fname,\
 #else
     thread = 0;
 #endif
-    field = NULL;
-    name  = NULL;
+    field    = NULL;
 
     ascii_open_file_buf(fname,'r');
     BEGIN_FOR_LINE_TOK_F(field,FILE_BUF(thread)," ",nf,lc)
@@ -758,7 +752,7 @@ latan_errno rs_sample_load_nsample_ascii(size_t *nsample, const strbuf fname,\
 }
 
 latan_errno rs_sample_load_ascii(rs_sample *s, const strbuf fname,\
-                                 const strbuf name)
+                                 const strbuf name __dumb)
 {
     int thread,nf,lc,j,jmod,nsample;
     int i;
@@ -772,7 +766,6 @@ latan_errno rs_sample_load_ascii(rs_sample *s, const strbuf fname,\
     thread = 0;
 #endif
     field       = NULL;
-    name        = NULL;
     j           = 0;
     got_nsample = false;
     nsample     = 0;

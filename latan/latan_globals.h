@@ -33,6 +33,13 @@
 
 __BEGIN_DECLS
 
+/* attribute to switch off unused warnings with gcc */
+#ifdef __GNUC__
+#define __dumb __attribute__((unused))
+#else
+#define __dumb
+#endif
+
 /* boolean type */
 #ifndef __cplusplus
 #define false (1==0)

@@ -20,9 +20,7 @@ static latan_errno mat_mul_nn(mat *a, const mat *b, const mat *c)
 #define FUNC_BENCH_2ARG(perf,nops,func,func_flop,a,b)\
 {\
     clock_t end_clk,timer;\
-    double nflop;\
     \
-    nflop   = 0;\
     nops    = 0;\
     \
     end_clk = clock() + TEST_TIME*CLOCKS_PER_SEC;\
@@ -38,9 +36,7 @@ static latan_errno mat_mul_nn(mat *a, const mat *b, const mat *c)
 #define FUNC_BENCH_3ARG(perf,nops,func,func_flop,a,b,c)\
 {\
     clock_t end_clk,timer;\
-    double nflop;\
     \
-    nflop   = 0;\
     nops    = 0;\
     \
     end_clk = clock() + TEST_TIME*CLOCKS_PER_SEC;\

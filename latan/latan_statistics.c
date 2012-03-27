@@ -593,7 +593,7 @@ static latan_errno resample_bootstrap(mat *cent_val, mat **sample,         \
     
     MALLOC(fakedat,mat**,ndat);
     
-    USTAT(f(cent_val,dat,ndat,0,param));
+    USTAT(f(cent_val,dat,ndat,param));
     for (i=0;i<nboot;i++)
     {
         
@@ -602,7 +602,7 @@ static latan_errno resample_bootstrap(mat *cent_val, mat **sample,         \
             rj = rand_ud((unsigned int)(ndat));
             fakedat[j] = dat[rj];
         }
-        USTAT(f(sample[i],fakedat,ndat,i+1,param));
+        USTAT(f(sample[i],fakedat,ndat,param));
     }
     
     FREE(fakedat);
@@ -639,15 +639,11 @@ latan_errno resample(rs_sample *s, mat **dat, const size_t ndat, rs_func *f, \
 /*                              useful rs_func                              */
 /****************************************************************************/
 latan_errno rs_mean(mat *res, mat **dat, const size_t ndat,\
-                    const size_t sampno, void *nothing)
+                    void *nothing __dumb)
 {
     latan_errno status;
-    size_t st_nothing;
-    
-    nothing    = NULL;
-    st_nothing = sampno;
-    
-    status = mat_mean(res,dat,ndat);
+
+    status  = mat_mean(res,dat,ndat);
     
     return status;
 }

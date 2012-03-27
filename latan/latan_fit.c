@@ -47,9 +47,8 @@ static double chi2_base(const mat *p, void *vd);
 /****************************************************************************/
 /** some useful constant npar_func **/
 #define DEFINE_CST_NPAR_FUNC(n)\
-size_t npar_##n(void *nothing)\
+size_t npar_##n(void *nothing __dumb)\
 {\
-    nothing = NULL;\
     return n;\
 }
 
@@ -122,14 +121,8 @@ static size_t sym_rowmaj(const size_t i, const size_t j, const size_t dim)
     return ind;
 }
 
-static double zero(const mat *p, void *vd)
-{
-    void *vdumb;
-    const mat *mdumb;
-    
-    mdumb = p;
-    vdumb = vd;
-    
+static double zero(const mat *p __dumb, void *vd __dumb)
+{    
     return 0.0;
 }
 
@@ -1004,7 +997,7 @@ static void init_chi2(fit_data *d, const int thread, const int nthread)
     mat *tmp_covar;
     int t;
     size_t k1,k2;
-    size_t ind,npt,ndata,nydim,nxdim,lXsize,Ysize,Xsize,px_ind,px_ind1,px_ind2;
+    size_t ind,ndata,nydim,nxdim,lXsize,Ysize,Xsize,px_ind,px_ind1,px_ind2;
     bool have_xy_covar;
     
 #ifdef _OPENMP
@@ -1014,7 +1007,6 @@ static void init_chi2(fit_data *d, const int thread, const int nthread)
         tmp_covar      = NULL;
         have_xy_covar  = fit_data_have_xy_covar(d);
         ndata          = fit_data_get_ndata(d);
-        npt            = fit_data_fit_point_num(d);
         nydim          = fit_data_get_nydim(d);
         nxdim          = fit_data_get_nxdim(d);
         Ysize          = get_Ysize(d);
@@ -1400,7 +1392,7 @@ latan_errno chi2_get_comp(mat *comp, mat *p, fit_data *d)
     size_t Ysize,Xsize;
     size_t i;
     double base,uncor,el;
-    mat *x,*Y,*CyY,*Cy,*X,*CxX,*Cx,*lX,*ClX,*C;
+    mat *x,*Y,*X;
     
     Ysize = get_Ysize(d);
     Xsize = get_Xsize(d);
@@ -1428,14 +1420,7 @@ latan_errno chi2_get_comp(mat *comp, mat *p, fit_data *d)
     init_chi2(d,thread,nthread);
     x   = d->buf[thread].x_f;
     Y   = d->buf[thread].Y;
-    CyY = d->buf[thread].CyY;
-    Cy  = d->y_var_inv;
     X   = d->buf[thread].X;
-    CxX = d->buf[thread].CxX;
-    Cx  = d->x_var_inv;
-    lX  = d->buf[thread].lX;
-    ClX = d->buf[thread].ClX;
-    C   = d->var_inv;
     /** setting X and Y **/
     set_X_Y(X,Y,x,p,d);
     /** diagonal y elements **/

@@ -72,11 +72,7 @@ latan_error_handler_t *latan_set_error_handler_off (void)
     return previous_handler;
 }
 
-void no_error_handler(const char *reason, const char *file, int line, int no)
+void no_error_handler(const char *reason __dumb, const char *file __dumb,
+                      int line __dumb, int no __dumb)
 {
-    /* do nothing */
-    reason = NULL;
-    file   = NULL;
-    line   = 0;
-    no     = LATAN_SUCCESS;
 }

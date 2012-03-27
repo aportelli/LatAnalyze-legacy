@@ -24,13 +24,9 @@
 /*                              1D models                                   */
 /****************************************************************************/
 /** 1D polynomial models **/
-static double fm_const_func(const mat *X, const mat *p, void *nothing)
+static double fm_const_func(const mat *X __dumb, const mat *p,\
+                            void *nothing __dumb)
 {
-    const mat *dummy;
-
-    dummy   = X;
-    nothing = NULL;
-    
     return mat_get(p,0,0);
 }
 
@@ -45,12 +41,11 @@ fit_model fm_const =
 };
 
 /** exponential decay **/
-static double fm_expdec_func(const mat *x, const mat *p, void *nothing)
+static double fm_expdec_func(const mat *x, const mat *p, void *nothing __dumb)
 {
     double res;
-    
-    nothing = NULL;
-    res = exp(-mat_get(p,0,0)*mat_get(x,0,0)+mat_get(p,1,0));
+
+    res     = exp(-mat_get(p,0,0)*mat_get(x,0,0)+mat_get(p,1,0));
     
     return res;
 }
@@ -65,11 +60,10 @@ fit_model fm_expdec =
 };
 
 /** hyperbolic cosine **/
-static double fm_cosh_func(const mat *x, const mat *p, void *nothing)
+static double fm_cosh_func(const mat *x, const mat *p, void *nothing __dumb)
 {
     double res;
     
-    nothing = NULL;
     res = mat_get(p,1,0)*cosh(mat_get(p,0,0)*mat_get(x,0,0));
     
     return res;

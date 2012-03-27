@@ -30,7 +30,7 @@
 __BEGIN_DECLS
 
 typedef latan_errno rs_func(mat *res, mat **dat, const size_t ndat,\
-                            const size_t sampno, void *param);
+                            void *param);
 
 /* elementary estimators */
 double mat_elsum(const mat *m);
@@ -109,8 +109,7 @@ latan_errno resample(rs_sample *s, mat **dat, const size_t ndat, rs_func *f,\
                      unsigned int resamp_method, void *param);
 
 /* useful rs_func */
-latan_errno rs_mean(mat *res, mat **dat, const size_t ndat,\
-                    const size_t sampno, void *nothing);
+latan_errno rs_mean(mat *res, mat **dat, const size_t ndat, void *nothing);
 
 /* operations */
 typedef latan_errno mat_unop(mat *a, const mat *b);

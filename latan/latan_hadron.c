@@ -38,39 +38,39 @@ channel_no channel_get_no_from_label(const strbuf label)
 {
     channel_no res;
     
-    if (strcmp(label,"SS") == 0)
+    if (strbufcmp(label,"SS") == 0)
     {
         res = ch_SS;
     }
-    else if (strcmp(label,"VV") == 0)
+    else if (strbufcmp(label,"VV") == 0)
     {
         res = ch_VV;
     }
-    else if (strcmp(label,"PP") == 0)
+    else if (strbufcmp(label,"PP") == 0)
     {
         res = ch_PP;
     }
-    else if (strcmp(label,"PA") == 0)
+    else if (strbufcmp(label,"PA") == 0)
     {
         res = ch_PA;
     }
-    else if (strcmp(label,"AP") == 0)
+    else if (strbufcmp(label,"AP") == 0)
     {
         res = ch_AP;
     }
-    else if (strcmp(label,"AA") == 0)
+    else if (strbufcmp(label,"AA") == 0)
     {
         res = ch_AA;
     }
-    else if (strcmp(label,"N") == 0)
+    else if (strbufcmp(label,"N") == 0)
     {
         res = ch_N;
     }
-    else if (strcmp(label,"Lambda") == 0)
+    else if (strbufcmp(label,"Lambda") == 0)
     {
         res = ch_Lambda;
     }
-    else if (strcmp(label,"Delta") == 0)
+    else if (strbufcmp(label,"Delta") == 0)
     {
         res = ch_Delta;
     }
@@ -86,39 +86,39 @@ channel_no channel_get_no_from_id(const strbuf id)
 {
     channel_no res;
 
-    if (strcmp(id,channel_id[ch_SS]) == 0)
+    if (strbufcmp(id,channel_id[ch_SS]) == 0)
     {
         res = ch_SS;
     }
-    else if (strcmp(id,channel_id[ch_VV]) == 0)
+    else if (strbufcmp(id,channel_id[ch_VV]) == 0)
     {
         res = ch_VV;
     }
-    else if (strcmp(id,channel_id[ch_PP]) == 0)
+    else if (strbufcmp(id,channel_id[ch_PP]) == 0)
     {
         res = ch_PP;
     }
-    else if (strcmp(id,channel_id[ch_PA]) == 0)
+    else if (strbufcmp(id,channel_id[ch_PA]) == 0)
     {
         res = ch_PA;
     }
-    else if (strcmp(id,channel_id[ch_AP]) == 0)
+    else if (strbufcmp(id,channel_id[ch_AP]) == 0)
     {
         res = ch_AP;
     }
-    else if (strcmp(id,channel_id[ch_AA]) == 0)
+    else if (strbufcmp(id,channel_id[ch_AA]) == 0)
     {
         res = ch_AA;
     }
-    else if (strcmp(id,channel_id[ch_N]) == 0)
+    else if (strbufcmp(id,channel_id[ch_N]) == 0)
     {
         res = ch_N;
     }
-    else if (strcmp(id,channel_id[ch_Lambda]) == 0)
+    else if (strbufcmp(id,channel_id[ch_Lambda]) == 0)
     {
         res = ch_Lambda;
     }
-    else if (strcmp(id,channel_id[ch_Delta]) == 0)
+    else if (strbufcmp(id,channel_id[ch_Delta]) == 0)
     {
         res = ch_Delta;
     }
@@ -418,7 +418,7 @@ hadron *spectrum_get(const spectrum *s, const strbuf part_name)
     
     for (i=0;i<s->nparticle;i++)
     {
-        if (strcmp(s->particle[i]->name,part_name) == 0)
+        if (strbufcmp(s->particle[i]->name,part_name) == 0)
         {
             h = s->particle[i];
             found = true;

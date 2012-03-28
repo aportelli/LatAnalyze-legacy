@@ -93,13 +93,24 @@ void latan_printf(const int verb, const strbuf fmt, ...)
 
 /*                           string operations                                */
 /******************************************************************************/
+char * strbufcat(strbuf a, const strbuf b)
+{
+    if (strlen(a)+strlen(b)+1 > STRING_LENGTH)
+    {
+        LATAN_WARNING("string buffer overflow",LATAN_FAILURE);
+    }
+    
+    return strncat(a,b,STRING_LENGTH-strlen(a)-1);
+}
+
+int strbufcmp(const strbuf a, const strbuf b)
+{
+    return strncmp(a,b,STRING_LENGTH-1);
+}
+
 char * strbufcpy(strbuf a, const strbuf b)
 {
-    char *pt;
-
-    pt = strncpy(a,b,STRING_LENGTH);
-    
-    return pt;
+    return strncpy(a,b,STRING_LENGTH);
 }
 
 /*                                NaN                                         */

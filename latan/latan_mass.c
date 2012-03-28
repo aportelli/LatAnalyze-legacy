@@ -122,7 +122,7 @@ latan_errno effmass_PCAC(mat *res, const mat *mprop_AP, const mat *mprop_PP)
 /*            interface to read experimental masses in latan_nunits.h       */
 /****************************************************************************/
 #define IF_NAME(pname)\
-if (strcmp(name,#pname) == 0)\
+if (strbufcmp(name,#pname) == 0)\
 {\
     mass[0] = NU_M_##pname;\
     mass[1] = NU_M_##pname##_ERR;\

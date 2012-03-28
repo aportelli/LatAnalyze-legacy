@@ -104,7 +104,7 @@ static latan_errno ascii_open_file_buf(const strbuf fname, const char mode)
     }
     if (env.file_is_loaded[thread])
     {
-        if ((strcmp(FILE_NAME(thread),fname) != 0)||(mode == 'w')||\
+        if ((strbufcmp(FILE_NAME(thread),fname) != 0)||(mode == 'w')||\
             (mode != FILE_MODE(thread)))
         {
             fclose(FILE_BUF(thread));
@@ -372,10 +372,10 @@ latan_errno prop_load_nt_ascii(size_t *nt, const channel_no channel,\
     ss_id_get(sink_id,sink);
     BEGIN_FOR_LINE_TOK_F(field,FILE_BUF(thread)," ",nf,lc)
     {
-        if((nf >= 6)&&(strcmp(field[0],"#")==0)&&                          \
-           (strcmp(field[1],source_id)==0)&&(strcmp(field[2],sink_id)==0)&&\
-           (strcmp(field[3],channel_id)==0)&&                              \
-           (strcmp(field[4],q1_id)==0)&&(strcmp(field[5],q2_id)==0))
+        if((nf >= 6)&&(strbufcmp(field[0],"#")==0)&&                          \
+           (strbufcmp(field[1],source_id)==0)&&(strbufcmp(field[2],sink_id)==0)&&\
+           (strbufcmp(field[3],channel_id)==0)&&                              \
+           (strbufcmp(field[4],q1_id)==0)&&(strbufcmp(field[5],q2_id)==0))
         {
             is_in_prop = true;
         }
@@ -433,14 +433,14 @@ latan_errno prop_load_ascii(mat *prop, const channel_no channel, \
     ss_id_get(sink_id,sink);
     BEGIN_FOR_LINE_TOK_F(field,FILE_BUF(thread)," ",nf,lc)
     {
-        if(is_in_prop&&(strcmp(field[0],"#") == 0))
+        if(is_in_prop&&(strbufcmp(field[0],"#") == 0))
         {
             break;
         }
-        else if((nf >= 6)&&(strcmp(field[0],"#")==0)&&                         \
-               (strcmp(field[1],source_id)==0)&&(strcmp(field[2],sink_id)==0)&&\
-               (strcmp(field[3],channel_id)==0)&&                              \
-               (strcmp(field[4],q1_id)==0)&&(strcmp(field[5],q2_id)==0))
+        else if((nf >= 6)&&(strbufcmp(field[0],"#")==0)&&                         \
+               (strbufcmp(field[1],source_id)==0)&&(strbufcmp(field[2],sink_id)==0)&&\
+               (strbufcmp(field[3],channel_id)==0)&&                              \
+               (strbufcmp(field[4],q1_id)==0)&&(strbufcmp(field[5],q2_id)==0))
         {
             is_in_prop            = true;
             is_first_line_in_prop = true;

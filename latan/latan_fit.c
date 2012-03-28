@@ -1456,19 +1456,19 @@ latan_errno data_fit(mat *p, fit_data *d)
     strbufcpy(cor_status,"correlations :");
     if (fit_data_is_y_correlated(d))
     {
-        strcat(cor_status," data/data");
+        strbufcat(cor_status," data/data");
     }
     if (fit_data_is_x_correlated(d))
     {
-        strcat(cor_status," x/x");
+        strbufcat(cor_status," x/x");
     }
     if (fit_data_have_xy_covar(d))
     {
-        strcat(cor_status," data/x");
+        strbufcat(cor_status," data/x");
     }
-    if (strcmp(cor_status,"correlations :") == 0)
+    if (strbufcmp(cor_status,"correlations :") == 0)
     {
-        strcat(cor_status," no");
+        strbufcat(cor_status," no");
     }
     latan_printf(VERB,"fitting (%s) %u data points with %s model...\n",
                  cor_status,(unsigned int)fit_data_fit_point_num(d),\

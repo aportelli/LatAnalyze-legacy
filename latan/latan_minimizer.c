@@ -43,7 +43,7 @@ minalg_no minalg_no_get(const strbuf m_id)
     
     for (i=0;i<NMINALG;i++)
     {
-        if (strcmp(m_id,minalg_id[i]) == 0)
+        if (strbufcmp(m_id,minalg_id[i]) == 0)
         {
             return i;
         }

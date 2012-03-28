@@ -75,7 +75,7 @@ static latan_errno xml_open_file_buf(const strbuf fname, const char mode)
     }
     if (env.file_is_loaded[thread])
     {
-        if ((strcmp(FILE_BUF(thread)->fname,fname) != 0)||(mode == 'w')||\
+        if ((strbufcmp(FILE_BUF(thread)->fname,fname) != 0)||(mode == 'w')||\
             (mode != FILE_BUF(thread)->mode))
         {
             status           = xml_close_file(FILE_BUF(thread));

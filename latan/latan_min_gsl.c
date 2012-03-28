@@ -235,7 +235,7 @@ latan_errno minimize_gsl(mat *x, double *f_min, min_func *f, void *param)
             {
                 sprintf(buf,"x_%lu= %10.6f ",(long unsigned)i,\
                 gsl_vector_get(gsl_x,i));
-                strcat(x_dump,buf);
+                strbufcat(x_dump,buf);
             }
         }
         latan_printf(DEBUG2,"%s\n",x_dump);

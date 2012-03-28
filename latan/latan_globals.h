@@ -175,7 +175,10 @@ latan_errno latan_set_verb(const int verb);
 void latan_printf(const int verb, const strbuf fmt, ...);
 
 /* string operations */
+char * strbufcat(strbuf a, const strbuf b);
+int    strbufcmp(const strbuf a, const strbuf b);
 char * strbufcpy(strbuf a, const strbuf b);
+
 
 /* NaN */
 double latan_nan(void);

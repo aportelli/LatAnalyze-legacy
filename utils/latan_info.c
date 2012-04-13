@@ -1,7 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "../config.h"
-#include <latan/latan_hadron.h>
 #include <latan/latan_io.h>
 #include <latan/latan_minimizer.h>
 

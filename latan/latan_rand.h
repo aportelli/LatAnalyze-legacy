@@ -29,7 +29,7 @@ __BEGIN_DECLS
 typedef int rg_state[RLXG_STATE_SIZE];
 
 void randgen_init(const int seed);
-void randgen_init_from_time(void);
+int randgen_init_from_time(void);
 void randgen_set_state(rg_state state);
 void randgen_get_state(rg_state state);
 double rand_u(double a, double b);

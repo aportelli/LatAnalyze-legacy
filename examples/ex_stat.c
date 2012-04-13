@@ -37,7 +37,7 @@ int main(void)
     double sigma;
     
     mean    = mat_create(NDIM,1);
-    s_mean  = rs_sample_create(NDIM,NBOOT);
+    s_mean  = rs_sample_create(NDIM,1,NBOOT);
     var     = mat_create(NDIM,NDIM);
     gvec    = mat_ar_create_from_dim(SEQ_LENGTH,mean);
     randgen_init_from_time();

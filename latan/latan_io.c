@@ -33,43 +33,79 @@
 #define DEF_IO_FMT                 IO_ASCII
 #define DEF_IO_INIT                IO_FUNC(io_init,ascii)
 #define DEF_IO_FINISH              IO_FUNC(io_finish,ascii)
-#define DEF_PROP_LOAD_NT           IO_FUNC(prop_load_nt,ascii)
 #define DEF_MAT_SAVE               IO_FUNC(mat_save,ascii)
-#define DEF_MAT_LOAD_DIM           IO_FUNC(mat_load_dim,ascii)
 #define DEF_MAT_LOAD               IO_FUNC(mat_load,ascii)
-#define DEF_PROP_LOAD              IO_FUNC(prop_load,ascii)
-#define DEF_PROP_SAVE              IO_FUNC(prop_save,ascii)
 #define DEF_RANDGEN_SAVE_STATE     IO_FUNC(randgen_save_state,ascii)
 #define DEF_RANDGEN_LOAD_STATE     IO_FUNC(randgen_load_state,ascii)
 #define DEF_RS_SAMPLE_SAVE         IO_FUNC(rs_sample_save,ascii)
-#define DEF_RS_SAMPLE_LOAD_NROW    IO_FUNC(rs_sample_load_nrow,ascii)
-#define DEF_RS_SAMPLE_LOAD_NSAMPLE IO_FUNC(rs_sample_load_nsample,ascii)
 #define DEF_RS_SAMPLE_LOAD         IO_FUNC(rs_sample_load,ascii)
+
+/*                               environment                                */
+/****************************************************************************/
+typedef struct io_env_s
+{
+    io_fmt_no fmt;
+    bool      is_init;
+} io_env;
+
+static io_env env =\
+{                  \
+    DEF_IO_FMT,    \
+    false          \
+};
+
+/*                            function pointers                             */
+/****************************************************************************/
+static void (*io_init_pt)(void)   = &DEF_IO_INIT;
+static void (*io_finish_pt)(void) = &DEF_IO_FINISH;
+static latan_errno (*mat_save_pt)(const strbuf fname, const char mode,\
+                                  const mat *m, const strbuf name)    \
+    = &DEF_MAT_SAVE;
+static latan_errno (*mat_load_pt)(mat *m, size_t *dim, const strbuf fname,\
+                                  const strbuf name)                      \
+    = &DEF_MAT_LOAD;
+static latan_errno (*randgen_save_state_pt)(const strbuf f_name, \
+                                            const char mode,     \
+                                            const rg_state state,\
+                                            const strbuf name)   \
+    = &DEF_RANDGEN_SAVE_STATE;
+static latan_errno (*randgen_load_state_pt)(rg_state state,     \
+                                            const strbuf f_name,\
+                                            const strbuf name)  \
+    = &DEF_RANDGEN_LOAD_STATE;
+static latan_errno (*rs_sample_save_pt)(const strbuf fname, const char mode,  \
+                                        const rs_sample *s, const strbuf name)\
+    = &DEF_RS_SAMPLE_SAVE;
+static latan_errno (*rs_sample_load_pt)(rs_sample *s, size_t *nsample,  \
+                                        size_t *dim, const strbuf fname,\
+                                        const strbuf name)              \
+    = &DEF_RS_SAMPLE_LOAD;
 
 /*                              I/O format                                  */
 /****************************************************************************/
-static io_fmt_no io_fmt = DEF_IO_FMT;
-
-#define SET_IO_FUNC(func_name,suf) func_name = &IO_FUNC(func_name,suf)
+#define SET_IO_FUNC(func_name,suf) func_name##_pt = &IO_FUNC(func_name,suf)
 #define SET_IO_FUNCS(suf)\
 SET_IO_FUNC(io_init,suf);\
 SET_IO_FUNC(io_finish,suf);\
 SET_IO_FUNC(mat_save,suf);\
-SET_IO_FUNC(mat_load_dim,suf);\
 SET_IO_FUNC(mat_load,suf);\
-SET_IO_FUNC(prop_load_nt,suf);\
-SET_IO_FUNC(prop_load,suf);\
-SET_IO_FUNC(prop_save,suf);\
 SET_IO_FUNC(randgen_save_state,suf);\
 SET_IO_FUNC(randgen_load_state,suf);\
 SET_IO_FUNC(rs_sample_save,suf);\
-SET_IO_FUNC(rs_sample_load_nrow,suf);\
-SET_IO_FUNC(rs_sample_load_nsample,suf);\
 SET_IO_FUNC(rs_sample_load,suf);
 
 latan_errno io_set_fmt(const io_fmt_no fmt)
 {
-    switch (fmt)
+    bool reinit;
+    
+    reinit = (io_get_fmt() != fmt);
+    
+    if (reinit)
+    {
+        io_finish();
+    }
+    env.fmt = fmt;
+    switch (env.fmt)
     {
         case IO_XML:
 #ifdef HAVE_LIBXML2
@@ -85,6 +121,10 @@ latan_errno io_set_fmt(const io_fmt_no fmt)
             LATAN_ERROR("I/O format flag unknown",LATAN_EINVAL);
             break;
     }
+    if (reinit)
+    {
+        io_init();
+    }
 
     return LATAN_SUCCESS;
 }
@@ -93,13 +133,28 @@ latan_errno io_set_fmt(const io_fmt_no fmt)
 
 io_fmt_no io_get_fmt(void)
 {
-    return io_fmt;
+    return env.fmt;
 }
 
 /*                              I/O init/finish                             */
 /****************************************************************************/
-void (*io_init)(void)   = &DEF_IO_INIT;
-void (*io_finish)(void) = &DEF_IO_FINISH;
+void io_init(void)
+{
+    if (!env.is_init)
+    {
+        io_init_pt();
+        env.is_init = true;
+    }
+}
+
+void io_finish(void)
+{
+    if (env.is_init)
+    {
+        io_finish_pt();
+        env.is_init = false;
+    }
+}
 
 /*                                general I/O                               */
 /****************************************************************************/
@@ -121,7 +176,7 @@ int get_nfile(const strbuf manifestfname)
     return nfile;
 }
 
-latan_errno get_firstfname(strbuf fname, const strbuf manifestfname)
+void get_firstfname(strbuf fname, const strbuf manifestfname)
 {
     strbuf *field;
     int lc,nf;
@@ -135,12 +190,36 @@ latan_errno get_firstfname(strbuf fname, const strbuf manifestfname)
         break;
     }
     END_FOR_LINE_TOK(field)
+}
+
+void get_elname(strbuf fname, strbuf elname, const strbuf latan_path)
+{
+    char *pt;
+    strbuf buf;
     
-    return LATAN_SUCCESS;
+    strbufcpy(buf,latan_path);
+    pt = strrchr(buf,LATAN_PATH_SEP);
+    if (pt)
+    {
+        strbufcpy(elname,pt+1);
+        *pt = '\0';
+        strbufcpy(fname,buf);
+    }
+    else
+    {
+        strbufcpy(fname,latan_path);
+        strbufcpy(elname,"");
+    }
 }
 
 /*                              mat I/O                                     */
 /****************************************************************************/
+#define FUNC_INIT(fname,elname)\
+{\
+    get_elname(fname,elname,latan_path);\
+    io_init();\
+}
+
 void mat_dump(FILE* stream, const mat *m, const strbuf fmt)
 {
     size_t i,j;
@@ -157,65 +236,53 @@ void mat_dump(FILE* stream, const mat *m, const strbuf fmt)
     }
 }
 
-latan_errno mat_save_plotdat(mat *x, mat *dat, const strbuf fname)
+latan_errno mat_save(const strbuf latan_path, const char mode, const mat *m)
 {
-    FILE* f = NULL;
-    size_t i;
+    latan_errno status;
+    strbuf fname,elname;
     
-    FOPEN(f,fname,"w");
-    
-    for (i=0;i<nrow(dat);i++)
+    FUNC_INIT(fname,elname);
+    if (strlen(elname) == 0)
     {
-        fprintf(f,"%.10e\t%.10e\n",mat_get(x,i,0),mat_get(dat,i,0));
+        LATAN_ERROR("no name specified",LATAN_EINVAL);
     }
-    fclose(f);
+    status = mat_save_pt(fname,mode,m,elname);
     
-    return LATAN_SUCCESS;
+    return status;
 }
 
-latan_errno mat_save_plotdat_yerr(mat *x, mat *dat, mat *yerr,\
-                                  const strbuf fname)
+latan_errno mat_save_subm(const strbuf latan_path, const char mode,      \
+                          const mat *m, const size_t k1, const size_t l1,\
+                          const size_t k2, const size_t l2)
 {
-    FILE* f = NULL;
-    size_t i;
+    latan_errno status;
+    mat *little_m;
     
-    FOPEN(f,fname,"w");
-    for (i=0;i<nrow(dat);i++)
-    {
-        fprintf(f,"%.10e\t%.10e\t%.10e\n",mat_get(x,i,0),mat_get(dat,i,0),\
-                mat_get(yerr,i,0));
-    }
-    fclose(f);
+    status = LATAN_SUCCESS;
     
-    return LATAN_SUCCESS;
+    little_m = mat_create(k2-k1+1,l2-l1+1);
+    
+    USTAT(mat_get_subm(little_m,m,k1,l1,k2,l2));
+    USTAT(mat_save(latan_path,mode,little_m));
+    
+    mat_destroy(little_m);
+    
+    return status;
 }
 
-latan_errno mat_save_plotdat_xyerr(mat *x, mat *dat, mat *xerr,\
-                                   mat *yerr, const strbuf fname)
+latan_errno mat_load(mat *m, size_t *dim, const strbuf latan_path)
 {
-    FILE* f = NULL;
-    size_t i;
+    latan_errno status;
+    strbuf fname,elname;
     
-    FOPEN(f,fname,"w");
-    for (i=0;i<nrow(dat);i++)
-    {
-        fprintf(f,"%.10e\t%.10e\t%.10e\t%.10e\n",mat_get(x,i,0),mat_get(dat,i,0),\
-                mat_get(xerr,i,0),mat_get(yerr,i,0));
-    }
-    fclose(f);
+    FUNC_INIT(fname,elname);
+    status = mat_load_pt(m,dim,fname,elname);
     
-    return LATAN_SUCCESS;
+    return status;
 }
 
-latan_errno (*mat_save)(const strbuf fname, const char mode, const mat *m, \
-                        const strbuf name);
-latan_errno (*mat_load_dim)(size_t dim[2], const strbuf fname,\
-                            const strbuf name);
-latan_errno (*mat_load)(mat *m, const strbuf fname, const strbuf name);
-
-latan_errno mat_load_subm(mat *m, const strbuf fname, const strbuf name,    \
-                          const size_t k1, const size_t l1, const size_t k2,\
-                          const size_t l2)
+latan_errno mat_load_subm(mat *m, const strbuf latan_path, const size_t k1, \
+                          const size_t l1, const size_t k2, const size_t l2)
 {
     mat *big_m;
     size_t dim[2];
@@ -223,9 +290,9 @@ latan_errno mat_load_subm(mat *m, const strbuf fname, const strbuf name,    \
     
     status = LATAN_SUCCESS;
     
-    USTAT(mat_load_dim(dim,fname,name));
+    USTAT(mat_load(NULL,dim,latan_path));
     big_m = mat_create(dim[0],dim[1]);
-    USTAT(mat_load(big_m,fname,name));
+    USTAT(mat_load(big_m,NULL,latan_path));
     USTAT(mat_get_subm(m,big_m,k1,l1,k2,l2));
     
     mat_destroy(big_m);
@@ -233,201 +300,99 @@ latan_errno mat_load_subm(mat *m, const strbuf fname, const strbuf name,    \
     return status;
 }
 
-/*                          propagator I/O                                  */
-/****************************************************************************/
-latan_errno (*prop_load_nt)(size_t *nt, const channel_no channel,\
-                            const quark_no q1, const quark_no q2,\
-                            const ss_no source, const ss_no sink,\
-                            strbuf fname)                        \
-        = &DEF_PROP_LOAD_NT;
-latan_errno (*prop_load)(mat *prop, const channel_no channel, \
-                         const quark_no q1, const quark_no q2,\
-                         const ss_no source, const ss_no sink,\
-                         strbuf fname)                        \
-        = &DEF_PROP_LOAD;
-latan_errno (*prop_save)(strbuf fname, const char mode, mat *prop, \
-                         const strbuf channel,                     \
-                         const quark_no q1, const quark_no q2,     \
-                         const ss_no source, const ss_no sink,     \
-                         const strbuf name)                        \
-        = &DEF_PROP_SAVE;
-
-latan_errno hadron_prop_load_bin(mat **prop, const hadron *h,              \
-                                 const ss_no source, const ss_no sink,     \
-                                 const strbuf manfname,const size_t binsize)
-{
-    int i,p,s;
-    size_t j;
-    int ndat, chmix, stmix, dumb;
-    size_t nt;
-    double mean;
-    mat **dat[MAXPROP][MAXQUARKST];
-    mat **prop_prebin;
-    strbuf buf,*fname;
-    latan_errno status;
-    
-    nt      = nrow(prop[0]);
-    ndat    = get_nfile(manfname);
-    chmix   = ((h->chmix) == NOMIX) ? 1 : MAXPROP;
-    stmix   = ((h->stmix) == NOMIX) ? 1 : MAXQUARKST;
-    status  = LATAN_SUCCESS;
-    
-    if (ndat == -1)
-    {
-        LATAN_ERROR("error while reading manifest file",LATAN_ESYSTEM);
-    }
-    
-    prop_prebin = mat_ar_create(ndat,nt,1);
-    MALLOC(fname,strbuf *,ndat);
-    
-    for (p=0;p<chmix;p++)
-    {
-        for (s=0;s<stmix;s++)
-        {
-            dat[p][s] = mat_ar_create((size_t)(ndat),(size_t)(nt),1);
-            i = 0;
-            BEGIN_FOR_LINE(buf,manfname,dumb)
-            {
-                strbufcpy(fname[i],buf);
-                i++;
-            }
-            END_FOR_LINE
-#ifdef _OPENMP
-            #pragma omp parallel for    
-#endif
-            for (i=0;i<ndat;i++)
-            {
-                USTAT(prop_load(dat[p][s][i],h->channel[p],h->quarkst[s][0],\
-                                h->quarkst[s][1],source,sink,fname[i]));
-            }
-        }
-    }
-    for (i=0;i<ndat;i++)
-    {
-        mat_zero(prop_prebin[i]);
-        for (p=0;p<chmix;p++)
-        {
-            for (s=0;s<stmix;s++)
-            {
-                USTAT(mat_eqadd(prop_prebin[i],dat[p][s][i]));
-            }
-        }
-        if ((h->chmix) == MEAN)
-        {
-            USTAT(mat_eqmuls(prop_prebin[i],DRATIO(1,MAXPROP)));
-        }
-        if ((h->stmix) == MEAN)
-        {
-            USTAT(mat_eqmuls(prop_prebin[i],DRATIO(1,MAXQUARKST)));
-        }
-    }
-    if ((h->parity) == ODD)
-    {
-        for (i=0;i<ndat;i++)
-        {
-            for (j=1;j<nt/2;j++)
-            {
-                mean = 0.5*(mat_get(prop_prebin[i],(size_t)(j),0)   \
-                            + mat_get(prop_prebin[i],(size_t)(nt-j),0));
-                mat_set(prop_prebin[i],(size_t)(j),0,mean);
-                mat_set(prop_prebin[i],(size_t)(nt-j),0,mean);
-            }
-        }
-    }
-    USTAT(mat_ar_bin(prop,prop_prebin,ndat,binsize));
-    
-    mat_ar_destroy(prop_prebin,ndat);
-    for (p=0;p<chmix;p++)
-    {
-        for (s=0;s<stmix;s++)
-        {
-            mat_ar_destroy(dat[p][s],(size_t)(ndat));
-        }
-    }
-    FREE(fname);
-    
-    return status;
-}
-
-latan_errno hadron_prop_load_nt(size_t *nt, const hadron *h,\
-                                const ss_no source,         \
-                                const ss_no sink,           \
-                                const strbuf manfname)
-{
-    latan_errno status;
-    strbuf ffname;
-
-    get_firstfname(ffname,manfname);
-    status = prop_load_nt(nt,h->channel[0],h->quarkst[0][0],h->quarkst[0][1],\
-                          source,sink,ffname);
-
-    return status;
-}
-
 /*                      random generator state I/O                          */
 /****************************************************************************/
-latan_errno (*randgen_save_state)(const strbuf f_name, const char mode,   \
-                                  const rg_state state, const strbuf name)\
-        = &DEF_RANDGEN_SAVE_STATE;
-latan_errno (*randgen_load_state)(rg_state state, const strbuf f_name,\
-                                  const strbuf name)                  \
-        = &DEF_RANDGEN_LOAD_STATE;
+latan_errno randgen_save_state(const strbuf latan_path, const char mode,\
+                               const rg_state state)
+{
+    latan_errno status;
+    strbuf fname,elname;
+    
+    FUNC_INIT(fname,elname);
+    if (strlen(elname) == 0)
+    {
+        LATAN_ERROR("no name specified",LATAN_EINVAL);
+    }
+    status = randgen_save_state_pt(fname,mode,state,elname);
+    
+    return status;
+}
+
+latan_errno randgen_load_state(rg_state state, const strbuf latan_path)
+{
+    latan_errno status;
+    strbuf fname,elname;
+    
+    FUNC_INIT(fname,elname);
+    status = randgen_load_state_pt(state,fname,elname);
+    
+    return status;
+}
 
 /*                          resampled sample I/O                            */
 /****************************************************************************/
-latan_errno (*rs_sample_save)(const strbuf fname, const char mode,\
-                              const rs_sample *s)                 \
-        = &DEF_RS_SAMPLE_SAVE;
+latan_errno rs_sample_save(const strbuf latan_path, const char mode,\
+                           const rs_sample *s)
+{
+    latan_errno status;
+    strbuf fname,elname;
+    
+    FUNC_INIT(fname,elname);
+    if (strlen(elname) == 0)
+    {
+        LATAN_ERROR("no name specified",LATAN_EINVAL);
+    }
+    status = rs_sample_save_pt(fname,mode,s,elname);
+    
+    return status;
+}
 
-latan_errno rs_sample_save_subsamp(const strbuf fname, const char mode,   \
-                                   const rs_sample *s,                    \
-                                   const size_t k1, const size_t k2)
+latan_errno rs_sample_save_subsamp(const strbuf latan_path, const char mode,\
+                                   const rs_sample *s, const size_t k1,     \
+                                   const size_t l1, const size_t k2,        \
+                                   const size_t l2)
 {
     latan_errno status;
     rs_sample *little_s;
-    strbuf name;
     
     status = LATAN_SUCCESS;
     
-    little_s = rs_sample_create(k2-k1+1,rs_sample_get_nsample(s));
-    
-    rs_sample_get_name(name,s);
-    rs_sample_set_name(little_s,name);
-    USTAT(rs_sample_get_subsamp(little_s,s,k1,k2));
-    USTAT(rs_sample_save(fname,mode,little_s));
+    little_s = rs_sample_create(k2-k1+1,l2-l1+1,rs_sample_get_nsample(s));
+
+    USTAT(rs_sample_get_subsamp(little_s,s,k1,l1,k2,l2));
+    USTAT(rs_sample_save(latan_path,mode,little_s));
     
     rs_sample_destroy(little_s);
     
     return status;
 }
 
-latan_errno (*rs_sample_load_nrow)(size_t *nr, const strbuf fname,\
-                                   const strbuf name)             \
-                                                                  \
-        = &DEF_RS_SAMPLE_LOAD_NROW;
-latan_errno (*rs_sample_load_nsample)(size_t *nsample, const strbuf fname,\
-                                      const strbuf name)                  \
-        = &DEF_RS_SAMPLE_LOAD_NSAMPLE;
-latan_errno (*rs_sample_load)(rs_sample *s, const strbuf fname,\
-                              const strbuf name)               \
-        = &DEF_RS_SAMPLE_LOAD;
+latan_errno rs_sample_load(rs_sample *s, size_t *nsample, size_t *dim,\
+                           const strbuf latan_path)
+{
+    latan_errno status;
+    strbuf fname,elname;
+    
+    FUNC_INIT(fname,elname);
+    status = rs_sample_load_pt(s,nsample,dim,fname,elname);
+    
+    return status;
+}
 
-latan_errno rs_sample_load_subsamp(rs_sample *s, const strbuf fname,  \
-                                   const strbuf name, const size_t k1,\
-                                   const size_t k2)
+latan_errno rs_sample_load_subsamp(rs_sample *s, const strbuf latan_path,\
+                                   const size_t k1, const size_t l1,     \
+                                   const size_t k2, const size_t l2)
 {
     latan_errno status;
     rs_sample *big_s;
-    size_t nr,nsample;
+    size_t dim[2],nsample;
     
     status = LATAN_SUCCESS;
     
-    USTAT(rs_sample_load_nrow(&nr,fname,name));
-    USTAT(rs_sample_load_nsample(&nsample,fname,name));
-    big_s = rs_sample_create(nr,nsample);
-    USTAT(rs_sample_load(big_s,fname,name));
-    USTAT(rs_sample_get_subsamp(s,big_s,k1,k2));
-    rs_sample_set_name(s,name);
+    USTAT(rs_sample_load(NULL,&nsample,dim,latan_path));
+    big_s = rs_sample_create(dim[0],dim[1],nsample);
+    USTAT(rs_sample_load(big_s,NULL,NULL,latan_path));
+    USTAT(rs_sample_get_subsamp(s,big_s,k1,l1,k2,l2));
     
     rs_sample_destroy(big_s);
     

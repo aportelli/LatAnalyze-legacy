@@ -21,10 +21,14 @@
 #define LATAN_IO_H_
 
 #include <latan/latan_globals.h>
-#include <latan/latan_hadron.h>
 #include <latan/latan_mat.h>
 #include <latan/latan_rand.h>
 #include <latan/latan_statistics.h>
+
+/* LatAnalayze separator in file paths */
+#ifndef LATAN_PATH_SEP
+#define LATAN_PATH_SEP ':'
+#endif
 
 /* loop on the lines of a file */
 #define BEGIN_FOR_LINE_F(str,f,lc)\
@@ -115,74 +119,42 @@ latan_errno io_set_fmt(const io_fmt_no fmt);
 io_fmt_no io_get_fmt(void);
 
 /* I/O init/finish */
-extern void (*io_init)(void);
-extern void (*io_finish)(void);
+void io_init(void);
+void io_finish(void);
 
 /* general I/O */
-int get_nfile(const strbuf manifestfname);
-latan_errno get_firstfname(strbuf fname, const strbuf manifestfname);
+int  get_nfile(const strbuf manifestfname);
+void get_firstfname(strbuf fname, const strbuf manifestfname);
+void get_elname(strbuf fname, strbuf elname, const strbuf latan_path);
 
 /* mat I/O */
 void mat_dump(FILE* stream, const mat *m, const strbuf fmt);
 #define mat_print(m,fmt) mat_dump(stdout,m,fmt)
-latan_errno mat_save_plotdat(mat *x, mat *m, const strbuf fname);
-latan_errno mat_save_plotdat_yerr(mat *x, mat *dat, mat *yerr,\
-                                  const strbuf fname);
-latan_errno mat_save_plotdat_xyerr(mat *x, mat *dat, mat *xerr,\
-                                   mat *yerr, const strbuf fname);
-extern latan_errno (*mat_save)(const strbuf fname, const char mode,\
-                               const mat *m, const strbuf name);
-extern latan_errno (*mat_load_dim)(size_t dim[2], const strbuf fname,\
-                                   const strbuf name);
-extern latan_errno (*mat_load)(mat *m, const strbuf fname, const strbuf name);
-latan_errno mat_load_subm(mat *m, const strbuf fname, const strbuf name,    \
-                          const size_t k1, const size_t l1, const size_t k2,\
-                          const size_t l2);
-
-/* propagator I/O */
-extern latan_errno (*prop_load_nt)(size_t *nt, const channel_no channel,\
-                                   const quark_no q1, const quark_no q2,\
-                                   const ss_no source, const ss_no sink,\
-                                   strbuf fname);
-extern latan_errno (*prop_load)(mat *prop, const channel_no channel, \
-                                const quark_no q1, const quark_no q2,\
-                                const ss_no source, const ss_no sink,\
-                                strbuf fname);
-extern latan_errno (*prop_save)(strbuf fname, const char mode, mat *prop, \
-                                const strbuf channel,                     \
-                                const quark_no q1, const quark_no q2,     \
-                                const ss_no source, const ss_no sink,     \
-                                const strbuf name);
-latan_errno hadron_prop_load_bin(mat **prop, const hadron *h,              \
-                                 const ss_no source, const ss_no sink,     \
-                                 const strbuf manfname,const size_t binsize);
-latan_errno hadron_prop_load_nt(size_t *nt, const hadron *h,               \
-                                const ss_no source, const ss_no sink,      \
-                                const strbuf manfname);
+latan_errno mat_save(const strbuf latan_path, const char mode, const mat *m);
+latan_errno mat_save_subm(const strbuf latan_path, const char mode,      \
+                          const mat *m, const size_t k1, const size_t l1,\
+                          const size_t k2, const size_t l2);
+latan_errno mat_load(mat *m, size_t *dim, const strbuf latan_path);
+latan_errno mat_load_subm(mat *m, const strbuf latan_path, const size_t k1, \
+                          const size_t l1, const size_t k2, const size_t l2);
 
 /* random generator state I/O */
-extern latan_errno (*randgen_save_state)(const strbuf f_name, const char mode,\
-                                         const rg_state state,                \
-                                         const strbuf name);
-extern latan_errno (*randgen_load_state)(rg_state state, const strbuf f_name,\
-                                         const strbuf name);
+latan_errno randgen_save_state(const strbuf latan_path, const char mode,\
+                               const rg_state state);
+latan_errno randgen_load_state(rg_state state, const strbuf latan_path);
 
 /* resampled sample I/O */
-extern latan_errno (*rs_sample_save)(const strbuf fname, const char mode,\
-                                     const rs_sample *s);
-latan_errno rs_sample_save_subsamp(const strbuf fname, const char mode,   \
-                                   const rs_sample *s,                    \
-                                   const size_t k1, const size_t k2);
-extern latan_errno (*rs_sample_load_nrow)(size_t *nr, const strbuf fname,\
-                                          const strbuf name);
-extern latan_errno (*rs_sample_load_nsample)(size_t *nsample,   \
-                                             const strbuf fname,\
-                                             const strbuf name);
-extern latan_errno (*rs_sample_load)(rs_sample *s, const strbuf fname,\
-                                     const strbuf name);
-latan_errno rs_sample_load_subsamp(rs_sample *s, const strbuf fname,  \
-                                   const strbuf name, const size_t k1,\
-                                   const size_t k2);
+latan_errno rs_sample_save(const strbuf latan_path, const char mode,\
+                           const rs_sample *s);
+latan_errno rs_sample_save_subsamp(const strbuf latan_path, const char mode,\
+                                   const rs_sample *s, const size_t k1,     \
+                                   const size_t l1, const size_t k2,        \
+                                   const size_t l2);
+latan_errno rs_sample_load(rs_sample *s, size_t *nsample, size_t *dim,\
+                           const strbuf latan_path);
+latan_errno rs_sample_load_subsamp(rs_sample *s, const strbuf latan_path,\
+                                   const size_t k1, const size_t l1,     \
+                                   const size_t k2, const size_t l2);
 
 __END_DECLS
 

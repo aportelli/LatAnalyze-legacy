@@ -7,18 +7,21 @@
 int main(int argc, char *argv[])
 {
     rg_state state;
+    int itime;
+    strbuf latan_path;
     
     if (argc != 2)
     {
-        fprintf(stderr,"usage: %s <output_file>\n",argv[0]);
+        fprintf(stderr,"usage: %s <output_file/name>\n",argv[0]);
         return EXIT_FAILURE;
     }
 
     io_init();
-    randgen_init_from_time();
+    itime = randgen_init_from_time();
     randgen_get_state(state);
-    randgen_save_state(OUTF_NAME,'w',state,"");
+    sprintf(latan_path,"%s%c%d",OUTF_NAME,LATAN_PATH_SEP,itime);
+    randgen_save_state(latan_path,'w',state);
     io_finish();
-    
+
     return EXIT_SUCCESS;
 }

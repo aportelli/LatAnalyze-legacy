@@ -62,7 +62,6 @@ const strbuf xml_mark[NXML_MARK] =
     "string", \
     "vect",   \
     "mat",    \
-    "prop",   \
     "rgstate",\
     "sample"  \
 };
@@ -198,7 +197,7 @@ latan_errno xml_get_mat_size(size_t s[2], xmlNode *node)
             if ((s[0] != 0)&&(buf != s[0]))
             {
                 strbuf errmsg;
-                sprintf(errmsg,"reading matrix with variable column dimension (%s:%u)",\
+                sprintf(errmsg,"matrix with variable column dimension (%s:%u)",\
                         node->doc->URL,node->line);
                 LATAN_ERROR(errmsg,LATAN_EBADLEN);
             }
@@ -208,30 +207,6 @@ latan_errno xml_get_mat_size(size_t s[2], xmlNode *node)
     }
 
     return LATAN_SUCCESS;
-}
-
-latan_errno xml_get_prop(mat *prop, xmlNode *node)
-{
-    latan_errno status;
-
-    IF_GOT_LATAN_MARK_ELSE_ERROR(node,i_prop)
-    {
-        status = xml_get_vect(prop,node->children);
-    }
-
-    return status;
-}
-
-latan_errno xml_get_prop_nt(size_t *nt, xmlNode *node)
-{
-    latan_errno status;
-
-    IF_GOT_LATAN_MARK_ELSE_ERROR(node,i_prop)
-    {
-        status = xml_get_vect_size(nt,node->children);
-    }
-
-    return status;
 }
 
 latan_errno xml_get_rgstate(rg_state state, xmlNode *node)
@@ -260,7 +235,6 @@ latan_errno xml_get_sample(rs_sample *s, xmlNode *node)
     xmlNode *scur;
     size_t i;
     latan_errno status;
-    mat *pt;
 
     i      = 0;
     status = LATAN_SUCCESS;
@@ -268,12 +242,10 @@ latan_errno xml_get_sample(rs_sample *s, xmlNode *node)
     IF_GOT_LATAN_MARK_ELSE_ERROR(node,i_sample)
     {
         scur = node->children;
-        pt   = rs_sample_pt_cent_val(s);
-        USTAT(xml_get_vect(pt,scur));
+        USTAT(xml_get_mat(rs_sample_pt_cent_val(s),scur));
         for (scur=scur->next;scur!=NULL;scur=scur->next)
         {
-            pt = rs_sample_pt_sample(s,i);
-            USTAT(xml_get_vect(pt,scur));
+            USTAT(xml_get_mat(rs_sample_pt_sample(s,i),scur));
             i++;
         }
     }
@@ -291,7 +263,7 @@ latan_errno xml_get_sample_nsample(size_t *nsample, xmlNode *node)
     {
         for (scur=node->children;scur!=NULL;scur=scur->next)
         {
-            IF_GOT_LATAN_MARK_ELSE_ERROR(scur,i_vect)
+            IF_GOT_LATAN_MARK_ELSE_ERROR(scur,i_mat)
             {
                 (*nsample)++;
             }
@@ -302,26 +274,27 @@ latan_errno xml_get_sample_nsample(size_t *nsample, xmlNode *node)
     return LATAN_SUCCESS;
 }
 
-latan_errno xml_get_sample_nrow(size_t *nr, xmlNode *node)
+latan_errno xml_get_sample_size(size_t s[2], xmlNode *node)
 {
     xmlNode *scur;
-    size_t buf;
+    size_t buf[2];
 
-    buf = 0;
-
+    s[0] = 0;
+    s[1] = 0;
     IF_GOT_LATAN_MARK_ELSE_ERROR(node,i_sample)
     {
         for (scur=node->children;scur!=NULL;scur=scur->next)
         {
-            xml_get_vect_size(&buf,scur);
-            if ((*nr != 0)&&(*nr != buf))
+            xml_get_mat_size(buf,scur);
+            if ((s[0] != 0)&&(s[1] != 0)&&((s[0] != buf[0])||(s[1] != buf[1])))
             {
                 strbuf errmsg;
                 sprintf(errmsg,"reading samples with variable length (%s:%u)",\
                         node->doc->URL,node->line);
                 LATAN_ERROR(errmsg,LATAN_EBADLEN);
             }
-            *nr = buf;
+            s[0] = buf[0];
+            s[1] = buf[1];
         }
     }
 
@@ -420,35 +393,6 @@ xmlNode * xml_insert_mat(xmlNode *parent, const mat *m, const strbuf name)
     return node_new;
 }
 
-xmlNode * xml_insert_prop(xmlNode *parent, mat *prop,            \
-                          const strbuf ch, const quark_no q1,    \
-                          const quark_no q2, const ss_no source, \
-                          const ss_no sink, const strbuf name)
-{
-    xmlNode *node_new;
-    strbuf q1_id,q2_id,source_id,sink_id;
-
-    
-    node_new = xmlNewChild(parent,NULL,(const xmlChar *)xml_mark[i_prop],\
-                           (const xmlChar *)"");
-    xml_insert_vect(node_new,prop,"");
-    sprintf(q1_id,"%d",q1);
-    sprintf(q2_id,"%d",q2);
-    ss_id_get(source_id,source);
-    ss_id_get(sink_id,sink);
-    xmlNewProp(node_new,(const xmlChar *)"channel",(const xmlChar *)ch);
-    xmlNewProp(node_new,(const xmlChar *)"mass1",(const xmlChar *)q1_id);
-    xmlNewProp(node_new,(const xmlChar *)"mass2",(const xmlChar *)q2_id);
-    xmlNewProp(node_new,(const xmlChar *)"source",(const xmlChar *)source_id);
-    xmlNewProp(node_new,(const xmlChar *)"sink",(const xmlChar *)sink_id);
-    if (strlen(name) > 0)
-    {
-        xmlNewProp(node_new,(const xmlChar *)"name",(const xmlChar *)name);
-    }
-    
-    return node_new;
-}
-
 xmlNode * xml_insert_rgstate(xmlNode *parent, const rg_state state,\
                              const strbuf name)
 {
@@ -480,11 +424,11 @@ xmlNode * xml_insert_sample(xmlNode *parent, const rs_sample *s,\
 
     node_new = xmlNewChild(parent,NULL,(const xmlChar *)xml_mark[i_sample],\
                            (const xmlChar *)"");
-    xml_insert_vect(node_new,rs_sample_pt_cent_val(s),"central");
+    xml_insert_mat(node_new,rs_sample_pt_cent_val(s),"central");
     for (i=0;i<nsample;i++)
     {
         sprintf(buf,"sample%lu",(unsigned long)i);
-        xml_insert_vect(node_new,rs_sample_pt_sample(s,i),buf);
+        xml_insert_mat(node_new,rs_sample_pt_sample(s,i),buf);
     }
     if (strlen(name) > 0)
     {
@@ -630,22 +574,20 @@ xml_file * xml_open_file(const strbuf fname, const char mode)
 
 latan_errno xml_save_file(xml_file *f)
 {
+    FILE *test_f;
     xmlDoc *doc;
     int blank_bak,size;
     char *buf;
 
     buf = NULL;
     
-    if (strlen(f->fname) == 0)
-    {
-        LATAN_ERROR("XML file name empty",LATAN_EINVAL);
-    }
-
     xmlReconciliateNs(f->doc,f->root);
     blank_bak = xmlKeepBlanksDefault(0);
     xmlDocDumpFormatMemoryEnc(f->doc,(xmlChar **)(&buf),&size,LATAN_XML_ENC,0);
     doc = xmlReadMemory(buf,size,NULL,LATAN_XML_ENC,\
                         XML_PARSE_NOBLANKS);
+    FOPEN(test_f,f->fname,"a");
+    fclose(test_f);
     xmlSaveFormatFileEnc(f->fname,doc,LATAN_XML_ENC,1);
     xmlKeepBlanksDefault(blank_bak);
 

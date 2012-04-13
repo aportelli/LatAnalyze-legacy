@@ -15,7 +15,6 @@ liblatan_la_SOURCES =       \
 	latan_error.c           \
 	latan_fit.c             \
 	latan_globals.c         \
-	latan_hadron.c          \
 	latan_includes.h        \
 	latan_io.c              \
 	latan_io_ascii.h        \
@@ -45,7 +44,6 @@ liblatan_la_HEADERS =       \
 	latan_error.h           \
 	latan_fit.h             \
 	latan_globals.h         \
-	latan_hadron.h          \
 	latan_io.h              \
 	latan_mass.h            \
 	latan_mat.h             \

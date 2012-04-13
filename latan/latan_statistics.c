@@ -445,7 +445,8 @@ size_t jackknife_nsample(const size_t ndat, const size_t jk_depth)
 }
 
 /** allocation **/
-rs_sample *rs_sample_create(const size_t init_nrow, const size_t nsample)
+rs_sample *rs_sample_create(const size_t init_nrow, const size_t init_ncol,\
+                            const size_t nsample)
 {
     rs_sample *s;
 
@@ -453,7 +454,7 @@ rs_sample *rs_sample_create(const size_t init_nrow, const size_t nsample)
 
     s->nsample = nsample;
 
-    s->cent_val = mat_create(init_nrow,1);
+    s->cent_val = mat_create(init_nrow,init_ncol);
     s->sample   = mat_ar_create_from_dim(s->nsample,s->cent_val);
 
     return s;
@@ -477,11 +478,6 @@ size_t rs_sample_get_nsample(const rs_sample *s)
     return s->nsample;
 }
 
-void rs_sample_get_name(strbuf name, const rs_sample *s)
-{
-    strbufcpy(name,s->name);
-}
-
 mat *rs_sample_pt_cent_val(const rs_sample *s)
 {
     return s->cent_val;
@@ -492,13 +488,9 @@ mat *rs_sample_pt_sample(const rs_sample *s, const size_t i)
     return (s->sample)[i];
 }
 
-void rs_sample_set_name(rs_sample *s, const strbuf name)
-{
-    strbufcpy(s->name,name);
-}
-
 latan_errno rs_sample_get_subsamp(rs_sample *s_a, const rs_sample *s_b,\
-                                  const size_t k1, const size_t k2)
+                                  const size_t k1, const size_t l1,    \
+                                  const size_t k2, const size_t l2)
 {
     latan_errno status;
     size_t nsample;
@@ -513,17 +505,18 @@ latan_errno rs_sample_get_subsamp(rs_sample *s_a, const rs_sample *s_b,\
     status  = LATAN_SUCCESS;
     nsample = s_a->nsample;
     
-    USTAT(mat_get_subm(s_a->cent_val,s_b->cent_val,k1,0,k2,0));
+    USTAT(mat_get_subm(s_a->cent_val,s_b->cent_val,k1,l1,k2,l2));
     for (i=0;i<nsample;i++)
     {
-        USTAT(mat_get_subm(s_a->sample[i],s_b->sample[i],k1,0,k2,0));
+        USTAT(mat_get_subm(s_a->sample[i],s_b->sample[i],k1,l1,k2,l2));
     }
     
     return status;
 }
 
 latan_errno rs_sample_set_subsamp(rs_sample *s_a, const rs_sample *s_b,\
-                                  const size_t k1, const size_t k2)
+                                  const size_t k1, const size_t l1,    \
+                                  const size_t k2, const size_t l2)
 {
     latan_errno status;
     size_t nsample;
@@ -538,10 +531,10 @@ latan_errno rs_sample_set_subsamp(rs_sample *s_a, const rs_sample *s_b,\
     status  = LATAN_SUCCESS;
     nsample = s_a->nsample;
     
-    USTAT(mat_set_subm(s_a->cent_val,s_b->cent_val,k1,0,k2,0));
+    USTAT(mat_set_subm(s_a->cent_val,s_b->cent_val,k1,l1,k2,l2));
     for (i=0;i<nsample;i++)
     {
-        USTAT(mat_set_subm(s_a->sample[i],s_b->sample[i],k1,0,k2,0));
+        USTAT(mat_set_subm(s_a->sample[i],s_b->sample[i],k1,l1,k2,l2));
     }
     
     return status;
@@ -618,7 +611,6 @@ latan_errno resample(rs_sample *s, mat **dat, const size_t ndat, rs_func *f, \
     /** bootstrap **/
     if (resamp_method == 0)
     {
-        randgen_get_state(s->gen_state);
         status = resample_bootstrap(s->cent_val,s->sample,s->nsample,dat,ndat,\
                                     f,param);
     }

@@ -102,7 +102,7 @@ LATAN_ERROR_VAL(reason,no,NULL)
 ((a) != LATAN_SUCCESS ? (a) : LATAN_ERROR_SELECT_4(b,c,d,e))
 #define LATAN_UPDATE_STATUS(status,instruction)\
 {\
-    int _cstat;\
+    latan_errno _cstat;\
     _cstat = instruction;\
     status = LATAN_ERROR_SELECT_2(status,_cstat);\
 }

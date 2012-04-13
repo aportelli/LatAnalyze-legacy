@@ -8,13 +8,15 @@
 #error BINOPS macro must be defined to compile this program (use -DBINOPS=<op> option)
 #endif
 
+#define STRINGIFY(x) #x
+
 int main(int argc, char *argv[])
 {
     rs_sample *s1,*res;
     int i,j;
     io_fmt_no fmt;
     double d;
-    size_t s1_nrow,s1_nsample;
+    size_t s1_dim[2],s1_nsample;
     mat *sig;
     bool do_save_res,show_usage;
     strbuf res_name,inf_name,outf_name;
@@ -108,17 +110,16 @@ int main(int argc, char *argv[])
     io_init();
 
     /* getting sizes */
-    rs_sample_load_nrow(&s1_nrow,inf_name,"");
-    rs_sample_load_nsample(&s1_nsample,inf_name,"");
+    rs_sample_load(NULL,&s1_nsample,s1_dim,inf_name);
 
     /* allocation */
-    s1 = rs_sample_create(s1_nrow,s1_nsample);
-    res = rs_sample_create(s1_nrow,s1_nsample);
-    sig = mat_create(s1_nrow,1);
+    s1  = rs_sample_create(s1_dim[0],s1_dim[1],s1_nsample);
+    res = rs_sample_create(s1_dim[0],s1_dim[1],s1_nsample);
+    sig = mat_create(s1_dim[0],s1_dim[1]);
 
     /* loading samples */
     printf("-- loading sample from %s...\n",inf_name);
-    rs_sample_load(s1,inf_name,"");
+    rs_sample_load(s1,NULL,NULL,inf_name);
 
     /* multiplying samples */
     printf("-- executing operation on sample...\n");
@@ -133,8 +134,9 @@ int main(int argc, char *argv[])
     mat_print(sig,"%e");
     if (do_save_res)
     {
-        rs_sample_set_name(res,res_name);
-        rs_sample_save(outf_name,'w',res);
+        sprintf(res_name,"%s%c%s_%s_%e",outf_name,LATAN_PATH_SEP,"",\
+                STRINGIFY(BINOPS),d);
+        rs_sample_save(res_name,'w',res);
     }
 
     /* desallocation */

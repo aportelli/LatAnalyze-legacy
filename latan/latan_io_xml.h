@@ -21,7 +21,6 @@
 #define	LATAN_IO_XML_H_
 
 #include <latan/latan_globals.h>
-#include <latan/latan_hadron.h>
 #include <latan/latan_mat.h>
 #include <latan/latan_statistics.h>
 
@@ -34,22 +33,8 @@ latan_errno mat_save_xml(const strbuf fname, const char mode, const mat *m,\
                          const strbuf name);
 latan_errno mat_load_dim_xml(size_t dim[2], const strbuf fname,\
                              const strbuf name);
-latan_errno mat_load_xml(mat *m, const strbuf fname, const strbuf name);
-
-/* propagator I/O */
-latan_errno prop_load_nt_xml(size_t *nt, const channel_no channel,\
-                             const quark_no q1, const quark_no q2,\
-                             const ss_no source, const ss_no sink,\
-                             strbuf fname);
-latan_errno prop_load_xml(mat *prop, const channel_no channel, \
-                          const quark_no q1, const quark_no q2,\
-                          const ss_no source, const ss_no sink,\
-                          strbuf fname);
-latan_errno prop_save_xml(strbuf fname, const char mode, mat *prop, \
-                          const strbuf channel,                     \
-                          const quark_no q1, const quark_no q2,     \
-                          const ss_no source, const ss_no sink,     \
-                          const strbuf name);
+latan_errno mat_load_xml(mat *m, size_t *dim, const strbuf fname,\
+                         const strbuf name);
 
 /* random generator state I/O */
 latan_errno randgen_save_state_xml(const strbuf f_name, const char mode,
@@ -59,13 +44,8 @@ latan_errno randgen_load_state_xml(rg_state state, const strbuf f_name,\
 
 /* resampled sample I/O */
 latan_errno rs_sample_save_xml(const strbuf fname, const char mode,\
-                               const rs_sample *s);
-latan_errno rs_sample_load_nrow_xml(size_t *nr, const strbuf fname,\
-                                    const strbuf name);
-latan_errno rs_sample_load_nsample_xml(size_t *nsample, const strbuf fname,\
-                                       const strbuf name);
-latan_errno rs_sample_load_xml(rs_sample *s, const strbuf fname,\
-                               const strbuf name);
+                               const rs_sample *s, const strbuf name);
+latan_errno rs_sample_load_xml(rs_sample *s, size_t *nsample, size_t *dim,\
+                               const strbuf fname, const strbuf name);
 
 #endif
-

@@ -7,7 +7,7 @@
 int main(int argc, char *argv[])
 {
     rs_sample *s1;
-    size_t s1_nrow,s1_nsample;
+    size_t s1_dim[2],s1_nsample;
     int i,j;
     mat *sig;
     bool show_usage;
@@ -80,16 +80,15 @@ int main(int argc, char *argv[])
     io_init();
     
     /* getting sizes */
-    rs_sample_load_nrow(&s1_nrow,inf_name,"");
-    rs_sample_load_nsample(&s1_nsample,inf_name,"");
+    rs_sample_load(NULL,&s1_nsample,s1_dim,inf_name);
     
     /* allocation */
-    s1  = rs_sample_create(s1_nrow,s1_nsample);
-    sig = mat_create(s1_nrow,1);
+    s1  = rs_sample_create(s1_dim[0],s1_dim[1],s1_nsample);
+    sig = mat_create(s1_dim[0],s1_dim[1]);
     
     /* loading samples */
     printf("-- loading sample from %s...\n",inf_name);
-    rs_sample_load(s1,inf_name,"");
+    rs_sample_load(s1,NULL,NULL,inf_name);
     
     /* result output */
     rs_sample_varp(sig,s1);

@@ -72,31 +72,30 @@ latan_errno histogram(mat *hist, const mat *data, const mat* w,\
 /* resampled sample type */
 typedef struct
 {
-    strbuf name;
     mat *cent_val;
     mat **sample;
     size_t nsample;
-    rg_state gen_state;
 } rs_sample;
 
 /** jackknife sample number calculation **/
 size_t jackknife_nsample(const size_t ndat, const size_t jk_depth);
 
 /** allocation **/
-rs_sample *rs_sample_create(const size_t init_nrow, const size_t nsample);
+rs_sample *rs_sample_create(const size_t init_nrow, const size_t init_ncol,\
+                            const size_t nsample);
 void rs_sample_destroy(rs_sample *s);
 
 /** access **/
 size_t rs_sample_get_nrow(const rs_sample *s);
 size_t rs_sample_get_nsample(const rs_sample *s);
-void rs_sample_get_name(strbuf name, const rs_sample *s);
 mat *rs_sample_pt_cent_val(const rs_sample *s);
 mat *rs_sample_pt_sample(const rs_sample *s, const size_t i);
-void rs_sample_set_name(rs_sample *s, const strbuf name);
 latan_errno rs_sample_get_subsamp(rs_sample *s_a, const rs_sample *s_b,\
-                                  const size_t k1, const size_t k2);
+                                  const size_t k1, const size_t l1,    \
+                                  const size_t k2, const size_t l2);
 latan_errno rs_sample_set_subsamp(rs_sample *s_a, const rs_sample *s_b,\
-                                  const size_t k1, const size_t k2);
+                                  const size_t k1, const size_t l1,    \
+                                  const size_t k2, const size_t l2);
 
 /** estimators **/
 latan_errno rs_sample_cov(mat *cov, const rs_sample *s, const rs_sample *t);

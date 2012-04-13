@@ -58,8 +58,8 @@ int main(void)
         if (i == GENTEST_SAVE_STEP)
         {
             randgen_get_state(state);
-            randgen_save_state("ex_rand.seed",'w',state,"");
-            printf("generator state after step %d saved in ex_rand.rand\n",\
+            randgen_save_state("ex_rand.seed:ex_rand",'w',state);
+            printf("generator state after step %d saved in ex_rand.seed\n",\
                    GENTEST_SAVE_STEP-1);
         }
         randd = rand_u(0.0,1.0);
@@ -69,7 +69,7 @@ int main(void)
     randgen_init_from_time();
     randgen_get_state(state);
     printf("-- reloading state from ex_rand.seed...\n");
-    randgen_load_state(state,"ex_rand.seed","");
+    randgen_load_state(state,"ex_rand.seed:ex_rand");
     randgen_set_state(state);
     printf("-- generating a %d steps random sequence...\n",GENTEST_SEQ_LENGTH);
     for (i=0;i<GENTEST_SEQ_LENGTH;i++) 

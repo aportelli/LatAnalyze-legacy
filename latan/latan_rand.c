@@ -670,9 +670,15 @@ void randgen_init(int seed)
     rlxd_init(RLXD_LEVEL,seed);
 }
 
-void randgen_init_from_time(void)
+int randgen_init_from_time(void)
 {
-    randgen_init((int)time(NULL));
+    int itime;
+    
+    itime = (int)time(NULL);
+    
+    randgen_init(itime);
+    
+    return itime;
 }
 
 void randgen_get_state(rg_state state)

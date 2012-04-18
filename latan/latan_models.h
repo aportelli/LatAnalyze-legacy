@@ -29,9 +29,11 @@ extern fit_model fm_const;
 
 /** exponential decay **/
 extern fit_model fm_expdec;
+extern fit_model fm_dbl_expdec;
 
 /** hyperbolic cosine **/
 extern fit_model fm_cosh;
+extern fit_model fm_dbl_cosh;
 
 /* 2D models */
 

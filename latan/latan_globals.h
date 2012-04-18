@@ -62,10 +62,6 @@ __END_DECLS
 #define DEBUG1 2
 #define DEBUG2 3
 
-/* parity flags */
-#define EVEN 0
-#define ODD 1
-
 /* size_t type */
 #include <sys/types.h>
 

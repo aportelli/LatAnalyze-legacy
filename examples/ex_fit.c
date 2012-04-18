@@ -56,7 +56,7 @@ int main(void)
     
     randgen_init_from_time();
     mat_set(real_param,0,0,0.5);
-    mat_set(real_param,1,0,5.0);
+    mat_set(real_param,1,0,log(5.0));
     mat_cst(var,SQ(ERR));
     fit_data_set_model(d,&fm_expdec,NULL);
     fit_data_set_y_covar(d,0,0,var);
@@ -81,7 +81,7 @@ int main(void)
         printf("\nfit parameters=\n");
         mat_print(fit_param,"%f");
         printf("\nchi2/dof= %e\n",fit_data_get_chi2pdof(d));
-        sprintf(plotcmd,"%e*exp(-%e*x)",mat_get(fit_param,1,0),\
+        sprintf(plotcmd,"%e*exp(-%e*x)",exp(mat_get(fit_param,1,0)),\
                 mat_get(fit_param,0,0));
         plot_add_plot(p,plotcmd);
     }

@@ -58,7 +58,7 @@
 #define BEGIN_FOR_LINE(str,f_name,lc)\
 {\
     FILE* _f;\
-    _f = fopen(f_name,"r");\
+    FOPEN_NOERRET(_f,f_name,"r");\
     BEGIN_FOR_LINE_F(str,_f,lc)\
     {
 
@@ -85,9 +85,12 @@
             _line_ptr = strtok_r(NULL,tok,&_save_ptr);\
             nf++;\
         }\
-        _save_ptr = NULL;
+        _save_ptr = NULL;\
+        if (nf > 0)\
+        {\
 
 #define END_FOR_LINE_TOK_F(field)\
+        }\
     }\
     END_FOR_LINE_F;\
     FREE(field);\
@@ -96,7 +99,7 @@
 #define BEGIN_FOR_LINE_TOK(field,f_name,tok,nf,lc)\
 {\
     FILE* _f;\
-    _f = fopen(f_name,"r");\
+    FOPEN_NOERRET(_f,f_name,"r");\
     BEGIN_FOR_LINE_TOK_F(field,_f,tok,nf,lc)\
     {
 

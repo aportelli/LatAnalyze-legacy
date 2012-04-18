@@ -22,14 +22,20 @@
 #ifndef LATAN_COMMENT
 #define LATAN_COMMENT "#L"
 #endif
+#ifndef LATAN_BEGIN
+#define LATAN_BEGIN "latan_begin"
+#endif
+#ifndef LATAN_END
+#define LATAN_END "latan_end"
+#endif
 #ifndef LATAN_MAT
-#define LATAN_MAT "latan_mat"
+#define LATAN_MAT "mat"
 #endif
 #ifndef LATAN_RG_STATE
-#define LATAN_RG_STATE "latan_rg_state"
+#define LATAN_RG_STATE "rg_state"
 #endif
 #ifndef LATAN_RS_SAMPLE
-#define LATAN_RS_SAMPLE "latan_rs_sample"
+#define LATAN_RS_SAMPLE "rs_sample"
 #endif
 
 #include <latan/latan_io_ascii.h>
@@ -125,7 +131,7 @@ static latan_errno ascii_open_file_buf(const strbuf fname, const char mode)
             strbufcpy(FILE_NAME(thread),fname);
             FILE_MODE(thread) = mode;
         }
-        else
+        else if (mode == 'r')
         {
             rewind(FILE_BUF(thread));
         }
@@ -178,6 +184,43 @@ void io_finish_ascii(void)
     FREE(env.file_is_loaded);
 }
 
+/*                   parsing kernel declarations                            */
+/****************************************************************************/
+typedef struct mat_ker_state_s
+{
+    int j,nr,nc;
+    bool got_ncol;
+} mat_ker_state;
+
+typedef struct rs_sample_ker_state_s
+{
+    int ns,i;
+    bool got_ns;
+    strbuf read_name,sname;
+    mat *pt;
+    mat_ker_state sampks;
+} rs_sample_ker_state;
+
+static latan_errno mat_load_ascii_ker(mat *m, size_t *dim, const strbuf fname,\
+                                      const strbuf name, strbuf *field,       \
+                                      const size_t nf, const int lc,          \
+                                      bool *is_inmat, bool *is_end,           \
+                                      mat_ker_state *ks);
+static latan_errno randgen_load_state_ascii_ker(rg_state state,                \
+                                                const strbuf fname,            \
+                                                const strbuf name,             \
+                                                strbuf *field, const size_t nf,\
+                                                const int lc, bool *is_inrgs,  \
+                                                bool *is_end,                  \
+                                                int *j);
+static latan_errno rs_sample_load_ascii_ker(rs_sample *s, size_t *nsample,    \
+                                            size_t *dim, const strbuf fname,  \
+                                            const strbuf name, strbuf *field, \
+                                            const size_t nf, const int lc,    \
+                                            bool *is_inrss, bool *is_end,     \
+                                            bool *is_insamp, bool *is_sampend,\
+                                            rs_sample_ker_state *ks);
+
 /*                             mat I/O                                      */
 /****************************************************************************/
 latan_errno mat_save_ascii(const strbuf fname, const char mode, const mat *m,\
@@ -199,10 +242,11 @@ latan_errno mat_save_ascii(const strbuf fname, const char mode, const mat *m,\
     {
         LATAN_ERROR("unknown or read-only file mode",LATAN_EINVAL);
     }
-    fprintf(FILE_BUF(thread),"%s %s %s\n",LATAN_COMMENT,LATAN_MAT,name);
+    fprintf(FILE_BUF(thread),"%s %s %s %s\n",LATAN_COMMENT,LATAN_BEGIN,\
+            LATAN_MAT,name);
     fprintf(FILE_BUF(thread),"%lu\n",(long unsigned int)ncol(m));
     mat_dump(FILE_BUF(thread),m,"% .15e");
-    fprintf(FILE_BUF(thread),"\n");
+    fprintf(FILE_BUF(thread),"%s %s %s\n",LATAN_COMMENT,LATAN_END,LATAN_MAT);
     
     return LATAN_SUCCESS;
 }
@@ -210,101 +254,34 @@ latan_errno mat_save_ascii(const strbuf fname, const char mode, const mat *m,\
 latan_errno mat_load_ascii(mat *m, size_t *dim, const strbuf fname,\
                            const strbuf name)
 {
-    int thread,nf,lc,nc,nr;
-    int i,j;
+    latan_errno status;
+    int thread,nf,lc;
     strbuf *field;
-    double dbuf;
-    bool got_ncol,is_inmat;
+    bool is_inmat,is_end;
+    mat_ker_state ks;
     
 #ifdef _OPENMP
     thread = omp_get_thread_num();
 #else
     thread = 0;
 #endif
+    status   = LATAN_SUCCESS;
     field    = NULL;
-    nc       = 0;
-    j        = 0;
-    got_ncol = false;
     is_inmat = false;
+    is_end   = false;
     
     ascii_open_file_buf(fname,'r');
     BEGIN_FOR_LINE_TOK_F(field,FILE_BUF(thread)," ",nf,lc)
     {
-        if ((nf >= 3)&&!is_inmat)
+        USTAT(mat_load_ascii_ker(m,dim,fname,name,field,nf,lc,&is_inmat,\
+                                 &is_end,&ks));
+        if (is_end)
         {
-            is_inmat  = true;
-            is_inmat  = is_inmat && (strbufcmp(field[0],LATAN_COMMENT) == 0);
-            is_inmat  = is_inmat && (strbufcmp(field[1],LATAN_MAT) == 0);
-            if (strlen(name) != 0)
-            {
-                is_inmat  = is_inmat && (strbufcmp(field[2],name) == 0);
-            }
-        }
-        else if (nf > 0)
-        {
-            if (strbufcmp(field[0],LATAN_COMMENT) == 0)
-            {
-                break;
-            }
-            else if (field[0][0] == '#')
-            {
-                continue;
-            }
-            else if (!got_ncol)
-            {
-                if (sscanf(field[0],"%d",&nc) > 0)
-                {
-                    if (m)
-                    {
-                        if (ncol(m) != (size_t)(nc))
-                        {
-                            LATAN_ERROR("column number mismatch",LATAN_EBADLEN);
-                        }
-                    }
-                    if (dim)
-                    {
-                        dim[1]   = (size_t)(nc);
-                    }
-                    got_ncol = true;
-                }
-                else
-                {
-                    strbuf errmsg;
-                    sprintf(errmsg,"error while reading column number (%s:%d)",\
-                            fname,lc);
-                    LATAN_ERROR(errmsg,LATAN_ELATSYN);
-                }
-            }
-            else
-            {
-                for (i=0;i<nf;i++)
-                {
-                    if (sscanf(field[i],"%lf",&dbuf) > 0)
-                    {
-                        if (m)
-                        {
-                            if (j >= (int)nel(m))
-                            {
-                                LATAN_ERROR("row number mismatch",\
-                                            LATAN_EBADLEN);
-                            }
-                            mat_set(m,(size_t)(j/nc),(size_t)(j%nc),dbuf);
-                        }
-                        j++;
-                    }
-                    else
-                    {
-                        strbuf errmsg;
-                        sprintf(errmsg,"impossible to read matrix element (%s:%d)",\
-                                fname,lc);
-                        LATAN_ERROR(errmsg,LATAN_ELATSYN);
-                    }
-                }
-            }
+            break;
         }
     }
     END_FOR_LINE_TOK_F(field);
-    if (!is_inmat)
+    if (!is_end)
     {
         strbuf errmsg,buf;
         
@@ -316,32 +293,20 @@ latan_errno mat_load_ascii(mat *m, size_t *dim, const strbuf fname,\
         {
             sprintf(buf,"\"%s\"",name);
         }
-        sprintf(errmsg,"matrix (name= %s) not found in file %s",buf,fname);
-        LATAN_ERROR(errmsg,LATAN_EINVAL);
-    }
-    if (j%nc != 0)
-    {
-        strbuf errmsg;
-        sprintf(errmsg,"matrix parsing unexpected end (%s:%d)",fname,lc);
-        LATAN_ERROR(errmsg,LATAN_ELATSYN);
-    }
-    else
-    {
-        nr = j/nc;
-        if (m)
+        if (is_inmat)
         {
-            if (nrow(m) != (size_t)(nr))
-            {
-                LATAN_ERROR("row number mismatch",LATAN_EBADLEN);
-            }
+            sprintf(errmsg,"unexpected EOF in %s while reading matrix (name= %s)",\
+                    fname,buf);
+            LATAN_ERROR(errmsg,LATAN_ELATSYN);
         }
-        if (dim)
+        else
         {
-            dim[0]   = (size_t)(nr);
+            sprintf(errmsg,"matrix (name= %s) not found in file %s",buf,fname);
+            LATAN_ERROR(errmsg,LATAN_EINVAL);
         }
     }
     
-    return LATAN_SUCCESS;
+    return status;
 }
 
 /*                      random generator state I/O                          */
@@ -366,12 +331,14 @@ latan_errno randgen_save_state_ascii(const strbuf fname, const char mode,   \
     {
         LATAN_ERROR("unknown or read-only file mode",LATAN_EINVAL);
     }
-    fprintf(FILE_BUF(thread),"%s %s %s\n",LATAN_COMMENT,LATAN_RG_STATE,name);
+    fprintf(FILE_BUF(thread),"%s %s %s %s\n",LATAN_COMMENT,LATAN_BEGIN,\
+            LATAN_RG_STATE,name);
     for (i=0;i<RLXG_STATE_SIZE;i++)
     {
         fprintf(FILE_BUF(thread),"%d\n",state[i]);
     }
-    fprintf(FILE_BUF(thread),"\n");
+    fprintf(FILE_BUF(thread),"%s %s %s\n",LATAN_COMMENT,LATAN_END,\
+           LATAN_RG_STATE);
     
     return LATAN_SUCCESS;
 }
@@ -379,68 +346,35 @@ latan_errno randgen_save_state_ascii(const strbuf fname, const char mode,   \
 latan_errno randgen_load_state_ascii(rg_state state, const strbuf fname,\
                                      const strbuf name)
 {
+    latan_errno status;
     int thread,nf,lc;
-    int i,j;
     strbuf *field;
-    bool is_inrgs;
+    bool is_inrgs,is_end;
+    int j;
 
 #ifdef _OPENMP
     thread = omp_get_thread_num();
 #else
     thread = 0;
 #endif
+    status   = LATAN_SUCCESS;
     field    = NULL;
-    j        = 0;
     is_inrgs = false;
+    is_end   = false;
+    j        = 0;
 
     ascii_open_file_buf(fname,'r');
     BEGIN_FOR_LINE_TOK_F(field,FILE_BUF(thread)," ",nf,lc)
     {
-        if ((nf >= 3)&&!is_inrgs)
+        USTAT(randgen_load_state_ascii_ker(state,fname,name,field,nf,lc,\
+                                           &is_inrgs,&is_end,&j));
+        if (is_end)
         {
-            is_inrgs = true;
-            is_inrgs = is_inrgs&&(strbufcmp(field[0],LATAN_COMMENT) == 0);
-            is_inrgs = is_inrgs&&(strbufcmp(field[1],LATAN_RG_STATE) == 0);
-            if (strlen(name) != 0)
-            {
-                is_inrgs = is_inrgs&&(strbufcmp(field[2],name) == 0);
-            }
-        }
-        else if (nf > 0)
-        {
-            if (strbufcmp(field[0],LATAN_COMMENT) == 0)
-            {
-                break;
-            }
-            else if (field[0][0] == '#')
-            {
-                continue;
-            }
-            else
-            {
-                for (i=0;i<nf;i++)
-                {
-                    if (sscanf(field[i],"%d",state+j) > 0)
-                    {
-                        j++;
-                        if (j == RLXG_STATE_SIZE)
-                        {
-                            break;
-                        }
-                    }
-                    else
-                    {
-                        strbuf errmsg;
-                        sprintf(errmsg,"impossible to read random generator state element (%s:%d)",\
-                                fname,lc);
-                        LATAN_ERROR(errmsg,LATAN_ELATSYN);
-                    }
-                }
-            }
+            break;
         }
     }
     END_FOR_LINE_TOK_F(field);
-    if (!is_inrgs)
+    if (!is_end)
     {
         strbuf errmsg,buf;
         
@@ -452,20 +386,23 @@ latan_errno randgen_load_state_ascii(rg_state state, const strbuf fname,\
         {
             sprintf(buf,"\"%s\"",name);
         }
-        sprintf(errmsg,"random generator state (name= %s) not found in file %s",\
-                buf,fname);
-        LATAN_ERROR(errmsg,LATAN_EINVAL);
-    }
-    if (j != RLXG_STATE_SIZE)
-    {
-        strbuf errmsg;
-        sprintf(errmsg,"random generator state parsing unexpected end (%s:%d)",\
-                fname,lc);
-        LATAN_ERROR(errmsg,LATAN_ELATSYN);
+        if (is_inrgs)
+        {
+            sprintf(errmsg,"unexpected EOF in %s while reading random generator state (name= %s)",\
+                    fname,buf);
+            LATAN_ERROR(errmsg,LATAN_ELATSYN);
+        }
+        else
+        {
+            sprintf(errmsg,"random generator state (name= %s) not found in file %s",\
+                    buf,fname);
+            LATAN_ERROR(errmsg,LATAN_EINVAL);
+        }
     }
     
-    return LATAN_SUCCESS;
+    return status;
 }
+
 /*                          resampled sample I/O                            */
 /****************************************************************************/
 latan_errno rs_sample_save_ascii(const strbuf fname, const char mode,\
@@ -493,7 +430,8 @@ latan_errno rs_sample_save_ascii(const strbuf fname, const char mode,\
     {
         LATAN_ERROR("unknown or read-only file mode",LATAN_EINVAL);
     }
-    fprintf(FILE_BUF(thread),"%s %s %s\n",LATAN_COMMENT,LATAN_RS_SAMPLE,name);
+    fprintf(FILE_BUF(thread),"%s %s %s %s\n",LATAN_COMMENT,LATAN_BEGIN,\
+            LATAN_RS_SAMPLE,name);
     fprintf(FILE_BUF(thread),"%lu\n",(long unsigned int)nsample);
     sprintf(sname,"%s_C",name);
     USTAT(mat_save_ascii(fname,'a',rs_sample_pt_cent_val(s),sname));
@@ -502,6 +440,8 @@ latan_errno rs_sample_save_ascii(const strbuf fname, const char mode,\
         sprintf(sname,"%s_S_%lu",name,(long unsigned int)(i));
         USTAT(mat_save_ascii(fname,'a',rs_sample_pt_sample(s,i),sname));
     }
+    fprintf(FILE_BUF(thread),"%s %s %s\n",LATAN_COMMENT,LATAN_END,\
+            LATAN_RS_SAMPLE);
     
     return status;
 }
@@ -510,71 +450,36 @@ latan_errno rs_sample_load_ascii(rs_sample *s, size_t *nsample, size_t *dim,\
                                  const strbuf fname, const strbuf name)
 {
     latan_errno status;
-    int thread,nf,ns,lc;
-    size_t cvdim[2];
-    size_t i;
-    strbuf *field,read_name,sname;
-    bool is_inrss;
+    int thread,nf,lc;
+    strbuf *field;
+    bool is_inrss,is_end,is_insamp,is_sampend;
+    rs_sample_ker_state ks;
 
 #ifdef _OPENMP
     thread = omp_get_thread_num();
 #else
     thread = 0;
 #endif
-    status   = LATAN_SUCCESS;
-    field    = NULL;
-    is_inrss = false;
+    status     = LATAN_SUCCESS;
+    field      = NULL;
+    is_inrss   = false;
+    is_end     = false;
+    is_insamp  = false;
+    is_sampend = false;
 
     ascii_open_file_buf(fname,'r');
     BEGIN_FOR_LINE_TOK_F(field,FILE_BUF(thread)," ",nf,lc)
     {
-        if ((nf >= 3)&&!is_inrss)
+        USTAT(rs_sample_load_ascii_ker(s,nsample,dim,fname,name,field,nf,lc,\
+                                       &is_inrss,&is_end,&is_insamp,        \
+                                       &is_sampend,&ks));
+        if (is_end)
         {
-            is_inrss = true;
-            is_inrss = is_inrss&&(strbufcmp(field[0],LATAN_COMMENT) == 0);
-            is_inrss = is_inrss&&(strbufcmp(field[1],LATAN_RS_SAMPLE) == 0);
-            if (strlen(name))
-            {
-                is_inrss = is_inrss&&(strbufcmp(field[2],name) == 0);
-                strbufcpy(read_name,name);
-            }
-            else
-            {
-                strbufcpy(read_name,field[2]);
-            }
-        }
-        else if (nf > 0)
-        {
-            if (strbufcmp(field[0],LATAN_COMMENT) == 0)
-            {
-                strbuf errmsg;
-                sprintf(errmsg,"error while reading number of samples (%s:%d)",\
-                        fname,lc);
-                LATAN_ERROR(errmsg,LATAN_ELATSYN);
-            }
-            else if (field[0][0] == '#')
-            {
-                continue;
-            }
-            else if (sscanf(field[0],"%d",&ns) > 0)
-            {
-                if (nsample)
-                {
-                    *nsample = (size_t)(ns);
-                }
-                break;
-            }
-            else
-            {
-                strbuf errmsg;
-                sprintf(errmsg,"error while reading number of samples (%s:%d)",\
-                        fname,lc);
-                LATAN_ERROR(errmsg,LATAN_ELATSYN);
-            }
+            break;
         }
     }
     END_FOR_LINE_TOK_F(field);
-    if (!is_inrss)
+    if (!is_sampend)
     {
         strbuf errmsg,buf;
         
@@ -586,22 +491,366 @@ latan_errno rs_sample_load_ascii(rs_sample *s, size_t *nsample, size_t *dim,\
         {
             sprintf(buf,"\"%s\"",name);
         }
-        sprintf(errmsg,"resampled samples (name= %s) not found in file %s",\
-                buf,fname);
-        LATAN_ERROR(errmsg,LATAN_EINVAL);
+        if (is_insamp)
+        {
+            sprintf(errmsg,"unexpected EOF in %s while reading sample %d (name= %s)",\
+                    fname,ks.i,buf);
+            LATAN_ERROR(errmsg,LATAN_ELATSYN);
+        }
+        else
+        {
+            sprintf(errmsg,"sample %d (name= %s) not found in file %s",ks.i,\
+                    buf,fname);
+            LATAN_ERROR(errmsg,LATAN_EINVAL);
+        }
     }
-    sprintf(sname,"%s_C",read_name);
-    USTAT(mat_load_ascii(rs_sample_pt_cent_val(s),cvdim,fname,sname));
-    if (dim)
+    if (!is_end)
     {
-        dim[0] = cvdim[0];
-        dim[1] = cvdim[1];
+        strbuf errmsg,buf;
+        
+        if (strlen(name) == 0)
+        {
+            strcpy(buf,"<no_name>");
+        }
+        else
+        {
+            sprintf(buf,"\"%s\"",name);
+        }
+        if (is_inrss)
+        {
+            sprintf(errmsg,"unexpected EOF in %s while reading samples (name= %s)",\
+                    fname,buf);
+            LATAN_ERROR(errmsg,LATAN_ELATSYN);
+        }
+        else
+        {
+            sprintf(errmsg,"samples (name= %s) not found in file %s",buf,fname);
+            LATAN_ERROR(errmsg,LATAN_EINVAL);
+        }
     }
-    for (i=0;i<((size_t)ns);i++)
-    {
-        sprintf(sname,"%s_S_%lu",read_name,(long unsigned int)(i));
-        USTAT(mat_load_ascii(rs_sample_pt_sample(s,i),NULL,fname,sname));
-    }
+    
+    return status;
+}
 
+/*                        parsing kernels (internal)                        */
+/****************************************************************************/
+static latan_errno mat_load_ascii_ker(mat *m, size_t *dim, const strbuf fname,\
+                                      const strbuf name, strbuf *field,       \
+                                      const size_t nf, const int lc,          \
+                                      bool *is_inmat, bool *is_end,           \
+                                      mat_ker_state *ks)
+{
+    size_t i;
+    double dbuf;
+    
+    if ((nf >= 4)&&!*is_inmat)
+    {
+        *is_inmat = true;
+        *is_inmat = *is_inmat && (strbufcmp(field[0],LATAN_COMMENT) == 0);
+        *is_inmat = *is_inmat && (strbufcmp(field[1],LATAN_BEGIN) == 0);
+        *is_inmat = *is_inmat && (strbufcmp(field[2],LATAN_MAT) == 0);
+        if (strlen(name) != 0)
+        {
+            *is_inmat  = *is_inmat && (strbufcmp(field[3],name) == 0);
+        }
+        if (*is_inmat)
+        {
+            *is_end      = false;
+            ks->got_ncol = false;
+            ks->nc       = 0;
+            ks->j        = 0;
+        }
+    }
+    else if (*is_inmat)
+    {
+        if ((nf >= 3)&&(strbufcmp(field[0],LATAN_COMMENT) == 0))
+        {
+            *is_end = true;
+            *is_end = *is_end && (strbufcmp(field[1],LATAN_END) == 0);
+            *is_end = *is_end && (strbufcmp(field[2],LATAN_MAT) == 0);
+            if (*is_end)
+            {
+                *is_inmat = false;
+                if ((ks->j)%(ks->nc) != 0)
+                {
+                    strbuf errmsg;
+                    sprintf(errmsg,"matrix parsing unexpected end (%s:%d)",\
+                            fname,lc);
+                    LATAN_ERROR(errmsg,LATAN_ELATSYN);
+                }
+                else
+                {
+                    ks->nr = (ks->nc != 0) ? (ks->j)/(ks->nc) : 0;
+                    if (m)
+                    {
+                        if (nrow(m) != (size_t)(ks->nr))
+                        {
+                            strbuf errmsg;
+                            sprintf(errmsg,"row number mismatch (%s:%d)",\
+                                    fname,lc);
+                            LATAN_ERROR(errmsg,LATAN_EBADLEN);
+                        }
+                    }
+                    if (dim)
+                    {
+                        dim[0]   = (size_t)(ks->nr);
+                        dim[1]   = (size_t)(ks->nc);
+                    }
+                }
+            }
+            else
+            {
+                strbuf errmsg;
+                sprintf(errmsg,"matrix parsing unexpected end (%s:%d)",\
+                        fname,lc);
+                LATAN_ERROR(errmsg,LATAN_ELATSYN);
+            }
+        }
+        else if (!(ks->got_ncol))
+        {
+            if (sscanf(field[0],"%d",&(ks->nc)) > 0)
+            {
+                if (m)
+                {
+                    if (ncol(m) != (size_t)(ks->nc))
+                    {
+                        strbuf errmsg;
+                        sprintf(errmsg,"column number mismatch (%s:%d)",\
+                                fname,lc);
+                        LATAN_ERROR(errmsg,LATAN_EBADLEN);
+                    }
+                }
+                ks->got_ncol = true;
+            }
+            else
+            {
+                strbuf errmsg;
+                sprintf(errmsg,"error while reading column number (%s:%d)",\
+                        fname,lc);
+                LATAN_ERROR(errmsg,LATAN_ELATSYN);
+            }
+        }
+        else
+        {
+            for (i=0;i<nf;i++)
+            {
+                if (field[i][0] == '#')
+                {
+                    break;
+                }
+                else if (sscanf(field[i],"%lf",&dbuf) > 0)
+                {
+                    if (m)
+                    {
+                        if (ks->j >= (int)nel(m))
+                        {
+                            strbuf errmsg;
+                            sprintf(errmsg,"row number mismatch (%s:%d)",\
+                                    fname,lc);
+                            LATAN_ERROR(errmsg,LATAN_EBADLEN);
+                        }
+                        mat_set(m,(size_t)((ks->j)/(ks->nc)), \
+                                (size_t)((ks->j)%(ks->nc)),dbuf);
+                    }
+                    (ks->j)++;
+                }
+                else
+                {
+                    strbuf errmsg;
+                    sprintf(errmsg,"impossible to read matrix element (%s:%d)",\
+                            fname,lc);
+                    LATAN_ERROR(errmsg,LATAN_ELATSYN);
+                }
+            }
+        }
+    }
+    
+    return LATAN_SUCCESS;
+}
+
+static latan_errno randgen_load_state_ascii_ker(rg_state state,                \
+                                                const strbuf fname,            \
+                                                const strbuf name,             \
+                                                strbuf *field, const size_t nf,\
+                                                const int lc, bool *is_inrgs,  \
+                                                bool *is_end,                  \
+                                                int *j)
+{
+    size_t i;
+    
+    if ((nf >= 4)&&!*is_inrgs)
+    {
+        *is_inrgs = true;
+        *is_inrgs = *is_inrgs&&(strbufcmp(field[0],LATAN_COMMENT) == 0);
+        *is_inrgs = *is_inrgs&&(strbufcmp(field[1],LATAN_BEGIN) == 0);
+        *is_inrgs = *is_inrgs&&(strbufcmp(field[2],LATAN_RG_STATE) == 0);
+        if (strlen(name) != 0)
+        {
+            *is_inrgs = *is_inrgs&&(strbufcmp(field[3],name) == 0);
+        }
+        if (*is_inrgs)
+        {
+            *is_end  = false;
+            *j       = 0;
+        }
+    }
+    else if (*is_inrgs)
+    {
+        if ((nf >= 3)&&(strbufcmp(field[0],LATAN_COMMENT) == 0))
+        {
+            *is_end = true;
+            *is_end = *is_end && (strbufcmp(field[1],LATAN_END) == 0);
+            *is_end = *is_end && (strbufcmp(field[2],LATAN_RG_STATE) == 0);
+            if (*is_end)
+            {
+                *is_inrgs = false;
+                if (*j != RLXG_STATE_SIZE)
+                {
+                    strbuf errmsg;
+                    sprintf(errmsg,"random generator state parsing unexpected end (%s:%d)",\
+                            fname,lc);
+                    LATAN_ERROR(errmsg,LATAN_ELATSYN);
+                }
+            }
+        }
+        else
+        {
+            for (i=0;i<nf;i++)
+            {
+                if (sscanf(field[i],"%d",state+(*j)) > 0)
+                {
+                    (*j)++;
+                    if (*j == RLXG_STATE_SIZE)
+                    {
+                        break;
+                    }
+                }
+                else
+                {
+                    strbuf errmsg;
+                    sprintf(errmsg,"impossible to read random generator state element (%s:%d)",\
+                            fname,lc);
+                    LATAN_ERROR(errmsg,LATAN_ELATSYN);
+                }
+            }
+        }
+    }
+    
+    return LATAN_SUCCESS;
+}
+
+static latan_errno rs_sample_load_ascii_ker(rs_sample *s, size_t *nsample,    \
+                                            size_t *dim, const strbuf fname,  \
+                                            const strbuf name, strbuf *field, \
+                                            const size_t nf, const int lc,    \
+                                            bool *is_inrss, bool *is_end,     \
+                                            bool *is_insamp, bool *is_sampend,\
+                                            rs_sample_ker_state *ks)
+{
+    latan_errno status;
+    bool bbuf;
+    
+    status = LATAN_SUCCESS;
+    
+    if ((nf >= 4)&&!*is_inrss)
+    {
+        *is_inrss = true;
+        *is_inrss = *is_inrss&&(strbufcmp(field[0],LATAN_COMMENT) == 0);
+        *is_inrss = *is_inrss&&(strbufcmp(field[1],LATAN_BEGIN) == 0);
+        *is_inrss = *is_inrss&&(strbufcmp(field[2],LATAN_RS_SAMPLE) == 0);
+        if (strlen(name))
+        {
+            *is_inrss = *is_inrss&&(strbufcmp(field[3],name) == 0);
+            strbufcpy(ks->read_name,name);
+        }
+        else
+        {
+            strbufcpy(ks->read_name,field[3]);
+        }
+        if (*is_inrss)
+        {
+            ks->ns      = 0;
+            ks->i       = -1;
+            *is_end     = false;
+            *is_insamp  = false;
+            *is_sampend = false;
+            ks->got_ns  = false;
+            bbuf        = false;
+            sprintf(ks->sname,"%s_C",ks->read_name);
+            if (s)
+            {
+                ks->pt = rs_sample_pt_cent_val(s);
+            }
+        }
+    }
+    else if (*is_inrss)
+    {
+        if ((nf >= 3)&&(strbufcmp(field[0],LATAN_COMMENT) == 0))
+        {
+            *is_end = true;
+            *is_end = *is_end && (strbufcmp(field[1],LATAN_END) == 0);
+            *is_end = *is_end && (strbufcmp(field[2],LATAN_RS_SAMPLE) == 0);
+            if (*is_end)
+            {
+                *is_inrss = false;
+                if (s)
+                {
+                    if (ks->i != ks->ns)
+                    {
+                        LATAN_ERROR("sample number mismatch",LATAN_EBADLEN);
+                    }
+                }
+            }
+        }
+        if (!(*is_end))
+        {
+            if (!(ks->got_ns))
+            {
+                if (sscanf(field[0],"%d",&(ks->ns)) > 0)
+                {
+                    if (nsample)
+                    {
+                        *nsample = (size_t)(ks->ns);
+                    }
+                    ks->got_ns = true;
+                    if (s)
+                    {
+                        if (rs_sample_get_nsample(s) != (size_t)(ks->ns))
+                        {
+                            LATAN_ERROR("sample number mismatch",LATAN_EBADLEN);
+                        }
+                    }
+                }
+                else
+                {
+                    strbuf errmsg;
+                    sprintf(errmsg,"error while reading number of samples (%s:%d)",\
+                            fname,lc);
+                    LATAN_ERROR(errmsg,LATAN_ELATSYN);
+                }
+            }
+            else
+            {
+                USTAT(mat_load_ascii_ker(ks->pt,dim,fname,ks->sname,field,nf,\
+                                         lc,&bbuf,is_sampend,&(ks->sampks)));
+                if ((*is_sampend)&&(*is_insamp))
+                {
+                    if (s)
+                    {
+                        (ks->i)++;
+                        ks->pt = rs_sample_pt_sample(s,(size_t)(ks->i));
+                        sprintf(ks->sname,"%s_S_%lu",ks->read_name,\
+                                (long unsigned int)(ks->i));
+                    }
+                    else
+                    {
+                        *is_end = true;
+                    }
+                }
+                *is_insamp = bbuf;
+            }
+        }
+    }
+    
     return status;
 }

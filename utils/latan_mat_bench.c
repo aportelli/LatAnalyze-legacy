@@ -30,6 +30,7 @@ static latan_errno mat_mul_nn(mat *a, const mat *b, const mat *c)
         (func)(a,b);\
         nops++;\
     }\
+    timer  = clock() - timer;\
     nops  /= (double)(timer)/(double)(CLOCKS_PER_SEC);\
     perf   = func_flop*nops/(1.0e9);\
 }
@@ -68,9 +69,30 @@ int main(void)
     
     printf("mat_mul_nn test :\n");
     printf("-----------------\n");
-    printf("general matrix\n");
+    printf("little general matrix\n");
     printf("%6s %10s %10s\n","size","Gflop/s","Nop/s");
-    for (mat_size=MAT_SIZE_STEP;mat_size<=MAX_MAT_SIZE;mat_size+=MAT_SIZE_STEP)
+    for (mat_size=20;mat_size<=200;mat_size+=20)
+    {
+        func_flop = NFLOP_MAT_MUL_NN(mat_size,mat_size,mat_size);
+        
+        a = mat_create(mat_size,mat_size);
+        b = mat_create_from_dim(a);
+        c = mat_create_from_dim(a);
+        
+        mat_rand_u(b,0.0,1.0);
+        mat_rand_u(c,0.0,1.0);
+        
+        FUNC_BENCH_3ARG(perf,nops,mat_mul_nn,func_flop,a,b,c);
+        printf("%6d %10f %10.1f\n",(int)mat_size,perf,nops);
+        
+        mat_destroy(a);
+        mat_destroy(b);
+        mat_destroy(c);
+    }
+    printf("\n");
+    printf("large general matrix\n");
+    printf("%6s %10s %10s\n","size","Gflop/s","Nop/s");
+    for (mat_size=1000;mat_size<=2000;mat_size+=200)
     {
         func_flop = NFLOP_MAT_MUL_NN(mat_size,mat_size,mat_size);
         

@@ -140,6 +140,8 @@ latan_errno mat_save_subm(const strbuf latan_path, const char mode,      \
 latan_errno mat_load(mat *m, size_t *dim, const strbuf latan_path);
 latan_errno mat_load_subm(mat *m, const strbuf latan_path, const size_t k1, \
                           const size_t l1, const size_t k2, const size_t l2);
+latan_errno mat_ar_loadbin(mat **m, size_t *dim, const strbuf man_fname,\
+                           const strbuf m_name, const size_t binsize);
 
 /* random generator state I/O */
 latan_errno randgen_save_state(const strbuf latan_path, const char mode,\

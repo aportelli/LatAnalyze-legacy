@@ -300,6 +300,49 @@ latan_errno mat_load_subm(mat *m, const strbuf latan_path, const size_t k1, \
     return status;
 }
 
+latan_errno mat_ar_loadbin(mat **m, size_t *dim, const strbuf man_fname,\
+                           const strbuf m_name, const size_t binsize)
+{
+    latan_errno status;
+    strbuf *field,latan_path;
+    mat **m_prebin;
+    size_t nf,lc,nmat;
+    size_t i;
+    
+    status = LATAN_SUCCESS;
+    i      = 0;
+    nmat   = get_nfile(man_fname);
+    field  = NULL;
+
+    m_prebin = (m) ? mat_ar_create_from_dim(nmat,m[0]) : NULL;
+    
+    BEGIN_FOR_LINE_TOK(field,man_fname," \t",nf,lc)
+    {
+        if (field[0][0] != '#')
+        {
+            sprintf(latan_path,"%s%c%s",field[0],LATAN_PATH_SEP,m_name);
+            if (m)
+            {
+                USTAT(mat_load(m_prebin[i],dim,latan_path));
+            }
+            else
+            {
+                USTAT(mat_load(NULL,dim,latan_path));
+                break;
+            }
+            i++;
+        }
+    }
+    END_FOR_LINE_TOK(field)
+    if (m)
+    {
+        USTAT(mat_ar_bin(m,m_prebin,nmat,binsize));
+        mat_ar_destroy(m_prebin,nmat);
+    }
+    
+    return status;
+}
+
 /*                      random generator state I/O                          */
 /****************************************************************************/
 latan_errno randgen_save_state(const strbuf latan_path, const char mode,\

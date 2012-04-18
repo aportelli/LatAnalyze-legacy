@@ -1298,7 +1298,7 @@ static void set_X_Y(mat* X, mat *Y, mat *x_buf, const mat *p, const fit_data *d)
                 for (k=0;k<nydim;k++)
                 {
                     eval = fit_model_eval(d->model,k,x_buf,p,d->model_param);
-                    mat_set(Y,k*ndata+k_i,0,eval-fit_data_get_y(d,i,k));
+                    mat_set(Y,k*npt+k_i,0,eval-fit_data_get_y(d,i,k));
                 }
                 k_i++;
             }
@@ -1313,7 +1313,7 @@ static void set_X_Y(mat* X, mat *Y, mat *x_buf, const mat *p, const fit_data *d)
             {
                 for (k=0;k<nydim;k++)
                 {
-                    mat_set(Y,k*ndata+k_i,0,fit_data_model_eval(d,k,i,p)\
+                    mat_set(Y,k*npt+k_i,0,fit_data_model_eval(d,k,i,p)\
                             -fit_data_get_y(d,i,k));
                 }
                 k_i++;
@@ -1518,7 +1518,7 @@ latan_errno rs_data_fit(rs_sample *p, rs_sample * const *x,         \
     {
         USTAT(fit_data_set_y_k(d,k,rs_sample_pt_cent_val(data[k])));
     }
-    if (x != NULL)
+    if (x)
     {
         px_ind = 0;
         for (k=0;k<nxdim;k++)

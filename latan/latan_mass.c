@@ -43,14 +43,14 @@ latan_errno effmass(mat *res, const mat *mprop, const int parity)
     /* fabs/MAX(.,1.0) : you don't want NaN at half-time */
     switch (parity)
     {
-        case EVEN:
+        case EM_LOG:
             for (i=0;i<nrow(res);i++)
             {
                 em = fabs(log(fabs(mat_get(mprop,i+1,0)/mat_get(mprop,i+2,0))));
                 mat_set(res,i,0,em);
             }
             break;
-        case ODD:
+        case EM_ACOSH:
             for (i=0;i<nrow(res);i++)
             {
                 em  = mat_get(mprop,i,0) + mat_get(mprop,i+2,0);
@@ -142,6 +142,7 @@ latan_errno get_mass(double mass[2], const strbuf name)
     ELIF_NAME(K_p)
     ELIF_NAME(K_0)
     ELIF_NAME(K_m)
+    ELIF_NAME(K)
     ELIF_NAME(K_iso)
     ELIF_NAME(Kchi)
     ELIF_NAME(rho_p)
@@ -186,202 +187,3 @@ latan_errno get_mass(double mass[2], const strbuf name)
 
 #undef IF_NAME
 #undef ELIF_NAME
-
-/*                     mass fit parameter tuning functions                  */
-/****************************************************************************/
-#ifndef PLAT_TOL
-#define PLAT_TOL 0.40
-#endif
-#ifndef NSIGMA
-#define NSIGMA 1.0
-#endif
-
-plat *search_plat(size_t *nplat, mat *data, mat *sigdata,\
-                  const size_t ntmax, const double nsig, const double tol)
-{
-    bool in,toend;
-    size_t maxlength,length,cplat,bplat;
-    size_t i,j;
-    double sup1,sup2,inf1,inf2,re1,re2;
-    plat *plat_ar;
-    
-    in        = false;
-    toend     = false;
-    j         = 0;
-    maxlength = 0;
-    *nplat    = 0;
-    cplat     = 0;
-    bplat     = 0;
-    plat_ar   = NULL;
-    
-    if (nrow(data) != nrow(sigdata))
-    {
-        LATAN_ERROR_NULL("data and error vectors must have the same number of rows",\
-                         LATAN_EBADLEN);
-    }
-    latan_printf(VERB,"Plateau searching at with %.2f sigma(s) with %.2f%% of maximum relative error\n",\
-                 nsig,tol*100.0);
-    for (i=0;i<ntmax;i++)
-    {
-        sup1 = mat_get(data,i,0)+nsig*mat_get(sigdata,i,0);
-        sup2 = mat_get(data,i+1,0)+nsig*mat_get(sigdata,i+1,0);
-        inf1 = mat_get(data,i,0)-nsig*mat_get(sigdata,i,0);
-        inf2 = mat_get(data,i+1,0)-nsig*mat_get(sigdata,i+1,0);
-        re1  = fabs(mat_get(sigdata,i,0)/mat_get(data,i,0));
-        re2  = fabs(mat_get(sigdata,i+1,0)/mat_get(data,i+1,0));
-        if ((sup1>inf2)&&(sup2>inf1)&&(re1<tol)&&(re2<tol))
-        {
-            if (!in)
-            {
-                (*nplat)++;
-                cplat = *nplat - 1;
-                REALLOC_ERRVAL(plat_ar,plat_ar,plat *,*nplat,NULL);
-                plat_ar[cplat].mean  = 0.0;
-                plat_ar[cplat].sig   = 0.0;
-                plat_ar[cplat].start = i;
-                latan_printf(VERB,"Plateau %i\n",*nplat);
-                in = true;
-            }
-            plat_ar[cplat].mean += mat_get(data,i,0);
-            plat_ar[cplat].sig  += SQ(mat_get(data,i,0));
-            latan_printf(DEBUG1,                                                \
-                         "%i ]%.10e,%.10e[ val = %e aerr = %e rerr = %.2f%%\n",\
-                         i,inf1,sup1,mat_get(data,i,0),mat_get(sigdata,i,0),   \
-                         re1*100.0);
-            if (i == ntmax-1)
-            {
-                j = i + 1;
-                toend = true;
-            }
-        }
-        else if (in)
-        {
-            j = i;
-            toend = true;
-        }
-        if (toend)
-        {
-            plat_ar[cplat].mean += mat_get(data,j,0);
-            plat_ar[cplat].sig  += SQ(mat_get(data,j,0));
-            plat_ar[cplat].end   = j;
-            latan_printf(DEBUG1,
-                         "%i ]%.10e,%.10e[ val = %e aerr = %e rerr = %.2f%%\n",\
-                         j,mat_get(data,j,0)-nsig*mat_get(sigdata,j,0),        \
-                         mat_get(data,j,0)+nsig*mat_get(sigdata,j,0),          \
-                         mat_get(data,j,0),mat_get(sigdata,j,0),               \
-                         fabs(mat_get(sigdata,j,0)/mat_get(data,j,0))*100.0);
-            length = plat_ar[cplat].end-plat_ar[cplat].start+1;
-            plat_ar[cplat].mean /= (double)(length);
-            plat_ar[cplat].sig  /= (double)(length-1);
-            plat_ar[cplat].sig  -= ((double)(length)/(double)(length-1))\
-                                   *SQ(plat_ar[cplat].mean);
-            plat_ar[cplat].sig   = sqrt(plat_ar[cplat].sig);
-            latan_printf(VERB,"length = %i mean = %.10e stddev = %.10e\n",\
-                         length,plat_ar[cplat].mean,plat_ar[cplat].sig);
-            in = false;
-            toend = false;
-            if (length > maxlength)
-            {
-                maxlength = length;
-                bplat = cplat;
-            }
-            else if (length == maxlength)
-            {
-                if (plat_ar[cplat].sig < plat_ar[bplat].sig)
-                {
-                    bplat = cplat;
-                }
-            }   
-        }
-    }
-    latan_printf(VERB,"Plateau %i is the best one.\n",bplat+1);
-    
-    return plat_ar;
-}
-
-latan_errno fit_data_mass_fit_tune(fit_data *d, mat *fit_init, mat *prop,\
-                                   mat *em, mat *sigem,                  \
-                                   const int parity)
-{
-    plat *em_plat;
-    size_t nplat,nt,ntmax;
-    size_t p,t;
-    double shift,mem,pref;
-    strbuf ranges,buf;
-    fit_model *model;
-    
-    nt    = nrow(em) + 2;
-    ntmax = (parity == EVEN) ? nt/2 : nt-2;
-    
-    /* setting fit model */
-    switch (parity)
-    {
-        case EVEN:
-            model = &fm_expdec;
-            break;
-        case ODD:
-            model = &fm_cosh;
-            break;
-        default:
-            LATAN_ERROR("wrong parity flag",LATAN_EINVAL);
-            break;
-    }
-    fit_data_set_model(d,model,NULL);
-    
-    /* setting datas */
-    switch (parity)
-    {
-        case EVEN:
-            shift = 0.0;
-            break;
-        case ODD:
-            shift = -DRATIO(nt,2.0);
-            break;
-        default:
-            LATAN_ERROR("wrong parity flag",LATAN_EINVAL);
-            break;
-    }
-    for (t=0;t<nt;t++)
-    {
-        fit_data_set_x(d,t,0,(double)(t)+shift);
-    }
-    
-    /* searching mass plateaux */
-    latan_printf(VERB,"searching mass plateaux in range [1,%lu]...\n",
-                 (long unsigned)ntmax);
-    em_plat = search_plat(&nplat,em,sigem,ntmax-1,NSIGMA,PLAT_TOL);
-    
-    /* setting points to fit */
-    fit_data_fit_all_points(d,false);
-    strbufcpy(ranges,"");
-    for (p=0;p<nplat;p++)
-    {
-        fit_data_fit_range(d,em_plat[p].start+1,em_plat[p].end+1,true);
-        sprintf(buf,"[%u,%u] ",(unsigned int)em_plat[p].start+1,\
-                (unsigned int)em_plat[p].end+1);
-        strcat(ranges,buf);
-    }
-    latan_printf(VERB,"fit ranges set to : %s\n",ranges);
-    
-    /* setting initial fit parameters */
-    latan_printf(VERB,"searching initial parameter values...\n");
-    mem = mat_get(em,nt/8-1,0);
-    switch (parity)
-    {
-        case EVEN:
-            pref = log(fabs(mat_get(prop,nt/8,0)*exp((int)(nt)*mem/8)));
-            break;
-        case ODD:
-            pref = fabs(mat_get(prop,nt/2,0));
-            break;
-        default:
-            LATAN_ERROR("wrong parity flag",LATAN_EINVAL);
-            break;
-    }
-    latan_printf(VERB,"prefactor = %e mass = %e\n",pref,mem);
-    mat_set(fit_init,0,0,mem);
-    mat_set(fit_init,1,0,pref);
-    FREE(em_plat);
-    
-    return LATAN_SUCCESS;
-}

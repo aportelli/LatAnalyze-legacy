@@ -36,6 +36,12 @@ typedef struct
 } plat;
 
 /* effective mass functions */
+enum
+{
+    EM_LOG   = 0,
+    EM_ACOSH = 1
+};
+
 latan_errno effmass(mat *res, const mat *mprop, const int parity);
 latan_errno rs_sample_effmass(rs_sample *s_res, const rs_sample *s_mprop,\
                               const int parity);
@@ -45,12 +51,6 @@ rs_sample_binop(s_res,s_mprop_AP,s_mprop_PP,&effmass_PCAC)
 
 /* interface to read experimental masses in latan_nunits.h */
 latan_errno get_mass(double mass[2], const strbuf name);
-
-/* mass fit parameter tuning functions */
-plat *search_plat(size_t *nplat, mat *data, mat *sigdata,\
-                  const size_t ntmax, const double nsig, const double tol);
-latan_errno fit_data_mass_fit_tune(fit_data *d, mat *fit_init, mat *prop,\
-                                   mat *em, mat *sigem, const int parity);
 
 __END_DECLS
 

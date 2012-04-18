@@ -53,7 +53,7 @@ int latan_get_verb(void)
 
 latan_errno latan_set_verb(const int verb)
 {
-    if ((verb < 0)||(verb > 2))
+    if ((verb < QUIET)||(verb > DEBUG2))
     {
         LATAN_ERROR("verbosity level invalid",LATAN_EINVAL);
     }

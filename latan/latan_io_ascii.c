@@ -781,6 +781,10 @@ static latan_errno rs_sample_load_ascii_ker(rs_sample *s, size_t *nsample,    \
             {
                 ks->pt = rs_sample_pt_cent_val(s);
             }
+            else
+            {
+                ks->pt = NULL;
+            }
         }
     }
     else if (*is_inrss)

@@ -485,6 +485,11 @@ mat *rs_sample_pt_cent_val(const rs_sample *s)
 
 mat *rs_sample_pt_sample(const rs_sample *s, const size_t i)
 {
+    if (i >= s->nsample)
+    {
+        LATAN_ERROR_VAL("sample index out of range",LATAN_EBADLEN,NULL);
+    }
+    
     return (s->sample)[i];
 }
 

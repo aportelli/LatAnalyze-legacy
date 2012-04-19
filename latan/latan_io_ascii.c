@@ -842,9 +842,12 @@ static latan_errno rs_sample_load_ascii_ker(rs_sample *s, size_t *nsample,    \
                     if (s)
                     {
                         (ks->i)++;
-                        ks->pt = rs_sample_pt_sample(s,(size_t)(ks->i));
-                        sprintf(ks->sname,"%s_S_%lu",ks->read_name,\
-                                (long unsigned int)(ks->i));
+                        if ((size_t)(ks->i) < rs_sample_get_nsample(s))
+                        {
+                            ks->pt = rs_sample_pt_sample(s,(size_t)(ks->i));
+                            sprintf(ks->sname,"%s_S_%lu",ks->read_name,\
+                                    (long unsigned int)(ks->i));
+                        }
                     }
                     else
                     {

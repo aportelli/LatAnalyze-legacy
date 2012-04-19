@@ -201,14 +201,26 @@ void get_elname(strbuf fname, strbuf elname, const strbuf latan_path)
     pt = strrchr(buf,LATAN_PATH_SEP);
     if (pt)
     {
-        strbufcpy(elname,pt+1);
+        if (elname)
+        {
+            strbufcpy(elname,pt+1);
+        }
         *pt = '\0';
-        strbufcpy(fname,buf);
+        if (fname)
+        {
+            strbufcpy(fname,buf);
+        }
     }
     else
     {
-        strbufcpy(fname,latan_path);
-        strbufcpy(elname,"");
+        if (fname)
+        {
+            strbufcpy(fname,latan_path);
+        }
+        if (elname)
+        {
+            strbufcpy(elname,"");
+        }
     }
 }
 

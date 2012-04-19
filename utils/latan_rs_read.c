@@ -11,7 +11,7 @@ int main(int argc, char *argv[])
     int i,j;
     mat *sig;
     bool show_usage;
-    strbuf inf_name;
+    strbuf in_path;
     io_fmt_no fmt;
     
     /* argument parsing */
@@ -57,7 +57,7 @@ int main(int argc, char *argv[])
             {
                 if (j == 0)
                 {
-                    strbufcpy(inf_name,argv[i]);
+                    strbufcpy(in_path,argv[i]);
                     j++;
                     i++;
                 }
@@ -80,15 +80,15 @@ int main(int argc, char *argv[])
     io_init();
     
     /* getting sizes */
-    rs_sample_load(NULL,&s1_nsample,s1_dim,inf_name);
+    rs_sample_load(NULL,&s1_nsample,s1_dim,in_path);
     
     /* allocation */
     s1  = rs_sample_create(s1_dim[0],s1_dim[1],s1_nsample);
     sig = mat_create(s1_dim[0],s1_dim[1]);
     
     /* loading samples */
-    printf("-- loading sample from %s...\n",inf_name);
-    rs_sample_load(s1,NULL,NULL,inf_name);
+    printf("-- loading sample from %s...\n",in_path);
+    rs_sample_load(s1,NULL,NULL,in_path);
     
     /* result output */
     rs_sample_varp(sig,s1);

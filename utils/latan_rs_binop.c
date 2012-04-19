@@ -8,8 +8,6 @@
 #error BINOP macro must be defined to compile this program (use -DBINOP=<op> option)
 #endif
 
-#define STRINGIFY(x) #x
-
 int main(int argc, char *argv[])
 {
     int i,j;
@@ -17,7 +15,8 @@ int main(int argc, char *argv[])
     size_t s1_dim[2],s2_dim[2],s1_nsample,s2_nsample;
     mat *sig;
     bool do_save_res, show_usage;
-    strbuf res_name,inf_name[2],outf_name;
+    strbuf out_elname,out_fname,in_elname[2],in_fname[2],in_path[2],out_path;
+    char *spt[2];
     io_fmt_no fmt;
     
     /* argument parsing */
@@ -44,7 +43,7 @@ int main(int argc, char *argv[])
                 }
                 else
                 {
-                    strbufcpy(outf_name,argv[i+1]);
+                    strbufcpy(out_path,argv[i+1]);
                     do_save_res = true;
                     i += 2;
                 }
@@ -78,7 +77,7 @@ int main(int argc, char *argv[])
             {
                 if (j < 2)
                 {
-                    strbufcpy(inf_name[j],argv[i]);
+                    strbufcpy(in_path[j],argv[i]);
                     j++;
                     i++;
                 }
@@ -102,8 +101,8 @@ int main(int argc, char *argv[])
     io_init();
     
     /* getting sizes */
-    rs_sample_load(NULL,&s1_nsample,s1_dim,inf_name[0]);
-    rs_sample_load(NULL,&s2_nsample,s2_dim,inf_name[1]);
+    rs_sample_load(NULL,&s1_nsample,s1_dim,in_path[0]);
+    rs_sample_load(NULL,&s2_nsample,s2_dim,in_path[1]);
     
     /* allocation */
     s1  = rs_sample_create(s1_dim[0],s1_dim[1],s1_nsample);
@@ -112,10 +111,10 @@ int main(int argc, char *argv[])
     sig = mat_create(s1_dim[0],s1_dim[1]);
     
     /* loading samples */
-    printf("-- loading sample from %s...\n",inf_name[0]);
-    rs_sample_load(s1,NULL,NULL,inf_name[0]);
-    printf("-- loading sample from %s...\n",inf_name[1]);
-    rs_sample_load(s2,NULL,NULL,inf_name[1]);
+    printf("-- loading sample from %s...\n",in_path[0]);
+    rs_sample_load(s1,NULL,NULL,in_path[0]);
+    printf("-- loading sample from %s...\n",in_path[1]);
+    rs_sample_load(s2,NULL,NULL,in_path[1]);
     
     /* multiplying samples */
     printf("-- executing operation on samples...\n");
@@ -130,9 +129,17 @@ int main(int argc, char *argv[])
     mat_print(sig,"%e");
     if (do_save_res)
     {
-        sprintf(res_name,"%s%c%s_%s_%s",outf_name,LATAN_PATH_SEP,"",\
-                STRINGIFY(BINOP),"");
-        rs_sample_save(res_name,'w',res);
+        get_elname(out_fname,out_elname,out_path);
+        if (strlen(out_elname) == 0)
+        {
+            get_elname(in_fname[0],in_elname[0],in_path[0]);
+            get_elname(in_fname[1],in_elname[1],in_path[1]);
+            spt[0] = (strlen(in_elname[0]) == 0) ? in_fname[0] : in_elname[0];
+            spt[1] = (strlen(in_elname[1]) == 0) ? in_fname[1] : in_elname[1];
+            sprintf(out_path,"%s%c%s_%s_%s",out_fname,LATAN_PATH_SEP,argv[0],\
+                    spt[0],spt[1]);
+        }
+        rs_sample_save(out_path,'w',res);
     }
     
     /* desallocation */

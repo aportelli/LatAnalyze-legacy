@@ -8,8 +8,6 @@
 #error BINOPS macro must be defined to compile this program (use -DBINOPS=<op> option)
 #endif
 
-#define STRINGIFY(x) #x
-
 int main(int argc, char *argv[])
 {
     rs_sample *s1,*res;
@@ -19,7 +17,8 @@ int main(int argc, char *argv[])
     size_t s1_dim[2],s1_nsample;
     mat *sig;
     bool do_save_res,show_usage;
-    strbuf res_name,inf_name,outf_name;
+    char *spt;
+    strbuf out_elname,out_fname,in_elname,in_fname,in_path,out_path;
 
     /* argument parsing */
     i           = 1;
@@ -46,7 +45,7 @@ int main(int argc, char *argv[])
                 }
                 else
                 {
-                    strbufcpy(outf_name,argv[i+1]);
+                    strbufcpy(out_path,argv[i+1]);
                     do_save_res = true;
                     i += 2;
                 }
@@ -80,7 +79,7 @@ int main(int argc, char *argv[])
             {
                 if (j == 0)
                 {
-                    strbufcpy(inf_name,argv[i]);
+                    strbufcpy(in_path,argv[i]);
                     j++;
                     i++;
                 }
@@ -110,7 +109,7 @@ int main(int argc, char *argv[])
     io_init();
 
     /* getting sizes */
-    rs_sample_load(NULL,&s1_nsample,s1_dim,inf_name);
+    rs_sample_load(NULL,&s1_nsample,s1_dim,in_path);
 
     /* allocation */
     s1  = rs_sample_create(s1_dim[0],s1_dim[1],s1_nsample);
@@ -118,8 +117,8 @@ int main(int argc, char *argv[])
     sig = mat_create(s1_dim[0],s1_dim[1]);
 
     /* loading samples */
-    printf("-- loading sample from %s...\n",inf_name);
-    rs_sample_load(s1,NULL,NULL,inf_name);
+    printf("-- loading sample from %s...\n",in_path);
+    rs_sample_load(s1,NULL,NULL,in_path);
 
     /* multiplying samples */
     printf("-- executing operation on sample...\n");
@@ -134,9 +133,15 @@ int main(int argc, char *argv[])
     mat_print(sig,"%e");
     if (do_save_res)
     {
-        sprintf(res_name,"%s%c%s_%s_%e",outf_name,LATAN_PATH_SEP,"",\
-                STRINGIFY(BINOPS),d);
-        rs_sample_save(res_name,'w',res);
+        get_elname(out_fname,out_elname,out_path);
+        if (strlen(out_elname) == 0)
+        {
+            get_elname(in_fname,in_elname,in_path);
+            spt = (strlen(in_elname) == 0) ? in_fname : in_elname;
+            sprintf(out_path,"%s%c%s_%s_%e",out_fname,LATAN_PATH_SEP,argv[0],\
+                    spt,d);
+        }
+        rs_sample_save(out_path,'w',res);
     }
 
     /* desallocation */

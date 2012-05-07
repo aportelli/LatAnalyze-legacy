@@ -1389,13 +1389,16 @@ double chi2(const mat *p, void *vd)
 latan_errno chi2_get_comp(mat *comp, mat *p, fit_data *d)
 {
     int nthread,thread;
-    size_t Ysize,Xsize;
-    size_t i;
+    size_t Ysize,Xsize,ndata,nydim,nxdim;
+    size_t i,k,j;
     double base,uncor,el;
     mat *x,*Y,*X;
     
     Ysize = get_Ysize(d);
     Xsize = get_Xsize(d);
+    nydim = fit_data_get_nydim(d);
+    nxdim = fit_data_get_nxdim(d);
+    ndata = fit_data_get_ndata(d);
     
     if (nrow(comp) != Xsize + Ysize + 2)
     {
@@ -1421,24 +1424,48 @@ latan_errno chi2_get_comp(mat *comp, mat *p, fit_data *d)
     x   = d->buf[thread].x_f;
     Y   = d->buf[thread].Y;
     X   = d->buf[thread].X;
+    
     /** setting X and Y **/
     set_X_Y(X,Y,x,p,d);
+    
     /** diagonal y elements **/
     uncor = 0.0;
-    for (i=0;i<Ysize;i++)
+    j     = 0;
+    for (k=0;k<nydim;k++)
+    for (i=0;i<ndata;i++)
     {
-        el     = mat_get(Y,i,0)*sqrt(mat_get(d->y_var_inv,i,i));
-        uncor += el;
-        mat_set(comp,i,0,el);
-    }
-    /** diagonal x elements **/
-    for (i=0;i<Xsize;i++)
-    {
-        el     = mat_get(X,i,0)*sqrt(mat_get(d->x_var_inv,i,i));
-        uncor += el;
-        mat_set(comp,i+Ysize,0,el);
+        if (fit_data_is_fit_point(d,i))
+        {
+            el = mat_get(Y,j,0)                                    \
+                 *sqrt(1.0/mat_get(fit_data_pt_y_covar(d,k,k),i,i));
+            uncor += el;
+            mat_set(comp,j,0,el);
+            j++;
+        }
     }
     
+    /** diagonal x elements **/
+    if (Xsize)
+    {
+        j = 0;
+        for (k=0;k<nxdim;k++)
+        {
+            if (fit_data_have_x_covar(d,k))
+            {
+                for (i=0;i<ndata;i++)
+                {
+                    if (fit_data_is_fit_point(d,i))
+                    {
+                        el = mat_get(X,j,0)                                    \
+                             *sqrt(1.0/mat_get(fit_data_pt_x_covar(d,k,k),i,i));
+                        uncor += el;
+                        mat_set(comp,j+Ysize,0,el);
+                        j++;
+                    }
+                }
+            }
+        }
+    }
     /* compute correlation contribution */
     mat_set(comp,Xsize+Ysize,0,base-uncor);
     

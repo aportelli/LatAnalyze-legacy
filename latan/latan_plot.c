@@ -217,24 +217,24 @@ void plot_set_scale_manual(plot *p, const double xmin, const double xmax,\
                            const double ymin, const double ymax)
 {
     p->scale = XMANUAL|YMANUAL;
-    p->xmin  = xmin;
-    p->xmax  = xmax;
-    p->ymin  = ymin;
-    p->ymax  = ymax;
+    p->xmin  = MIN(xmin,xmax);
+    p->xmax  = MAX(xmin,xmax);
+    p->ymin  = MIN(ymin,ymax);
+    p->ymax  = MAX(ymin,ymax);
 }
 
 void plot_set_scale_xmanual(plot *p, const double xmin, const double xmax)
 {
-    p->scale = XMANUAL;
-    p->xmin  = xmin;
-    p->xmax  = xmax;
+    p->scale |= XMANUAL;
+    p->xmin   = MIN(xmin,xmax);
+    p->xmax   = MAX(xmin,xmax);
 }
 
 void plot_set_scale_ymanual(plot *p, const double ymin, const double ymax)
 {
-    p->scale = YMANUAL;
-    p->ymin  = ymin;
-    p->ymax  = ymax;
+    p->scale |= YMANUAL;
+    p->ymin   = MIN(ymin,ymax);
+    p->ymax   = MAX(ymin,ymax);
 }
 
 void plot_set_scale_lin(plot *p)

@@ -116,7 +116,8 @@ void gsl_fdf(const gsl_vector *v, void *v_gf_param, double *f, gsl_vector *df)
     gsl_df(v,v_gf_param,df);
 }
 
-latan_errno minimize_gsl(mat *x, double *f_min, min_func *f, void *param)
+latan_errno minimize_gsl(mat *x, const mat *x_limit, double *f_min,\
+                         min_func *f, void *param)
 {
     latan_errno status;
     size_t n;
@@ -132,6 +133,12 @@ latan_errno minimize_gsl(mat *x, double *f_min, min_func *f, void *param)
     const gsl_multimin_fminimizer_type *minimizer_f_t;
     gsl_multimin_fminimizer *minimizer_f;
     strbuf buf, x_dump, war_msg;
+    
+    if (x_limit)
+    {
+        LATAN_WARNING("minimization with limits is not implemented in GSL minimizers",\
+                      LATAN_EINVAL);
+    }
     
     n                       = nrow(x);
     iter                    = 0u;

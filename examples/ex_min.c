@@ -40,7 +40,7 @@ int main(void)
     
     mat_set(res,0,0,2.5);
     
-    minimize(res,&fval,&polynom,NULL);
+    minimize(res,NULL,&fval,&polynom,NULL);
     
     printf("%f\n",mat_get(res,0,0));
     

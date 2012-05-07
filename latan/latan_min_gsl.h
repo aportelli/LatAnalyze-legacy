@@ -26,7 +26,8 @@
 
 __BEGIN_DECLS
 
-latan_errno minimize_gsl(mat *x, double *f_min, min_func *f, void *param);
+latan_errno minimize_gsl(mat *x, const mat *x_limit, double *f_min,\
+                         min_func *f, void *param);
 
 __END_DECLS
 

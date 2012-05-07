@@ -75,7 +75,7 @@ int main(void)
         mat_set(fit_param,1,0,7.0);
         minimizer_set_alg(alg);
         printf("-- fitting datas...\n");
-        data_fit(fit_param,d);
+        data_fit(fit_param,NULL,d);
         printf("exact parameters=\n");
         mat_print(real_param,"%f");
         printf("\nfit parameters=\n");

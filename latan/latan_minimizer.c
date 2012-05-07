@@ -165,7 +165,8 @@ void minimizer_set_max_iteration(unsigned int max_iteration)
 
 /*                          the minimizer                                   */
 /****************************************************************************/
-latan_errno minimize(mat *x, double *f_min, min_func *f, void *param)
+latan_errno minimize(mat *x, const mat *x_limit, double *f_min, min_func *f,\
+                     void *param)
 {
     latan_errno status;
     strbuf name;
@@ -175,11 +176,11 @@ latan_errno minimize(mat *x, double *f_min, min_func *f, void *param)
     switch (minimizer_get_lib())
     {
         case GSL:
-            status = minimize_gsl(x,f_min,f,param);
+            status = minimize_gsl(x,x_limit,f_min,f,param);
             break;
         case MINUIT:
 #ifdef HAVE_MINUIT2
-            status = minimize_minuit2(x,f_min,f,param);
+            status = minimize_minuit2(x,x_limit,f_min,f,param);
 #else
             LATAN_ERROR("MINUIT support was not compiled",LATAN_EINVAL);
 #endif

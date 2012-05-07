@@ -97,7 +97,8 @@ double Minuit2MinFunc::Up(void) const
     return 1.0;
 }
 
-latan_errno minimize_minuit2(mat *x, double *f_min, min_func *f, void *param)
+latan_errno minimize_minuit2(mat *x, const mat *x_limit, double *f_min,\
+                             min_func *f, void *param)
 {
     latan_errno status;
     strbuf buf;
@@ -116,6 +117,24 @@ latan_errno minimize_minuit2(mat *x, double *f_min, min_func *f, void *param)
         sprintf(buf,"p%lu",(long unsigned)i);
         name = buf;
         Init_x.Add(name,mat_get(x,i,0),fabs(mat_get(x,i,0))*INIT_RERROR);
+        if (x_limit)
+        {
+            is_xl_l_nan = latan_isnan(mat_get(x_limit,i,0));
+            is_xl_u_nan = latan_isnan(mat_get(x_limit,i,1));
+            if ((!is_xl_l_nan)&&(is_xl_u_nan))
+            {
+                Init_x.SetLowerLimit((unsigned int)i,mat_get(x_limit,i,0));
+            }
+            else if ((is_xl_l_nan)&&(!is_xl_u_nan))
+            {
+                Init_x.SetUpperLimit((unsigned int)i,mat_get(x_limit,i,1));
+            }
+            else if ((!is_xl_l_nan)&&(!is_xl_u_nan))
+            {
+                Init_x.SetLimits((unsigned int)i,mat_get(x_limit,i,0),\
+                                 mat_get(x_limit,i,1));
+            }
+        }
     }
 
     Minuit2MinFunc F(f,param);

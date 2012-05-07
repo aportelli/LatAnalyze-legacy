@@ -1474,7 +1474,7 @@ latan_errno chi2_get_comp(mat *comp, mat *p, fit_data *d)
 
 /*                          fit functions                                   */
 /****************************************************************************/
-latan_errno data_fit(mat *p, fit_data *d)
+latan_errno data_fit(mat *p, const mat *p_limit, fit_data *d)
 {
     latan_errno status;
     strbuf cor_status;
@@ -1500,7 +1500,7 @@ latan_errno data_fit(mat *p, fit_data *d)
     latan_printf(VERB,"fitting (%s) %u data points with %s model...\n",
                  cor_status,(unsigned int)fit_data_fit_point_num(d),\
                  d->model->name);
-    status = minimize(p,&chi2_min,&chi2,d);
+    status = minimize(p,p_limit,&chi2_min,&chi2,d);
     if (d->save_chi2pdof)
     {
         d->chi2_val = chi2_min;
@@ -1510,9 +1510,9 @@ latan_errno data_fit(mat *p, fit_data *d)
     return status;
 }
 
-latan_errno rs_data_fit(rs_sample *p, rs_sample * const *x,         \
-                          rs_sample * const *data, fit_data *d,       \
-                          const cor_flag flag, const bool *use_x_var)
+latan_errno rs_data_fit(rs_sample *p, const mat *p_limit, rs_sample * const *x,\
+                        rs_sample * const *data, fit_data *d,                  \
+                        const cor_flag flag, const bool *use_x_var)
 {
     latan_errno status;
     mat *pbuf,*comp_backup,*x_k;
@@ -1534,11 +1534,12 @@ latan_errno rs_data_fit(rs_sample *p, rs_sample * const *x,         \
     fit_data_set_covar_from_sample(d,x,data,flag,use_x_var);    
     Xsize = get_Xsize(d);
     Ysize = get_Ysize(d);
-
+    
     /* central value fit */
     d->s        = 0;
     pbuf        = mat_create(npar+Xsize,1);
     comp_backup = mat_create(Xsize+Ysize+2,1);
+    
     /** setting data and initial parameters **/
     USTAT(mat_set_subm(pbuf,rs_sample_pt_cent_val(p),0,0,npar-1,0));
     for (k=0;k<nydim;k++)
@@ -1571,7 +1572,7 @@ latan_errno rs_data_fit(rs_sample *p, rs_sample * const *x,         \
     latan_printf(VERB,"starting chi^2/dof = %f\n",         \
                  chi2(pbuf,d)/((double)fit_data_get_dof(d)));
     /**  fit **/
-    USTAT(data_fit(pbuf,d));
+    USTAT(data_fit(pbuf,p_limit,d));
     USTAT(mat_get_subm(rs_sample_pt_cent_val(p),pbuf,0,0,npar-1,0));
     chi2_backup = fit_data_get_chi2(d);
     fit_data_get_chi2_comp(comp_backup,d);
@@ -1616,7 +1617,7 @@ latan_errno rs_data_fit(rs_sample *p, rs_sample * const *x,         \
         {
             USTAT(latan_set_verb(QUIET));
         }
-        USTAT(data_fit(pbuf,d));
+        USTAT(data_fit(pbuf,p_limit,d));
         USTAT(latan_set_verb(verb_backup));
         if (latan_get_verb() == VERB)
         {

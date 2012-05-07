@@ -59,7 +59,8 @@ void minimizer_set_max_iteration(unsigned int max_iteration);
 typedef double min_func(const mat *x, void *param);
 
 /* the minimizer */
-latan_errno minimize(mat *x, double *f_min, min_func *f, void *param);
+latan_errno minimize(mat *x, const mat *x_limit, double *f_min, min_func *f,\
+                     void *param);
 
 __END_DECLS
 

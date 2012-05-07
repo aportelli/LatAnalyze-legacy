@@ -219,10 +219,10 @@ double chi2(const mat *p, void *vd);
 latan_errno chi2_get_comp(mat *comp, mat *p, fit_data *d);
 
 /* fit functions */
-latan_errno data_fit(mat *p, fit_data *d);
-latan_errno rs_data_fit(rs_sample *p, rs_sample * const *x,         \
-                          rs_sample * const *data, fit_data *d,       \
-                          const cor_flag flag, const bool *use_x_var);
+latan_errno data_fit(mat *p, const mat *p_limit, fit_data *d);
+latan_errno rs_data_fit(rs_sample *p, const mat *p_limit, rs_sample * const *x,\
+                        rs_sample * const *data, fit_data *d,                  \
+                        const cor_flag flag, const bool *use_x_var);
 void fit_residual(mat *res, const fit_data *d, const size_t ky, const mat *p);
 void fit_partresidual(mat *res, const fit_data *d, const size_t ky, \
                       const mat *x_ex, const size_t kx, const mat *p);

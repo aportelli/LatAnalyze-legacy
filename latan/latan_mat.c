@@ -23,6 +23,7 @@
 #include <latan/latan_math.h>
 #include <latan/latan_rand.h>
 #include <gsl/gsl_cblas.h>
+#include <gsl/gsl_eigen.h>
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_linalg.h>
 #include <gsl/gsl_permutation.h>
@@ -860,8 +861,9 @@ latan_errno mat_pseudoinv(mat *m, const mat *n)
 {
     latan_errno status;
     mat *U,*V,*S,*VSinv;
+    gsl_eigen_symmv_workspace *works;
     gsl_vector_view Sv;
-    gsl_vector *work;
+    gsl_vector *workv;
     size_t nsv,nsv_cut;
     size_t i;
     double tol;
@@ -878,18 +880,31 @@ latan_errno mat_pseudoinv(mat *m, const mat *n)
     U     = mat_create_from_mat(n);
     V     = mat_create(nsv,nsv);
     S     = mat_create(nsv,nsv);
-    VSinv = mat_create(nsv,nsv);
     Sv    = gsl_matrix_diagonal(S->data_cpu);
-    work  = gsl_vector_alloc(nsv);
+    VSinv = mat_create(nsv,nsv);
     
     mat_zero(S);
-    USTAT(gsl_linalg_SV_decomp(U->data_cpu,V->data_cpu,&(Sv.vector),work));
+    if (mat_is_assumed(n,MAT_SYM)&&mat_is_square(n))
+    {
+        works = gsl_eigen_symmv_alloc(nsv);
+        USTAT(gsl_eigen_symmv(U->data_cpu,&(Sv.vector),V->data_cpu,works))
+        USTAT(gsl_eigen_symmv_sort(&(Sv.vector),V->data_cpu,\
+                                   GSL_EIGEN_SORT_ABS_DESC));
+        gsl_eigen_symmv_free(works);
+    }
+    else
+    {
+        workv = gsl_vector_alloc(nsv);
+        USTAT(gsl_linalg_SV_decomp(U->data_cpu,V->data_cpu,&(Sv.vector),workv));
+        gsl_vector_free(workv);
+    }
+    
     tol     = MAX(nrow(n),ncol(n))*mat_get(S,0,0)*DBL_EPSILON;
     nsv_cut = 0;
     latan_printf(DEBUG1,"singular values :\n");
     for (i=0;i<nsv;i++)
     {
-        if (mat_get(S,i,i) > tol)
+        if (fabs(mat_get(S,i,i)) > tol)
         {
             latan_printf(DEBUG1,"S_%d= %e\n",(int)i,mat_get(S,i,i));
             mat_set(S,i,i,1.0/mat_get(S,i,i));
@@ -903,11 +918,13 @@ latan_errno mat_pseudoinv(mat *m, const mat *n)
     }
     if (nsv_cut > 0)
     {
-        latan_printf(VERB,"SVD: %d singular value(s) eliminated over %d\n",\
-                     (int)nsv_cut,(int)nsv);
+        strbuf warn;
+        sprintf(warn,"%d singular value(s) eliminated over %d",(int)nsv_cut,\
+                (int)nsv);
+        LATAN_WARNING(warn,LATAN_EDOM);
     }
     USTAT(mat_mul(VSinv,V,'n',S,'n'));
-    if (mat_is_assumed(n,MAT_SYM)&&mat_is_assumed(n,MAT_POS))
+    if (mat_is_assumed(n,MAT_SYM)&&mat_is_square(n))
     {
         USTAT(mat_mul(m,VSinv,'n',V,'t'));
     }
@@ -920,7 +937,6 @@ latan_errno mat_pseudoinv(mat *m, const mat *n)
     mat_destroy(V);
     mat_destroy(S);
     mat_destroy(VSinv);
-    gsl_vector_free(work);
     
     return status;
 }

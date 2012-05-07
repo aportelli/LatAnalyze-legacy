@@ -38,12 +38,6 @@
 #ifndef INIT_RERROR
 #define INIT_RERROR 0.5
 #endif
-#ifndef STRATEGY
-#define STRATEGY 2
-#endif
-#ifndef FIT_TOL
-#define FIT_TOL 1.0e-2
-#endif 
 
 using namespace std;
 using namespace ROOT;
@@ -105,7 +99,8 @@ latan_errno minimize_minuit2(mat *x, const mat *x_limit, double *f_min,\
     string name;
     size_t ndim;
     size_t i;
-    double x_i;
+    double x_i,err_i;
+    bool is_xl_l_nan,is_xl_u_nan;
     MnUserParameters Init_x;
     MnApplication *Minimizer;
   
@@ -138,15 +133,15 @@ latan_errno minimize_minuit2(mat *x, const mat *x_limit, double *f_min,\
     }
 
     Minuit2MinFunc F(f,param);
-    MnMigrad Migrad(F,Init_x,STRATEGY);
-    MnSimplex Simplex(F,Init_x,STRATEGY);
+    MnMigrad Migrad1(F,Init_x,0);
+    MnSimplex Simplex1(F,Init_x,0);
     switch (minimizer_get_alg())
     {
         case MIN_MIGRAD:
-            Minimizer = &Migrad;
+            Minimizer = &Migrad1;
             break;
         case MIN_SIMPLEX:
-            Minimizer = &Simplex;
+            Minimizer = &Simplex1;
             break;
         default:
             LATAN_ERROR("invalid MINUIT minimization algorithm flag",
@@ -155,16 +150,47 @@ latan_errno minimize_minuit2(mat *x, const mat *x_limit, double *f_min,\
     }
     latan_printf(DEBUG2,"(MINUIT) Minimizing...\n");
     FunctionMinimum Min = (*Minimizer)();
+    latan_printf(DEBUG2,"(MINUIT) Pre-minimizer call :\n");
+    if (latan_get_verb() == DEBUG2)
+    {
+        cout << "--------------------------------------------------------";
+        cout << Min;
+        cout << "--------------------------------------------------------";
+        cout << endl;
+    }
+    for (i=0;i<ndim;i++)
+    {
+        x_i   = Min.UserParameters().Value((unsigned int)i);
+        err_i = Min.UserParameters().Error((unsigned int)i);
+        Init_x.SetValue((unsigned int)i,x_i);
+        Init_x.SetError((unsigned int)i,err_i);
+    }
+    MnMigrad Migrad2(F,Init_x,2);
+    MnSimplex Simplex2(F,Init_x,2);
+    switch (minimizer_get_alg())
+    {
+        case MIN_MIGRAD:
+            Minimizer = &Migrad2;
+            break;
+        case MIN_SIMPLEX:
+            Minimizer = &Simplex2;
+            break;
+        default:
+            LATAN_ERROR("invalid MINUIT minimization algorithm flag",
+                        LATAN_EINVAL);
+            break;
+    }
+    Min = (*Minimizer)();
+    for (i=0;i<ndim;i++)
+    {
+        x_i = Min.UserParameters().Parameter((unsigned int)i).Value();
+        mat_set(x,i,0,x_i);
+    }
     if (!Min.IsValid())
     {
         LATAN_WARNING("MINUIT library reported that minimization result is not valid",\
                       LATAN_FAILURE);
         status = LATAN_FAILURE;
-    }
-    for (i=0;i<ndim;i++)
-    {
-        x_i = Min.UserParameters().Parameter((unsigned int)i).Value();
-        mat_set(x,i,0,x_i);
     }
     *f_min = Min.Fval();
           
@@ -182,7 +208,7 @@ latan_errno minimize_minuit2(mat *x, const mat *x_limit, double *f_min,\
         vector<pair<double, double> > ScanRes;
         MnPlot Plot;
 
-        MnScan Scanner(F,Min.UserParameters(),STRATEGY);
+        MnScan Scanner(F,Min.UserParameters(),2);
         cout << "--------------------------------------------------------";
         cout << endl;
         for (i=0;i<ndim;i++)

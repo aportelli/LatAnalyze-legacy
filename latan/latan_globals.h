@@ -162,10 +162,13 @@ __BEGIN_DECLS
 /* LatAnalyze environment access */
 void latan_get_name(strbuf name);
 void latan_get_version(strbuf version);
-int latan_get_verb(void);
+int  latan_get_verb(void);
 #ifdef LATAN_ERRNO_DEF
 latan_errno latan_set_verb(const int verb);
 #endif
+bool latan_get_warn(void);
+void latan_set_warn(const bool warn);
+
 
 /* LatAnalyze message function */
 void latan_printf(const int verb, const strbuf fmt, ...);

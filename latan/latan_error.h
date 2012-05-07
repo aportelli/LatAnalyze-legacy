@@ -85,6 +85,7 @@ LATAN_ERROR_VAL(reason,no,NULL)
     latan_error(_freason,__FILE__,__LINE__,no);\
 }\
 
+#define LATAN_MAX_WARNING 10
 #define LATAN_WARNING(reason,no)\
 {\
     strbuf _freason;\

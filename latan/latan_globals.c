@@ -25,13 +25,15 @@ typedef struct
     strbuf name;
     strbuf version;
     int verb;
+    bool warn;
 } latan_env;
 
 static latan_env env = 
 {
     PACKAGE_NAME,       \
     PACKAGE_VERSION,    \
-    QUIET               \
+    QUIET,              \
+    true
 };
 
 /*                         LatAnalyze environment access                      */
@@ -61,6 +63,16 @@ latan_errno latan_set_verb(const int verb)
     env.verb = verb;
     
     return LATAN_SUCCESS;
+}
+
+bool latan_get_warn(void)
+{
+    return env.warn;
+}
+
+void latan_set_warn(const bool warn)
+{
+    env.warn = warn;
 }
 
 /*                        LatAnalyze message function                         */

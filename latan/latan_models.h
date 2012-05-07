@@ -23,18 +23,19 @@
 #include <latan/latan_globals.h>
 #include <latan/latan_fit.h>
 
-/* 1D models */
-/** 1D polynomial models **/
+/** constant **/
 extern fit_model fm_const;
 
 /** exponential decay **/
 extern fit_model fm_expdec;
-extern fit_model fm_dbl_expdec;
+extern fit_model fm_expdec_ex;
+extern fit_model fm_expdec_splitsum;
+extern fit_model fm_expdec_ex_splitsum;
 
 /** hyperbolic cosine **/
 extern fit_model fm_cosh;
-extern fit_model fm_dbl_cosh;
-
-/* 2D models */
+extern fit_model fm_cosh_ex;
+extern fit_model fm_cosh_splitsum;
+extern fit_model fm_cosh_ex_splitsum;
 
 #endif

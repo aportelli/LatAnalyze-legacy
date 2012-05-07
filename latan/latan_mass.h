@@ -42,9 +42,13 @@ enum
     EM_ACOSH = 1
 };
 
-latan_errno effmass(mat *res, const mat *mprop, const int parity);
-latan_errno rs_sample_effmass(rs_sample *s_res, const rs_sample *s_mprop,\
-                              const int parity);
+latan_errno get_effmass_size(size_t dim[2], const mat *mprop,   \
+                             const size_t nstate, const int type);
+latan_errno effmass(mat *res, mat *t, const mat *mprop, const size_t nstate,\
+                    const int type);
+latan_errno rs_sample_effmass(rs_sample *s_res, mat *t,                     \
+                              const rs_sample *s_mprop, const size_t nstate,\
+                              const int type);
 latan_errno effmass_PCAC(mat *res, const mat *mprop_AP, const mat *mprop_PP);
 #define rs_sample_effmass_PCAC(s_res,s_mprop_AP,s_mprop_PP)\
 rs_sample_binop(s_res,s_mprop_AP,s_mprop_PP,&effmass_PCAC)

@@ -29,41 +29,171 @@
 extern double acosh(double x); /* acosh is not ANSI compliant */
 #endif
 
-latan_errno effmass(mat *res, const mat *mprop, const int parity)
+latan_errno get_effmass_size(size_t dim[2], const mat *mprop,   \
+                             const size_t nstate, const int type)
 {
-    size_t i;
-    double em;
-    
-    if (nrow(res) != nrow(mprop) - 2)
-    {
-        LATAN_ERROR("effective mass matrix have wrong dimensions",\
-                    LATAN_EBADLEN);
-    }
-    
-    /* fabs/MAX(.,1.0) : you don't want NaN at half-time */
-    switch (parity)
+    dim[1] = nstate;
+    switch (type) 
     {
         case EM_LOG:
-            for (i=0;i<nrow(res);i++)
-            {
-                em = fabs(log(fabs(mat_get(mprop,i+1,0)/mat_get(mprop,i+2,0))));
-                mat_set(res,i,0,em);
-            }
+            dim[0] = nrow(mprop) - 2*nstate + 1;
             break;
         case EM_ACOSH:
-            for (i=0;i<nrow(res);i++)
-            {
-                em  = mat_get(mprop,i,0) + mat_get(mprop,i+2,0);
-                em /= 2.0*mat_get(mprop,i+1,0);
-                em  = MAX(em,cosh(1.0e-3));
-                em  = acosh(em);
-                mat_set(res,i,0,em);
-            }
+            dim[0] = nrow(mprop) - 4*nstate + 2;
             break;
         default:
-            LATAN_ERROR("wrong parity flag",LATAN_EINVAL);
+            dim[0] = 0;
+            LATAN_ERROR("wrong effective mass type flag",LATAN_EINVAL);
             break;
     }
+    
+    return LATAN_SUCCESS;
+}
+
+/* effective mass for 1 or 2 states ( cf. http://arxiv.org/abs/0903.2314 ) */
+latan_errno effmass(mat *res, mat *t, const mat *mprop, const size_t nstate,\
+                    const int type)
+{
+    size_t dim[2],t_0;
+    size_t i,j,k,t_i;
+    unsigned int bin;
+    double *y,*em,lim,sign;
+    double (*inv_func)(double);
+    
+    get_effmass_size(dim,mprop,nstate,type);
+    if (res)
+    {
+        if ((nrow(res) != dim[0])||(ncol(res) != dim[1]))
+        {
+            LATAN_ERROR("effective mass matrix has wrong dimensions",\
+                        LATAN_EBADLEN);
+        }
+    }
+    if (t)
+    {
+        if (nrow(t) != dim[0])
+        {
+            LATAN_ERROR("time vector has wrong dimensions",\
+                        LATAN_EBADLEN);
+        }
+    }
+    
+    MALLOC(y,double *,2*nstate);
+    MALLOC(em,double *,nstate);
+    
+    switch (type)
+    {
+        case EM_LOG:
+            t_0      = 0;
+            inv_func = &log;
+            lim      = 0.0;
+            sign     = -1.0;
+            break;
+        case EM_ACOSH:
+            t_0      = 2*nstate-1;
+            inv_func = &acosh;
+            lim      = 1.0;
+            sign     = 1.0;
+            break;
+        default:
+            t_0      = 0;
+            inv_func = NULL;
+            lim      = 0.0;
+            sign     = 0.0;
+            LATAN_ERROR("wrong type flag",LATAN_EINVAL);
+            break;
+    }
+    for (i=0;i<dim[0];i++)
+    {
+        t_i = t_0 + i;
+        if (t)
+        {
+            mat_set(t,i,0,(double)(t_i));
+        }
+        if (res)
+        {
+            for (j=0;j<2*nstate;j++) 
+            {
+                switch (type)
+                {
+                    case EM_LOG:
+                        y[j] = mat_get(mprop,t_i+j,0);
+                        break;
+                    case EM_ACOSH:
+                        y[j] = 0.0;
+                        for (k=0;k<=j;k++)
+                        {
+                            bin   = binomial((unsigned int)(j),\
+                                             (unsigned int)(k));
+                            y[j] += ((double)(bin))*mat_get(mprop,t_i+j-2*k,0);
+                        }
+                        y[j] *= pow(0.5,j);
+                        break;
+                    default:
+                        LATAN_ERROR("wrong type flag",LATAN_EINVAL);
+                        break;
+                }
+            }
+            switch (nstate) 
+            {
+                case 1:
+                    em[0] = y[1]/y[0];
+                    break;
+                case 2:
+                    {
+                        double a,b,c,d,x1,x2;
+                        a     = y[0]*y[2] - SQ(y[1]);
+                        b     = y[1]*y[2] - y[0]*y[3];
+                        c     = y[1]*y[3] - SQ(y[2]);
+                        d     = SQ(b)-4.0*a*c;
+                        if (d > 0.0)
+                        {
+                            x1 = (-b-sqrt(d))/(2.0*a);
+                            x2 = (-b+sqrt(d))/(2.0*a);
+                            x1 = (x1 > lim) ? x1 : latan_nan();
+                            x2 = (x2 > lim) ? x2 : latan_nan();
+                            if (latan_isnan(x1)&&!latan_isnan(x2))
+                            {
+                                em[0] = x2;
+                                em[1] = x1;
+                            }
+                            else if (latan_isnan(x2)&&!latan_isnan(x1))
+                            {
+                                em[0] = x1;
+                                em[1] = x2;
+                            }
+                            else if (!latan_isnan(x1)&&!latan_isnan(x2))
+                            {
+                                em[0] = MIN(x1,x2);
+                                em[1] = MAX(x1,x2);
+                            }
+                            else
+                            {
+                                em[0] = latan_nan();
+                                em[1] = latan_nan();
+                            }
+                        }
+                        else
+                        {
+                            em[0] = latan_nan();
+                            em[1] = latan_nan();
+                        }
+                    }
+                    break;
+                default:
+                    LATAN_ERROR("only 1 or 2 states effective mass implemented",\
+                                LATAN_EINVAL);
+                    break;
+            }
+            for (j=0;j<nstate;j++)
+            {
+                mat_set(res,i,j,sign*inv_func(em[j]));
+            }
+        }
+    }
+    
+    FREE(y);
+    FREE(em);
     
     return LATAN_SUCCESS;
 }
@@ -71,8 +201,9 @@ latan_errno effmass(mat *res, const mat *mprop, const int parity)
 #define CENT_VAL(s)  rs_sample_pt_cent_val(s)
 #define ELEMENT(s,i) rs_sample_pt_sample(s,i)
 
-latan_errno rs_sample_effmass(rs_sample *s_res, const rs_sample *s_mprop,\
-                              const int parity)
+latan_errno rs_sample_effmass(rs_sample *s_res, mat *t,                     \
+                              const rs_sample *s_mprop, const size_t nstate,\
+                              const int type)
 {
     size_t i;
     size_t nsample;
@@ -80,17 +211,17 @@ latan_errno rs_sample_effmass(rs_sample *s_res, const rs_sample *s_mprop,\
     
     if (rs_sample_get_nsample(s_res) != rs_sample_get_nsample(s_mprop))
     {
-        LATAN_ERROR("operation between samples with different numbers of elements",\
+        LATAN_ERROR("operation between samples with different number of elements",\
                     LATAN_EINVAL);
     }
     
     nsample = rs_sample_get_nsample(s_res);
     status  = LATAN_SUCCESS;
     
-    USTAT(effmass(CENT_VAL(s_res),CENT_VAL(s_mprop),parity));
+    USTAT(effmass(CENT_VAL(s_res),t,CENT_VAL(s_mprop),nstate,type));
     for (i=0;i<nsample;i++)
     {
-        USTAT(effmass(ELEMENT(s_res,i),ELEMENT(s_mprop,i),parity));
+        USTAT(effmass(ELEMENT(s_res,i),NULL,ELEMENT(s_mprop,i),nstate,type));
     }
     
     return status;

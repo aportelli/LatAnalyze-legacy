@@ -1145,13 +1145,13 @@ static void init_chi2(fit_data *d, const int thread, const int nthread)
             }
             /*** inversion ***/
             latan_printf(DEBUG1,"Cd=\n");
-            if (latan_get_verb() == DEBUG1)
+            if (latan_get_verb() >= DEBUG1)
             {
                 mat_print(d->y_var_inv,"% 10e");
             }
             pseudoinvert_var(d->y_var_inv,fit_data_is_y_correlated(d));
             latan_printf(DEBUG1,"Cd^-1=\n");
-            if (latan_get_verb() == DEBUG1)
+            if (latan_get_verb() >= DEBUG1)
             {
                 mat_print(d->y_var_inv,"% 10e");
             }
@@ -1207,13 +1207,13 @@ static void init_chi2(fit_data *d, const int thread, const int nthread)
                 }
                 /*** inversion ***/
                 latan_printf(DEBUG1,"Cx=\n");
-                if (latan_get_verb() == DEBUG1)
+                if (latan_get_verb() >= DEBUG1)
                 {
                     mat_print(d->x_var_inv,"% 10e");
                 }
                 pseudoinvert_var(d->x_var_inv,fit_data_is_x_correlated(d));
                 latan_printf(DEBUG1,"Cx^-1=\n");
-                if (latan_get_verb() == DEBUG1)
+                if (latan_get_verb() >= DEBUG1)
                 {
                     mat_print(d->x_var_inv,"% 10e");
                 }
@@ -1241,13 +1241,13 @@ static void init_chi2(fit_data *d, const int thread, const int nthread)
                     }
                 }
                 latan_printf(DEBUG1,"C=\n");
-                if (latan_get_verb() == DEBUG1)
+                if (latan_get_verb() >= DEBUG1)
                 {
                     mat_print(d->var_inv,"% 10e");
                 }
                 pseudoinvert_var(d->var_inv,true);
                 latan_printf(DEBUG1,"C^-1=\n");
-                if (latan_get_verb() == DEBUG1)
+                if (latan_get_verb() >= DEBUG1)
                 {
                     mat_print(d->var_inv,"% 10e");
                 }

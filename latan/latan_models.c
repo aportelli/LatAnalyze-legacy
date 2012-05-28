@@ -126,16 +126,16 @@ fit_model fm_expdec_splitsum =
 static double fm_expdec_ex_splitsum_func0(const mat *x, const mat *p,\
                                           void *nothing __dumb)
 {
-    double res,m,dm,A1_0,A1_1,E,t;
+    double res,m,dm,A1_0,A2_0,E2_0,t;
     
     t    = mat_get(x,0,0);
     m    = mat_get(p,0,0);
     dm   = mat_get(p,1,0);
-    E    = mat_get(p,2,0);
-    A1_0 = mat_get(p,3,0);
-    A1_1 = mat_get(p,5,0);
+    E2_0 = mat_get(p,2,0);
+    A1_0 = mat_get(p,4,0);
+    A2_0 = mat_get(p,6,0);
     
-    res = exp(-(m+dm)*t+A1_0) + exp(-E*t+A1_1);
+    res = exp(-(m+0.5*dm)*t+A1_0) + exp(-E2_0*t+A2_0);
     
     return res;
 }
@@ -143,16 +143,16 @@ static double fm_expdec_ex_splitsum_func0(const mat *x, const mat *p,\
 static double fm_expdec_ex_splitsum_func1(const mat *x, const mat *p,\
                                           void *nothing __dumb)
 {
-    double res,m,dm,A2_0,A2_1,E,t;
+    double res,m,dm,A1_1,A2_1,E2_1,t;
     
     t    = mat_get(x,0,0);
     m    = mat_get(p,0,0);
     dm   = mat_get(p,1,0);
-    E    = mat_get(p,2,0);
-    A2_0 = mat_get(p,4,0);
-    A2_1 = mat_get(p,6,0);
+    E2_1 = mat_get(p,3,0);
+    A1_1 = mat_get(p,5,0);
+    A2_1 = mat_get(p,7,0);
     
-    res = exp(-(m-dm)*t+A2_0) + exp(-E*t+A2_1);
+    res = exp(-(m-0.5*dm)*t+A1_1) + exp(-E2_1*t+A2_1);
     
     return res;
 }
@@ -161,7 +161,7 @@ fit_model fm_expdec_ex_splitsum =
 {
     "y0(x) = exp(-(p0-p1)*x+p3)+exp(-p2*x+p5), y1(x) = exp(-(p0+p1)*x+p4)+exp(-p2*x+p6)",
     {&fm_expdec_ex_splitsum_func0,&fm_expdec_ex_splitsum_func1},
-    &npar_7,
+    &npar_8,
     1,
     2
 };
@@ -293,15 +293,15 @@ fit_model fm_cosh_splitsum =
 static double fm_cosh_ex_splitsum_func0(const mat *x, const mat *p,\
                                         void *vnt)
 {
-    double res,m,dm,A1_0,A2_0,E,t;
+    double res,m,dm,A1_0,A2_0,E2_0,t;
     size_t nt;
     
     t    = mat_get(x,0,0);
     m    = mat_get(p,0,0);
     dm   = mat_get(p,1,0);
-    E    = mat_get(p,2,0);
-    A1_0 = mat_get(p,3,0);
-    A2_0 = mat_get(p,5,0);
+    E2_0 = mat_get(p,2,0);
+    A1_0 = mat_get(p,4,0);
+    A2_0 = mat_get(p,6,0);
     
     if (vnt)
     {
@@ -312,8 +312,8 @@ static double fm_cosh_ex_splitsum_func0(const mat *x, const mat *p,\
         nt = 0;
     }
     
-    res = exp(A1_0)*cosh((m+dm)*(t-DRATIO(nt,2)))\
-          +exp(A2_0)*cosh(E*(t-DRATIO(nt,2)));
+    res = exp(A1_0)*cosh((m+0.5*dm)*(t-DRATIO(nt,2)))\
+          +exp(A2_0)*cosh(E2_0*(t-DRATIO(nt,2)));
     
     return res;
 }
@@ -321,15 +321,15 @@ static double fm_cosh_ex_splitsum_func0(const mat *x, const mat *p,\
 static double fm_cosh_ex_splitsum_func1(const mat *x, const mat *p,\
                                         void *vnt)
 {
-    double res,m,dm,A1_1,A2_1,E,t;
+    double res,m,dm,A1_1,A2_1,E2_1,t;
     size_t nt;
     
     t    = mat_get(x,0,0);
     m    = mat_get(p,0,0);
     dm   = mat_get(p,1,0);
-    E    = mat_get(p,2,0);
-    A1_1 = mat_get(p,4,0);
-    A2_1 = mat_get(p,6,0);
+    E2_1 = mat_get(p,3,0);
+    A1_1 = mat_get(p,5,0);
+    A2_1 = mat_get(p,7,0);
     
     if (vnt)
     {
@@ -340,8 +340,8 @@ static double fm_cosh_ex_splitsum_func1(const mat *x, const mat *p,\
         nt = 0;
     }
     
-    res = exp(A1_1)*cosh((m-dm)*(t-DRATIO(nt,2)))\
-          +exp(A2_1)*cosh(E*(t-DRATIO(nt,2)));
+    res = exp(A1_1)*cosh((m-0.5*dm)*(t-DRATIO(nt,2)))\
+          +exp(A2_1)*cosh(E2_1*(t-DRATIO(nt,2)));
     
     return res;
 }
@@ -350,7 +350,7 @@ fit_model fm_cosh_ex_splitsum =
 {
     "y0(x) = exp(p3)*cosh((p0-p1)*(x-nt/2))+exp(p5)*cosh(p2*(x-nt/2)), y1(x) = exp(p4)*cosh((p0+p1)*(x-nt/2))+exp(p6)*cosh(p2*(x-nt/2))",
     {&fm_cosh_ex_splitsum_func0,&fm_cosh_ex_splitsum_func1},
-    &npar_7,
+    &npar_8,
     1,
     2
 };

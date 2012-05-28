@@ -263,6 +263,9 @@ double mat_elpercentile_with_sind(const mat *m, const mat *w,       \
     double *m_ar,*w_ar;
     double res;
     
+    m_buf = NULL;
+    w_buf = NULL;
+    
     /* create buffers if matrices are submatrices */
     create_m_buf = (ncol(m) != m->data_cpu->tda);
     if (w)

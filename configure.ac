@@ -13,6 +13,7 @@ AM_INIT_AUTOMAKE([-Wall -Werror])
 AM_CONFIG_HEADER([config.h])
 
 # Checks for programs.
+AM_PROG_AR
 AC_PROG_CC
 AM_PROG_CC_C_O
 AC_PROG_CXX

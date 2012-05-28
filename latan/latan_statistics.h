@@ -141,7 +141,7 @@ latan_errno rs_sample_binops(rs_sample *s_a, const rs_sample *s_b,\
 #define rs_sample_eqsqrt(s_a)       rs_sample_sqrt(s_a,s_a)
 #define rs_sample_expp(s_a,s_b)     rs_sample_unop(s_a,s_b,&mat_expp)
 #define rs_sample_eqexpp(s_a)       rs_sample_expp(s_a,s_a)
-#define rs_sample_sub(s_a,s_b,s_c)  rs_sample_binop(s_a,s_b,s_c,&mat_add)
+#define rs_sample_sub(s_a,s_b,s_c)  rs_sample_binop(s_a,s_b,s_c,&mat_sub)
 #define rs_sample_eqsub(s_a,s_b)    rs_sample_sub(s_a,s_a,s_b)
 
 __END_DECLS

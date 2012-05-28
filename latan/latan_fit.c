@@ -170,13 +170,14 @@ fit_data *fit_data_create(const size_t ndata, const size_t nxdim,\
     d->var_inv       = NULL;
     d->is_inverted   = false;
     d->chi2_ext      = &zero;
-    d->chi2_val      = -1.0;
+    d->chi2_val      = latan_nan();
     d->chi2_comp     = NULL;
     d->save_chi2pdof = true;
     d->buf           = NULL;
     d->nbuf          = 0;
     d->s             = 0;
-
+    d->matperf       = latan_nan();
+    d->callps        = latan_nan();
     for (k1=0;k1<nxdim;k1++)
     {
         for (k2=k1;k2<nxdim;k2++)
@@ -1322,6 +1323,10 @@ static void set_X_Y(mat* X, mat *Y, mat *x_buf, const mat *p, const fit_data *d)
     }
 }
 
+#define NFLOP_MAT_MUL_NN(b,c)\
+(2.0*(double)(nrow(b)*ncol(c)*ncol(b)))
+#define NFLOP_DDOT(b) (2.0*(double)(nrow(b)))
+
 /* compute t(lX)*C^-1*lX */
 static double chi2_base(const mat *p, void *vd)
 {
@@ -1354,6 +1359,7 @@ static double chi2_base(const mat *p, void *vd)
 
     /* setting X and Y */
     set_X_Y(X,Y,x_f,p,d);
+    d->callps += (double)(nrow(Y));
     
     /* setting lX and computing chi^2 in case of data/x covariance */
     if (fit_data_have_xy_covar(d))
@@ -1361,17 +1367,23 @@ static double chi2_base(const mat *p, void *vd)
         mat_set_subm(lX,Y,0,0,nrow(Y)-1,0);
         mat_set_subm(lX,X,nrow(Y),0,nrow(lX)-1,0);
         mat_mul(ClX,C,'n',lX,'n');
+        d->matperf += NFLOP_MAT_MUL_NN(C,lX);
         latan_blas_ddot(ClX,lX,&res);
+        d->matperf += NFLOP_DDOT(ClX);
     }
     /* computing chi^2 by blocks in case of no data/x covariance */
     else
     {
         mat_mul(CyY,Cy,'n',Y,'n');
+        d->matperf += NFLOP_MAT_MUL_NN(Cy,Y);
         latan_blas_ddot(CyY,Y,&res);
+        d->matperf += NFLOP_DDOT(CyY);
         if (fit_data_have_x_var(d))
         {
             mat_mul(CxX,Cx,'n',X,'n');
+            d->matperf += NFLOP_MAT_MUL_NN(Cx,X);
             latan_blas_ddot(CxX,X,&buf);
+            d->matperf += NFLOP_DDOT(CxX);
             res += buf;
         }
     }
@@ -1479,6 +1491,7 @@ latan_errno data_fit(mat *p, const mat *p_limit, fit_data *d)
     latan_errno status;
     strbuf cor_status;
     double chi2_min;
+    clock_t dur;
     
     strbufcpy(cor_status,"correlations :");
     if (fit_data_is_y_correlated(d))
@@ -1500,7 +1513,13 @@ latan_errno data_fit(mat *p, const mat *p_limit, fit_data *d)
     latan_printf(VERB,"fitting (%s) %u data points with %s model...\n",
                  cor_status,(unsigned int)fit_data_fit_point_num(d),\
                  d->model->name);
-    status = minimize(p,p_limit,&chi2_min,&chi2,d);
+    d->matperf  = 0.0;
+    d->callps   = 0.0;
+    dur         = clock();
+    status      = minimize(p,p_limit,&chi2_min,&chi2,d);
+    dur         = clock() - dur;
+    d->matperf /= DRATIO(dur,CLOCKS_PER_SEC);
+    d->callps  /= DRATIO(dur,CLOCKS_PER_SEC);
     if (d->save_chi2pdof)
     {
         d->chi2_val = chi2_min;
@@ -1576,8 +1595,10 @@ latan_errno rs_data_fit(rs_sample *p, const mat *p_limit, rs_sample * const *x,\
     USTAT(mat_get_subm(rs_sample_pt_cent_val(p),pbuf,0,0,npar-1,0));
     chi2_backup = fit_data_get_chi2(d);
     fit_data_get_chi2_comp(comp_backup,d);
-    latan_printf(VERB,"fit: central value chi^2/dof = %e -- p-value = %e\n",\
+    latan_printf(VERB,"fit: central value chi^2/dof= %e (p-value= %e)\n",\
                  fit_data_get_chi2pdof(d),fit_data_get_pvalue(d));
+    latan_printf(VERB,"     matrix perf= %f Gflop/s -- model call= %f s^-1\n",\
+                 d->matperf/(1.0e+09),d->callps);
     
     /* sample fits */
     for (s=0;s<nsample;s++)

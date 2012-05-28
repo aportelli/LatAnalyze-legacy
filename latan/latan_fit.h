@@ -119,6 +119,9 @@ typedef struct fid_data_s
     int nbuf;
     /* sample counter */
     size_t s;
+    /* chi^2 performance */
+    double matperf;
+    double callps;
 } fit_data;
 
 /** allocation **/

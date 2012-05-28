@@ -119,7 +119,7 @@ int main(void)
                        DIS_SEQ_LENGTH,true,"rand_n distribution","rgb 'red'");
     sprintf(plotcmd,"exp(-(x-%e)**2/(2.0*%e))/%e t 'theoretical distribution'",\
             GAUSS_MU,SQ(GAUSS_SIG),sqrt(2*C_PI)*GAUSS_SIG);
-    plot_add_plot(dist_plot,plotcmd);
+    plot_add_plot(dist_plot,plotcmd,"");
     plot_disp(dist_plot);
     plot_destroy(dist_plot);
     io_finish();

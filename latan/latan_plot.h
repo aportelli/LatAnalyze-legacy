@@ -46,13 +46,13 @@ typedef double univar_func(const double x, void *param);
 typedef double mulvar_func(const mat *x, void *param);
 
 /* the plot structure */
-typedef struct 
+typedef struct plot_s
 {
     size_t nplot;       /* number of plot commands the buffer*/
     strbuf *plotbuf;    /* buffer of plot commands */
+    strbuf *datfname;   /* names of the data files for this plot */
     size_t nhead;       /* number of head commands */
     strbuf *headbuf;    /* buffer of head commands */
-    strbuf *tmpfname;   /* names of the temporary files opened for this plot */
     strbuf title;       /* title of the plot */
     strbuf term;        /* output terminal of the plot */
     strbuf output;      /* output file of the plot */
@@ -87,7 +87,7 @@ void plot_set_term(plot *p, const strbuf term);
 void plot_set_output(plot *p, const strbuf output);
 
 /* plot functions */
-void plot_add_plot(plot *p, const strbuf cmd);
+void plot_add_plot(plot *p, const strbuf cmd, const strbuf datfname);
 void plot_add_head(plot *p, const strbuf cmd);
 void plot_add_datpoint(plot *p, const double x, const double y,\
                        const double xerr, const double yerr,   \
@@ -135,6 +135,7 @@ void plot_add_fit(plot *p, const fit_data *d, const size_t ky, const mat *x_ex,\
 void plot_parse(FILE* outstr, const plot *p);
 #define plot_print(p) plot_parse(stdout,p);
 latan_errno plot_disp(const plot *p);
+latan_errno plot_save(const strbuf dirname, plot *p);
 
 __END_DECLS
 

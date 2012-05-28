@@ -83,7 +83,7 @@ int main(void)
         printf("\nchi2/dof= %e\n",fit_data_get_chi2pdof(d));
         sprintf(plotcmd,"%e*exp(-%e*x)",exp(mat_get(fit_param,1,0)),\
                 mat_get(fit_param,0,0));
-        plot_add_plot(p,plotcmd);
+        plot_add_plot(p,plotcmd,"");
     }
     mat_eqsqrt(var);
     fit_data_get_x_k(x,d,0);

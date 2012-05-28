@@ -42,13 +42,16 @@ int main(void)
     xerr[0] = 0.2;
     xerr[1] = 0.5;
     
+    plot_set_term(p,"aqua");
+    plot_set_scale_ymanual(p,0.0,16.0);
     plot_add_vlineaerr(p,3,xerr,"rgb 'green'");
-    plot_add_plot(p,"x**2 lc rgb 'red'");
+    plot_add_plot(p,"x**2 lc rgb 'red'","");
     plot_add_func(p,&tabfunc_lineval,&sq,sq.xmin,sq.xmax,1000,"x**2 table",\
                   "rgb 'blue'");
-    plot_set_scale_ymanual(p,0.0,16.0);
+    plot_save("ex_plot_save",p);
     plot_disp(p);
     plot_print(p);
+    
     
     plot_destroy(p);
     

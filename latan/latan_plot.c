@@ -21,6 +21,7 @@
 
 #include <latan/latan_plot.h>
 #include <latan/latan_includes.h>
+#include <latan/latan_io.h>
 #include <latan/latan_math.h>
 
 enum
@@ -39,7 +40,6 @@ enum
 
 static char * gnuplot_get_program_path(const char *pname);
 static void gnuplot_cmd(FILE *ctrl, const char *cmd, ...);
-static void plot_add_tmpf(plot *p, const strbuf tmpfname);
 
 static size_t ntmpf = 0;
 
@@ -50,12 +50,12 @@ static size_t ntmpf = 0;
 #define GNUPLOT_CMD "gnuplot"
 #endif
 #ifndef GNUPLOT_CMD_ARGS
-#define GNUPLOT_CMD_ARGS "-persist"
+#define GNUPLOT_CMD_ARGS "-p"
 #endif
 
 /** part of Nicolas Devillard gnuplot interface **/
 /*** Maximal size of a gnuplot command ***/
-#define GP_CMD_SIZE 2048
+#define GP_CMD_SIZE STRING_LENGTH
 /*** Maximal size of a name in the PATH ***/
 #define PATH_MAXNAMESZ 4096
 
@@ -156,14 +156,6 @@ static void gnuplot_cmd(FILE* ctrl, const char *cmd, ...)
     fflush(ctrl);
 }
 
-/** temporary file management **/
-static void plot_add_tmpf(plot *p, const strbuf tmpfname)
-{
-    (ntmpf)++;
-    REALLOC_NOERRET(p->tmpfname,p->tmpfname,strbuf*,ntmpf);
-    strbufcpy(p->tmpfname[ntmpf-1],tmpfname);
-}
-
 /*                              allocation                                  */
 /****************************************************************************/
 plot *plot_create(void)
@@ -176,7 +168,7 @@ plot *plot_create(void)
     p->plotbuf  = NULL;
     p->nhead    = 0;
     p->headbuf  = NULL;
-    p->tmpfname = NULL;
+    p->datfname = NULL;
     strbufcpy(p->title,"");
     strbufcpy(p->term,DEFTERM);
     strbufcpy(p->output,"");
@@ -195,14 +187,23 @@ plot *plot_create(void)
 void plot_destroy(plot *p)
 {
     size_t i;
+    strbuf war_msg;
     
     FREE(p->headbuf);
     FREE(p->plotbuf);
-    for (i=0;i<ntmpf;i++)
+    for (i=0;i<p->nplot;i++)
     {
-        remove(p->tmpfname[i]);
+        if (strlen(p->datfname[i]))
+        {
+            if (remove(p->datfname[i]))
+            {
+                sprintf(war_msg,"impossible to remove plot temporary file %s",\
+                        p->datfname[i]);
+                LATAN_WARNING(war_msg,LATAN_ESYSTEM);
+            }
+        }
     }
-    FREE(p->tmpfname);
+    FREE(p->datfname);
     FREE(p);
 }
 
@@ -284,11 +285,20 @@ void plot_set_output(plot *p, const strbuf output)
 
 /*                              plot functions                              */
 /****************************************************************************/
-void plot_add_plot(plot *p, const strbuf cmd)
+void plot_add_plot(plot *p, const strbuf cmd, const strbuf datfname)
 {
+    strbuf war_msg;
+    
     (p->nplot)++;
-    REALLOC_NOERRET(p->plotbuf,p->plotbuf,strbuf*,p->nplot);
+    REALLOC_NOERRET(p->plotbuf,p->plotbuf,strbuf *,p->nplot);
+    REALLOC_NOERRET(p->datfname,p->datfname,strbuf *,p->nplot);
     strbufcpy(p->plotbuf[p->nplot-1],cmd);
+    strbufcpy(p->datfname[p->nplot-1],datfname);
+    if (strlen(datfname)&&(access(datfname,R_OK) != 0))
+    {
+        sprintf(war_msg,"cannot access datafile %s",datfname);
+        LATAN_WARNING(war_msg,LATAN_ESYSTEM);
+    }
 }
 
 void plot_add_head(plot *p, const strbuf cmd)
@@ -348,9 +358,9 @@ void plot_add_datpoint(plot *p, const double x, const double y, \
     {
         sprintf(colorcmd,"lc %s",color);
     }
-    sprintf(plotcmd,"%s u %s %s t '%s' lt -1 %s",echocmd,ucmd,errcmd,title,\
-            colorcmd);
-    plot_add_plot(p,plotcmd);
+    sprintf(plotcmd,"%s u %s %s t '%s' lt -1 pt 1 %s",echocmd,ucmd,errcmd,\
+            title,colorcmd);
+    plot_add_plot(p,plotcmd,"");
 }
 
 void plot_add_dat(plot *p, const mat *x, const mat *dat, const mat *xerr,\
@@ -365,7 +375,8 @@ void plot_add_dat(plot *p, const mat *x, const mat *dat, const mat *xerr,\
     
     err_flag |= (xerr != NULL) ? X_ERR : NO_ERR;
     err_flag |= (yerr != NULL) ? Y_ERR : NO_ERR;
-    sprintf(tmpfname,".latan_plot_tmp_%lu",(long unsigned)ntmpf);
+    sprintf(tmpfname,".latan_tmp_plot_%lu.dat",(long unsigned)ntmpf);
+    ntmpf++;
     FOPEN_NOERRET(tmpf,tmpfname,"w");
     if ((err_flag & X_ERR)&&(err_flag & Y_ERR))
     {
@@ -408,7 +419,6 @@ void plot_add_dat(plot *p, const mat *x, const mat *dat, const mat *xerr,\
         }
     }
     fclose(tmpf);
-    plot_add_tmpf(p,tmpfname);
     if (strlen(color) == 0)
     {
         strbufcpy(colorcmd,"");
@@ -417,9 +427,9 @@ void plot_add_dat(plot *p, const mat *x, const mat *dat, const mat *xerr,\
     {
         sprintf(colorcmd,"lc %s",color);
     }
-    sprintf(plotcmd,"'%s' u %s %s t '%s' lt -1 %s",tmpfname,ucmd,errcmd,title,\
+    sprintf(plotcmd,"u %s %s t '%s' lt -1 pt 1 %s",ucmd,errcmd,title,\
             colorcmd);
-    plot_add_plot(p,plotcmd);
+    plot_add_plot(p,plotcmd,tmpfname);
 }
 
 void plot_add_points(plot *p, const mat *x, const mat *y, const strbuf title,\
@@ -429,15 +439,14 @@ void plot_add_points(plot *p, const mat *x, const mat *y, const strbuf title,\
     strbuf tmpfname, plotcmd, colorcmd;
     size_t i;
     
-    sprintf(tmpfname,".latan_plot_tmp_%lu",(long unsigned)ntmpf);
+    sprintf(tmpfname,".latan_tmp_plot_%lu.dat",(long unsigned)ntmpf);
+    ntmpf++;
     FOPEN_NOERRET(tmpf,tmpfname,"w");
     for (i=0;i<nrow(y);i++)
     {
         fprintf(tmpf,"%.10e %.10e\n",mat_get(x,i,0),mat_get(y,i,0));
     }
     fclose(tmpf);
-    plot_add_tmpf(p,tmpfname);
-    plot_add_tmpf(p,tmpfname);
     if (strlen(color) == 0)
     {
         strbufcpy(colorcmd,"");
@@ -446,9 +455,9 @@ void plot_add_points(plot *p, const mat *x, const mat *y, const strbuf title,\
     {
         sprintf(colorcmd,"lc %s",color);
     }
-    sprintf(plotcmd,"'%s' u 1:2 t '%s' lt -1 %s w %s",tmpfname,title,\
+    sprintf(plotcmd,"u 1:2 t '%s' lt -1 %s w %s",title,\
             colorcmd,style);
-    plot_add_plot(p,plotcmd);
+    plot_add_plot(p,plotcmd,tmpfname);
 }
 
 void plot_add_func(plot *p, univar_func *f, void *f_param, const double xmin,\
@@ -567,7 +576,7 @@ void plot_add_hline(plot *p, const double y, const strbuf color)
         sprintf(colorcmd,"lc %s",color);
     }
     sprintf(plotcmd,"%.10e lt -1 %s notitle",y,colorcmd);
-    plot_add_plot(p,plotcmd);
+    plot_add_plot(p,plotcmd,"");
 }
 
 void plot_add_hlineerr(plot *p, const double y, const double err,\
@@ -585,7 +594,7 @@ void plot_add_hlineerr(plot *p, const double y, const double err,\
     }
     sprintf(plotcmd,"%.10e %s w filledcurve y1=%.10e fs transparent solid 0.25 noborder notitle",\
             y+err,colorcmd,y-err);
-    plot_add_plot(p,plotcmd);
+    plot_add_plot(p,plotcmd,"");
     plot_add_hline(p,y,color);
 }
 
@@ -609,7 +618,7 @@ void plot_add_vline(plot *p, const double x, const strbuf color)
     }
     sprintf(plotcmd,"sprintf(\"< printf ' %e %%e\\n%e %%e\\n'\",ymin,ymax) lt -1 %s w lines notitle",\
             x,x,colorcmd);
-    plot_add_plot(p,plotcmd);
+    plot_add_plot(p,plotcmd,"");
 }
 
 void plot_add_vlineaerr(plot *p, const double x, const double xerr[2],\
@@ -626,7 +635,7 @@ void plot_add_vlineaerr(plot *p, const double x, const double xerr[2],\
         sprintf(colorcmd,"lc %s",color);
     }
     sprintf(plotcmd,"sprintf(\"< printf ' %e %%e\\n%e %%e\\n%e %%e\\n%e %%e\\n%e %%e\\n'\",ymin,ymax,ymax,ymin,ymin) %s w filledcurve fs transparent solid 0.25 noborder notitle",x-xerr[0],x-xerr[0],x+xerr[1],x+xerr[1],x-xerr[0],colorcmd);
-    plot_add_plot(p,plotcmd);
+    plot_add_plot(p,plotcmd,"");
     plot_add_vline(p,x,color);
 }
 
@@ -723,7 +732,7 @@ void plot_add_fit(plot *p, const fit_data *d, const size_t ky, const mat *x_ex,\
 /****************************************************************************/
 void plot_parse(FILE* outstr, const plot *p)
 {
-    strbuf begin, end;
+    strbuf begin, end, fname;
     size_t i;
     
     gnuplot_cmd(outstr,"set term %s",p->term);
@@ -766,7 +775,7 @@ void plot_parse(FILE* outstr, const plot *p)
         }
         else 
         {
-            strbufcpy(begin,"");
+            strbufcpy(begin,"     ");
         }
         if (i == p->nplot-1)
         {
@@ -776,7 +785,15 @@ void plot_parse(FILE* outstr, const plot *p)
         {
             strbufcpy(end,",\\");
         }
-        gnuplot_cmd(outstr,"%s%s%s",begin,p->plotbuf[i],end);
+        if (strlen(p->datfname[i]))
+        {
+            sprintf(fname,"'%s' ",p->datfname[i]);
+        }
+        else
+        {
+            strbufcpy(fname,"");
+        }
+        gnuplot_cmd(outstr,"%s%s%s%s",begin,fname,p->plotbuf[i],end);
     }
 }
 
@@ -790,5 +807,80 @@ latan_errno plot_disp(const plot *p)
     
     GNUPLOT_CLOSE(ctrl);
                         
+    return LATAN_SUCCESS;
+}
+
+latan_errno plot_save(const strbuf dirname, plot *p)
+{
+    strbuf path,buf,*datfname_bak,term_bak,output_bak;
+    FILE *outf;
+    size_t i,j,lc;
+    mode_t mode_755;
+    strbuf name,ver,err_msg;
+    
+    MALLOC_ERRVAL(datfname_bak,strbuf *,p->nplot,LATAN_ENOMEM);
+    
+    mode_755 = S_IRWXU|S_IRGRP|S_IXGRP|S_IROTH|S_IXOTH;
+    
+    /* backup I/O parameters */
+    strbufcpy(term_bak,p->term);
+    strbufcpy(output_bak,p->output);
+    for (i=0;i<p->nplot;i++)
+    {
+        strbufcpy(datfname_bak[i],p->datfname[i]);
+    }
+    /* generate directory */
+    if (access(dirname,R_OK|W_OK|X_OK))
+    {
+        if (mkdir(dirname,mode_755))
+        {
+            sprintf(err_msg,"impossible to create directory %s",dirname);
+            LATAN_ERROR(err_msg,LATAN_ESYSTEM);
+        }
+    }
+    /* save pdf */
+    sprintf(path,"%s/plot.pdf",dirname);
+    plot_set_term(p,"pdf");
+    plot_set_output(p,path);
+    plot_disp(p);
+    plot_set_term(p,term_bak);
+    plot_set_output(p,output_bak);
+    /* save script and datafiles */
+    j = 0;
+    for (i=0;i<p->nplot;i++)
+    {
+        if (strlen(p->datfname[i]))
+        {
+            sprintf(p->datfname[i],"points_%lu.dat",(long unsigned)(j));
+            j++;
+            sprintf(path,"%s/%s",dirname,p->datfname[i]);
+            FOPEN(outf,path,"w");
+            BEGIN_FOR_LINE(buf,datfname_bak[i],lc)
+            {
+                fprintf(outf,"%s\n",buf);
+            }
+            END_FOR_LINE
+            fclose(outf);
+        }
+    }
+    sprintf(path,"%s/disp.plt",dirname);
+    FOPEN(outf,path,"w");
+    fprintf(outf,"#!/usr/bin/env %s %s\n\n",GNUPLOT_CMD,GNUPLOT_CMD_ARGS);
+    latan_get_name(name);
+    latan_get_version(ver);
+    fprintf(outf,"# script generated by %s v%s\n\n",name,ver);
+    plot_parse(outf,p);
+    fprintf(outf,"\n");
+    fclose(outf);
+    if(chmod(path,mode_755))
+    {
+        sprintf(err_msg,"impossible to set file %s in mode 755",path);
+        LATAN_WARNING(err_msg,LATAN_ESYSTEM);
+    }
+    for (i=0;i<p->nplot;i++)
+    {
+        strbufcpy(p->datfname[i],datfname_bak[i]);
+    }
+    
     return LATAN_SUCCESS;
 }

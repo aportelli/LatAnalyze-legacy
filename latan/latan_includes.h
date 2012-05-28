@@ -50,6 +50,7 @@
 #include <time.h>
 #include <float.h>
 #include <unistd.h>
+#include <sys/stat.h>
 #include <gsl/gsl_math.h>
 #ifdef _OPENMP
 #include <omp.h>

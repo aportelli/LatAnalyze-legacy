@@ -13,6 +13,7 @@ examples/ex_min
 examples/ex_rand
 examples/ex_rand.seed
 examples/ex_plot
+examples/ex_plot_save/*
 examples/ex_stat
 utils/latan_create_rg_state
 utils/latan_get_mass

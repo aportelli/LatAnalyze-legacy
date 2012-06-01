@@ -87,78 +87,98 @@ with @var{nmat} elements.
 Here are described the different functions to access and modify
 matrix elements and properties.
 
-@deftypefun size_t nrow (mat * m)
+@deftypefun size_t nrow (const mat *m)
 This function returns the number of rows of @var{m}.
 @end deftypefun
 
-@deftypefun size_t ncol (mat * m)
+@deftypefun size_t ncol (const mat *m)
 This function returns the number of columns of @var{m}.
 @end deftypefun
 
-@deftypefun double mat_get (mat * m, const size_t i, const size_t j)
-This function returns the element  @math{m_{ij}} of matrix @var{m}  
+@deftypefun size_t nel (const mat *m)
+This function returns the number of elements of @var{m} (equals @code{nrow(m)*ncol(m)}).
+@end deftypefun
+
+@deftypefun double mat_get (const mat *m, const size_t i, const size_t j)
+This function returns the element  @math{m_{i,j}} of matrix @var{m}  
 at row @var{i} and column @var{j}.
 @end deftypefun
 
-@deftypefun void mat_set (mat * m, const size_t i, const size_t j, const double val)
+@deftypefun double mat_get_rm (const mat *m,  const size_t ind)
+This function returns the element of matrix @var{m}  
+at row-major index @var{ind}.
+@end deftypefun
+
+@deftypefun void mat_set (mat *m, const size_t i, const size_t j, const double val)
 This function sets to @var{val} the element  @math{m_{i,j}} of
-matrix @var{m}  at row @var{i} and column @var{j}.
+matrix @var{m} at row @var{i} and column @var{j}.
+@end deftypefun
+
+@deftypefun void mat_set_rm (mat *m, const size_t ind, const double val)
+This function sets to @var{val} the element of
+matrix @var{m} with row-major index @var{ind}.
 @end deftypefun
 
 @cindex sub-matrix
-@deftypefun latan_errno mat_get_subm (mat * m, mat n, const size_t k1, const size_t l1, const size_t k2, const size_t l2)
+@deftypefun latan_errno mat_get_subm (mat *m, const mat *n, const size_t k1, const size_t l1, const size_t k2, const size_t l2)
 This function copies into @var{m} the submatrix of @var{n} of
 all elements @math{n_{i,j}} with @var{k1} @leq{} @math{i} @leq{} @var{k2}
 and @var{l1} @leq{} @math{j} @leq{} @var{l2}.
 @end deftypefun
  
-@deftypefun latan_errno mat_set_subm (mat * m, mat * n, const size_t k1, const size_t l1, const size_t k2, const size_t l2)
+@deftypefun latan_errno mat_set_subm (mat *m, const mat *n, const size_t k1, const size_t l1, const size_t k2, const size_t l2)
 This function copies the matrix @var{n} into the submatrix of @var{m} of
 all elements @math{m_{i,j}} with @*@var{k1} @leq{} @math{i} @leq{} @var{k2}
 and @var{l1} @leq{} @math{j} @leq{} @var{l2}.
 @end deftypefun
 
-@defmac MAT_PT_SUBM (mat * m, mat * n, size_t k1, size_t l1, size_t k2, size_t l2)
-This macro points @var{m} on the submatrix of @var{n} of
-all elements @math{n_{i,j}} with @var{k1} @leq{} @math{i} @leq{} @var{k2}
-and @var{l1} @leq{} @math{j} @leq{} @var{l2}.
-@end defmac
-
-@deftypefun latan_errno mat_get_diag (mat * diag, mat * m)
-This function copies in @var{diag} (as a column vector) the diagonal of @var{m} 
-:
+@deftypefun latan_errno mat_get_diag (mat *diag, const mat *m)
+This function copies in @var{diag} (as a column vector) the diagonal of @var{m}:
 @tex
 $$diag_{i,0}\leftarrow m_{i,i}$$
 @end tex
 @end deftypefun
 
-@deftypefun latan_errno mat_set_diag (mat * m, mat * diag)
-This function copies @var{diag} (as a column vector) in the diagonal of @var{m} :
+@deftypefun latan_errno mat_set_diag (mat *m, const mat *diag)
+This function copies @var{diag} (as a column vector) in the diagonal of @var{m}:
 @tex
 $$m_{i,i}\leftarrow diag_{i,0}$$
 @end tex
 @end deftypefun
 
-@deftypefun latan_errno mat_set_step (mat * m, const double x0, const double step)
+@deftypefun latan_errno mat_set_step (mat *m, const double x0, const double step)
 This function sets the elements of @var{m} (as a column vector) to an
-arithmetic sequence with origin @var{x0} and increment @var{step} :
+arithmetic sequence with origin @var{x0} and increment @var{step}:
 @tex
 $$m_{i,0}\leftarrow x0+i.steps$$
 @end tex
 @end deftypefun
 
-@deftypefun latan_errno mat_set_from_ar (mat * m, const double * ar)
-This function copies the array @var{ar} into @var{m}, using row major indexing.
+@deftypefun latan_errno mat_set_from_ar (mat *m, const double *ar)
+This function copies the array @var{ar} into @var{m}, using row-major indexing.
 @end deftypefun
 
-@deftypefun double mat_get_min (mat * m)
+@deftypefun double mat_get_min (const mat *m)
 This function returns the minimal element of @var{m}.
 @end deftypefun
 
-@deftypefun double mat_get_max (mat * m)
+@deftypefun double mat_get_max (const mat *m)
 This function returns the maximal element of @var{m}.
 @end deftypefun
 
+@deftypefun void mat_inc (mat *m, const size_t i, const size_t j, const double val)
+This function increment the element @math{m_{i,j}} of matrix @var{m} by @var{val}:
+@tex
+$$m_{i,j}\leftarrow m_{i,j}+val$$
+@end tex
+@end deftypefun
+
+@deftypefun void mat_pp (mat *m, const size_t i, const size_t j)
+This function increment the element @math{m_{i,j}} of matrix @var{m} by @math{1}:
+@tex
+$$m_{i,j}\leftarrow m_{i,j}+1$$
+@end tex
+@end deftypefun
 
 @node Tests, Operations, Access, Matrices
 @section Tests

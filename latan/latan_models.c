@@ -95,7 +95,7 @@ static double fm_expdec_splitsum_func0(const mat *x, const mat *p,\
     m   = mat_get(p,0,0);
     dm  = mat_get(p,1,0);
     A0  = mat_get(p,2,0);
-    res = exp(-(m+dm)*t+A0);
+    res = exp(-(m+0.5*dm)*t+A0);
     
     return res;
 }
@@ -109,7 +109,7 @@ static double fm_expdec_splitsum_func1(const mat *x, const mat *p,\
     m   = mat_get(p,0,0);
     dm  = mat_get(p,1,0);
     A1  = mat_get(p,3,0);
-    res = exp(-(m-dm)*t+A1);
+    res = exp(-(m-0.5*dm)*t+A1);
     
     return res;
 }
@@ -251,7 +251,7 @@ static double fm_cosh_splitsum_func0(const mat *x, const mat *p,\
         nt = 0;
     }
     
-    res = exp(A0)*cosh((m+dm)*(t-DRATIO(nt,2)));
+    res = exp(A0)*cosh((m+0.5*dm)*(t-DRATIO(nt,2)));
     
     return res;
 }
@@ -276,7 +276,7 @@ static double fm_cosh_splitsum_func1(const mat *x, const mat *p,\
         nt = 0;
     }
     
-    res = exp(A1)*cosh((m-dm)*(t-DRATIO(nt,2)));
+    res = exp(A1)*cosh((m-0.5*dm)*(t-DRATIO(nt,2)));
     
     return res;
 }

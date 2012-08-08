@@ -72,11 +72,12 @@
 /* field is assumed to be a non allocated strbuf*                           */
 #define BEGIN_FOR_LINE_TOK_F(field,f,tok,nf,lc)\
 {\
-    strbuf _line;\
-    BEGIN_FOR_LINE_F(_line,f,lc)\
+    strbuf _line,_line_buf;\
+    BEGIN_FOR_LINE_F(_line_buf,f,lc)\
     {\
         char *_line_ptr,*_save_ptr;\
-        _line_ptr = strtok_r(_line,tok,&_save_ptr);\
+        strbufcpy(_line,_line_buf);\
+        _line_ptr = strtok_r(_line_buf,tok,&_save_ptr);\
         nf        = 0;\
         while(_line_ptr != NULL)\
         {\

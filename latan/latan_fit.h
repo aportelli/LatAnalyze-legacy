@@ -196,6 +196,8 @@ double fit_data_model_xeval(const fit_data *d, const size_t k, const mat *x,\
                             const mat *p);
 double fit_data_model_eval(const fit_data *d, const size_t k, const size_t i,\
                            const mat *p);
+void fit_data_model_rs_xeval(rs_sample *res, const fit_data *d, const size_t k,\
+                             const mat *x, const rs_sample *p);
 
 /*** dof ***/
 size_t fit_data_get_dof(const fit_data *d);

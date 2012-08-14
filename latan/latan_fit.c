@@ -704,6 +704,24 @@ double fit_data_model_eval(const fit_data *d, const size_t k, const size_t i,\
     return res;
 }
 
+void fit_data_model_rs_xeval(rs_sample *res, const fit_data *d, const size_t k,\
+                             const mat *x, const rs_sample *p)
+{
+    size_t nsample;
+    size_t i;
+    double buf;
+    
+    nsample = rs_sample_get_nsample(res);
+    
+    buf = fit_data_model_xeval(d,k,x,rs_sample_pt_cent_val(p));
+    mat_set(rs_sample_pt_cent_val(res),0,0,buf);
+    for (i=0;i<nsample;i++)
+    {
+        buf = fit_data_model_xeval(d,k,x,rs_sample_pt_sample(p,i));
+        mat_set(rs_sample_pt_sample(res,i),0,0,buf);
+    }
+}
+
 /*** dof ***/
 size_t fit_data_get_dof(const fit_data *d)
 {

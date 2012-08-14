@@ -465,7 +465,7 @@ rs_sample *rs_sample_create(const size_t init_nrow, const size_t init_ncol,\
 
 void rs_sample_destroy(rs_sample *s)
 {
-    if (s != NULL)
+    if (s)
     {
         mat_destroy(s->cent_val);
         mat_ar_destroy(s->sample,s->nsample);

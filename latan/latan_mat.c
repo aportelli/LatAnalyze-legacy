@@ -95,9 +95,12 @@ mat **mat_ar_create(const size_t nmat, const size_t init_nrow,\
 
 void mat_destroy(mat *m)
 {
-    gsl_matrix_free(m->data_cpu);
-    m->prop_flag = MAT_GEN;
-    FREE(m);
+    if (m)
+    {
+        gsl_matrix_free(m->data_cpu);
+        m->prop_flag = MAT_GEN;
+        FREE(m);
+    }
 }
 
 void mat_ar_destroy(mat **m, const size_t nmat)

@@ -600,24 +600,27 @@ latan_errno xml_save_file(xml_file *f)
 void xml_file_destroy(xml_file *f)
 {
 
-    if (f->ctxt != NULL)
+    if (f)
     {
-        xmlXPathFreeContext(f->ctxt);
+        if (f->ctxt != NULL)
+        {
+            xmlXPathFreeContext(f->ctxt);
+        }
+        if ((f->ns != NULL)&&(f->mode == 'w'))
+        {
+            xmlFreeNs(f->ns);
+        }
+        if (f->doc != NULL)
+        {
+            xmlFreeDoc(f->doc);
+        }
+        f->doc  = NULL;
+        f->root = NULL;
+        f->ns   = NULL;
+        f->ctxt = NULL;
+        strbufcpy(f->fname,"");
+        FREE(f);
     }
-    if ((f->ns != NULL)&&(f->mode == 'w'))
-    {
-        xmlFreeNs(f->ns);
-    }
-    if (f->doc != NULL)
-    {
-        xmlFreeDoc(f->doc);
-    }
-    f->doc  = NULL;
-    f->root = NULL;
-    f->ns   = NULL;
-    f->ctxt = NULL;
-    strbufcpy(f->fname,"");
-    FREE(f);
 }
 
 latan_errno xml_close_file(xml_file *f)

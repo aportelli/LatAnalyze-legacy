@@ -221,46 +221,49 @@ void fit_data_destroy(fit_data *d)
 {
     int i;
 
-    mat_destroy(d->x);
-    mat_ar_destroy(d->x_covar,d->nxdim*(d->nxdim+1)/2);
-    FREE(d->have_x_covar);
-    FREE(d->have_xy_covar);
-    mat_destroy(d->y);
-    mat_ar_destroy(d->y_covar,d->nydim*(d->nydim+1)/2);
-    mat_ar_destroy(d->xy_covar,d->nydim*d->nxdim);
-    mat_destroy(d->cor_filter);
-    if (d->x_var_inv != NULL)
+    if (d)
     {
-        mat_destroy(d->x_var_inv);
-    }
-    if (d->y_var_inv != NULL)
-    {
-        mat_destroy(d->y_var_inv);
-    }
-    if (d->var_inv != NULL)
-    {
-        mat_destroy(d->var_inv);
-    }
-    if (d->chi2_comp != NULL)
-    {
-        mat_destroy(d->chi2_comp);
-    }
-    for(i=0;i<d->nbuf;i++)
-    {
-        mat_destroy(d->buf[i].x_f);
-        mat_destroy(d->buf[i].Y);
-        mat_destroy(d->buf[i].CyY);
-        if (d->buf[i].is_xpart_alloc)
+        mat_destroy(d->x);
+        mat_ar_destroy(d->x_covar,d->nxdim*(d->nxdim+1)/2);
+        FREE(d->have_x_covar);
+        FREE(d->have_xy_covar);
+        mat_destroy(d->y);
+        mat_ar_destroy(d->y_covar,d->nydim*(d->nydim+1)/2);
+        mat_ar_destroy(d->xy_covar,d->nydim*d->nxdim);
+        mat_destroy(d->cor_filter);
+        if (d->x_var_inv != NULL)
         {
-            mat_destroy(d->buf[i].X);
-            mat_destroy(d->buf[i].CxX);
-            mat_destroy(d->buf[i].lX);
-            mat_destroy(d->buf[i].ClX);
+            mat_destroy(d->x_var_inv);
         }
+        if (d->y_var_inv != NULL)
+        {
+            mat_destroy(d->y_var_inv);
+        }
+        if (d->var_inv != NULL)
+        {
+            mat_destroy(d->var_inv);
+        }
+        if (d->chi2_comp != NULL)
+        {
+            mat_destroy(d->chi2_comp);
+        }
+        for(i=0;i<d->nbuf;i++)
+        {
+            mat_destroy(d->buf[i].x_f);
+            mat_destroy(d->buf[i].Y);
+            mat_destroy(d->buf[i].CyY);
+            if (d->buf[i].is_xpart_alloc)
+            {
+                mat_destroy(d->buf[i].X);
+                mat_destroy(d->buf[i].CxX);
+                mat_destroy(d->buf[i].lX);
+                mat_destroy(d->buf[i].ClX);
+            }
+        }
+        FREE(d->buf);
+        FREE(d->to_fit);
+        FREE(d);
     }
-    FREE(d->buf);
-    FREE(d->to_fit);
-    FREE(d);
 }
 
 /** access **/

@@ -189,22 +189,25 @@ void plot_destroy(plot *p)
     size_t i;
     strbuf war_msg;
     
-    FREE(p->headbuf);
-    FREE(p->plotbuf);
-    for (i=0;i<p->nplot;i++)
+    if (p)
     {
-        if (strlen(p->datfname[i]))
+        FREE(p->headbuf);
+        FREE(p->plotbuf);
+        for (i=0;i<p->nplot;i++)
         {
-            if (remove(p->datfname[i]))
+            if (strlen(p->datfname[i]))
             {
-                sprintf(war_msg,"impossible to remove plot temporary file %s",\
-                        p->datfname[i]);
-                LATAN_WARNING(war_msg,LATAN_ESYSTEM);
+                if (remove(p->datfname[i]))
+                {
+                    sprintf(war_msg,"impossible to remove plot temporary file %s",\
+                            p->datfname[i]);
+                    LATAN_WARNING(war_msg,LATAN_ESYSTEM);
+                }
             }
         }
+        FREE(p->datfname);
+        FREE(p);
     }
-    FREE(p->datfname);
-    FREE(p);
 }
 
 /*                              plot configuration                          */

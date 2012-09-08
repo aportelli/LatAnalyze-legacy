@@ -25,10 +25,6 @@
 
 /*                         effective mass functions                         */
 /****************************************************************************/
-#ifdef HAVE_ACOSH
-extern double acosh(double x); /* acosh is not ANSI compliant */
-#endif
-
 latan_errno get_effmass_size(size_t dim[2], const mat *mprop,   \
                              const size_t nstate, const int type)
 {

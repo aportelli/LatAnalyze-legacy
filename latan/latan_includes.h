@@ -28,6 +28,10 @@
 #undef acosh
 #endif
 #define acosh gsl_acosh
+#else
+#ifndef __cplusplus
+extern double acosh(double x); /* acosh is not ANSI compliant */
+#endif
 #endif
 #ifndef HAVE_STRTOK_R
 #ifdef _OPENMP

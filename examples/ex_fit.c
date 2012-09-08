@@ -39,7 +39,7 @@ int main(void)
     plot *p;
     mat *var,*x,*y,*real_param,*fit_param;
     size_t i;
-    minalg_no alg;
+    int alg;
     double step,buf;
     fit_data *d;
     strbuf plotcmd;
@@ -73,7 +73,7 @@ int main(void)
     {
         mat_set(fit_param,0,0,0.3);
         mat_set(fit_param,1,0,7.0);
-        minimizer_set_alg(alg);
+        minimizer_set_alg((minalg_no)alg);
         printf("-- fitting datas...\n");
         data_fit(fit_param,NULL,d);
         printf("exact parameters=\n");

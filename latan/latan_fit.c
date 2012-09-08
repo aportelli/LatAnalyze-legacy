@@ -342,7 +342,8 @@ latan_errno fit_data_set_y_k(fit_data *d, const size_t k, const mat *y_k)
     gsl_vector_view y_vview;
     
     y_vview = gsl_matrix_column(y_k->data_cpu,0);
-    status  = gsl_matrix_set_row(d->y->data_cpu,k,&(y_vview.vector));
+    status  = (latan_errno)gsl_matrix_set_row(d->y->data_cpu,k,\
+                                              &(y_vview.vector));
     
     return status;
 }
@@ -358,7 +359,8 @@ latan_errno fit_data_get_y_k(mat *y_k, const fit_data *d, const size_t k)
     gsl_vector_view y_vview;
     
     y_vview = gsl_matrix_column(y_k->data_cpu,0);
-    status  = gsl_matrix_get_row(&(y_vview.vector),d->y->data_cpu,k);
+    status  = (latan_errno)gsl_matrix_get_row(&(y_vview.vector),\
+                                              d->y->data_cpu,k);
     
     return status;
 }
@@ -458,7 +460,8 @@ latan_errno fit_data_set_x_k(fit_data *d, const size_t k, const mat *x_k)
     gsl_vector_view x_vview;
 
     x_vview = gsl_matrix_column(x_k->data_cpu,0);
-    status  = gsl_matrix_set_row(d->x->data_cpu,k,&(x_vview.vector));
+    status  = (latan_errno)gsl_matrix_set_row(d->x->data_cpu,k,\
+                                              &(x_vview.vector));
 
     return status;
 }
@@ -474,7 +477,8 @@ latan_errno fit_data_get_x_k(mat *x_k, const fit_data *d, const size_t k)
     gsl_vector_view x_vview;
 
     x_vview = gsl_matrix_column(x_k->data_cpu,0);
-    status  = gsl_matrix_get_row(&(x_vview.vector),d->x->data_cpu,k);
+    status  = (latan_errno)gsl_matrix_get_row(&(x_vview.vector),\
+                                              d->x->data_cpu,k);
     
     return status;
 }
@@ -1104,7 +1108,7 @@ static void init_chi2(fit_data *d, const int thread, const int nthread)
             if (d->var_inv == NULL)
             {
                 d->var_inv = mat_create(lXsize,lXsize);
-                mat_assume(d->var_inv,MAT_SYM|MAT_POS);
+                mat_assume(d->var_inv,(mat_flag)(MAT_SYM|MAT_POS));
                 mat_zero(d->var_inv);
                 d->is_inverted = false;
             }
@@ -1112,7 +1116,7 @@ static void init_chi2(fit_data *d, const int thread, const int nthread)
             {
                 mat_destroy(d->var_inv);
                 d->var_inv = mat_create(lXsize,lXsize);
-                mat_assume(d->var_inv,MAT_SYM|MAT_POS);
+                mat_assume(d->var_inv,(mat_flag)(MAT_SYM|MAT_POS));
                 mat_zero(d->var_inv);
                 d->is_inverted = false;
             }
@@ -1139,13 +1143,13 @@ static void init_chi2(fit_data *d, const int thread, const int nthread)
             if (d->y_var_inv == NULL)
             {
                 d->y_var_inv = mat_create(Ysize,Ysize);
-                mat_assume(d->y_var_inv,MAT_SYM|MAT_POS);
+                mat_assume(d->y_var_inv,(mat_flag)(MAT_SYM|MAT_POS));
             }
             else if (nrow(d->y_var_inv) != Ysize)
             {
                 mat_destroy(d->y_var_inv);
                 d->y_var_inv = mat_create(Ysize,Ysize);
-                mat_assume(d->y_var_inv,MAT_SYM|MAT_POS);
+                mat_assume(d->y_var_inv,(mat_flag)(MAT_SYM|MAT_POS));
             }
             mat_zero(d->y_var_inv);
             /*** building y variance matrix by blocks ***/
@@ -1184,13 +1188,13 @@ static void init_chi2(fit_data *d, const int thread, const int nthread)
                 if (d->x_var_inv == NULL)
                 {
                     d->x_var_inv = mat_create(Xsize,Xsize);
-                    mat_assume(d->x_var_inv,MAT_SYM|MAT_POS);
+                    mat_assume(d->x_var_inv,(mat_flag)(MAT_SYM|MAT_POS));
                 }
                 else if (nrow(d->x_var_inv) != Xsize)
                 {
                     mat_destroy(d->x_var_inv);
                     d->x_var_inv = mat_create(Xsize,Xsize);
-                    mat_assume(d->x_var_inv,MAT_SYM|MAT_POS);
+                    mat_assume(d->x_var_inv,(mat_flag)(MAT_SYM|MAT_POS));
                 }
                 mat_zero(d->x_var_inv);
                 /*** building x variance matrix by blocks ***/

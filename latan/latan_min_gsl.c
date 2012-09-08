@@ -207,11 +207,12 @@ latan_errno minimize_gsl(mat *x, const mat *x_limit, double *f_min,\
         iter++;
         if (need_df)
         {
-            status = gsl_multimin_fdfminimizer_iterate(minimizer_fdf);
+            status = (latan_errno)                                   \
+                     gsl_multimin_fdfminimizer_iterate(minimizer_fdf);
         }
         else
         {
-            status = gsl_multimin_fminimizer_iterate(minimizer_f);
+            status = (latan_errno)gsl_multimin_fminimizer_iterate(minimizer_f);
         }
         if (status)
         {
@@ -220,7 +221,8 @@ latan_errno minimize_gsl(mat *x, const mat *x_limit, double *f_min,\
         latan_printf(DEBUG2,"------ iteration %d\n",iter);
         if (need_df)
         {
-            status = gsl_multimin_test_gradient(minimizer_fdf->gradient,\
+            status = (latan_errno)                                      \
+                     gsl_multimin_test_gradient(minimizer_fdf->gradient,\
                                                 FDF_CVG_PREC);
             latan_printf(DEBUG2,"f(x)= %10.6f gradf(x)= %10.4e\n",\
                          minimizer_fdf->f,                       \
@@ -229,7 +231,8 @@ latan_errno minimize_gsl(mat *x, const mat *x_limit, double *f_min,\
         }
         else
         {
-            status = gsl_multimin_test_size(minimizer_f->size,F_CVG_PREC);
+            status = (latan_errno)gsl_multimin_test_size(minimizer_f->size,\
+                                                         F_CVG_PREC);
             latan_printf(DEBUG2,"f(x)= %10.6f size= %10.4e\n",minimizer_f->fval,\
                          minimizer_f->size);
             gsl_vector_memcpy(gsl_x,minimizer_f->x);

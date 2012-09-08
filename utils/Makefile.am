@@ -1,7 +1,15 @@
-COM_CFLAGS = -Wall -Wmissing-prototypes -Wstrict-prototypes \
-	-Wshadow -Wpointer-arith -Wcast-qual -Wcast-align       \
-	-Wwrite-strings -Wnested-externs -W -fno-common -O2     \
-	-g -ansi -pedantic
+if CC_GNU
+    COM_CFLAGS = -Wall -Wmissing-prototypes -Wstrict-prototypes			\
+        -Wshadow -Wpointer-arith -Wcast-qual -Wcast-align               \
+        -Wwrite-strings -Wnested-externs -W -fPIC -fno-common -O2		\
+        -g -ansi -pedantic
+else
+if CC_INTEL
+    COM_CFLAGS = -Wall -Wmissing-prototypes -Wstrict-prototypes         \
+        -Wshadow -Wpointer-arith -Wcast-qual -Wwrite-strings -fPIC      \
+        -fno-common -O2 -g -ansi
+endif
+endif
 
 bin_PROGRAMS =              \
 	latan_create_rg_state   \

@@ -1,11 +1,26 @@
-COM_CFLAGS = -Wall -Wmissing-prototypes -Wstrict-prototypes			\
-	-Wshadow -Wpointer-arith -Wcast-qual -Wcast-align               \
-	-Wwrite-strings -Wnested-externs -W -fPIC -fno-common -O2		\
-	-g -ansi -pedantic
-	
-COM_CXXFLAGS = -Wall -Wshadow -Wpointer-arith -Wcast-qual           \
-	-Wcast-align -Wwrite-strings -W -fPIC -fno-common -O2 -g		\
-	-pedantic
+if CC_GNU
+    COM_CFLAGS = -Wall -Wmissing-prototypes -Wstrict-prototypes			\
+        -Wshadow -Wpointer-arith -Wcast-qual -Wcast-align               \
+        -Wwrite-strings -Wnested-externs -W -fPIC -fno-common -O2		\
+        -g -ansi -pedantic
+else
+if CC_INTEL
+    COM_CFLAGS = -Wall -Wmissing-prototypes -Wstrict-prototypes         \
+        -Wshadow -Wpointer-arith -Wcast-qual -Wwrite-strings -fPIC      \
+        -fno-common -O2 -g -ansi
+endif
+endif
+
+if CXX_GNU
+    COM_CXXFLAGS = -Wall -Wshadow -Wpointer-arith -Wcast-qual           \
+        -Wcast-align -Wwrite-strings -fPIC -fno-common -O2 -g		    \
+        -pedantic
+else
+if CXX_INTEL
+    COM_CXXFLAGS = -Wall -Wshadow -Wpointer-arith -Wcast-qual           \
+        -Wwrite-strings -fPIC -fno-common -O2 -g
+endif
+endif
 
 lib_LTLIBRARIES = liblatan.la
 	
@@ -37,6 +52,7 @@ liblatan_la_SOURCES =       \
 	latan_xml.h             \
 	latan_xml.c             \
 	../config.h             \
+    ../alloc.h              \
     ../malloc.c             \
     ../realloc.c            
 liblatan_ladir = $(includedir)/latan

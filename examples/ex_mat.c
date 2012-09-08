@@ -146,7 +146,7 @@ int main(void)
     mat_print(a,"%8.2f");
     printf("\n");
     printf("a is assumed symmetric and positive\n\n");
-    mat_assume(a,MAT_SYM|MAT_POS);
+    mat_assume(a,(mat_flag)(MAT_SYM|MAT_POS));
     printf("e <- a^+\n");
     mat_pseudoinv(e,a);
     printf("e =\n");

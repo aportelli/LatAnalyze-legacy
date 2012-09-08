@@ -9,7 +9,7 @@ noinst_PROGRAMS = \
 
 ex_fit_SOURCES		= ex_fit.c
 ex_fit_CFLAGS		= -g -O2
-ex_fit_LDFLAGS		= -L../latan/.libs -llatan -fopenmp
+ex_fit_LDFLAGS		= -L../latan/.libs -llatan
 
 ex_io_SOURCES		= ex_io.c
 ex_io_CFLAGS		= -g -O2
@@ -21,7 +21,7 @@ ex_mat_LDFLAGS		= -L../latan/.libs -llatan
 
 ex_min_SOURCES		= ex_min.c
 ex_min_CFLAGS		= -g -O2
-ex_min_LDFLAGS		= -L../latan/.libs -llatan -fopenmp
+ex_min_LDFLAGS		= -L../latan/.libs -llatan
 
 ex_plot_SOURCES		= ex_plot.c
 ex_plot_CFLAGS		= -g -O2

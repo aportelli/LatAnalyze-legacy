@@ -39,21 +39,21 @@ static const strbuf minalg_id[NMINALG] =
 
 minalg_no minalg_no_get(const strbuf m_id)
 {
-    minalg_no i;
+    unsigned int i;
     
     for (i=0;i<NMINALG;i++)
     {
         if (strbufcmp(m_id,minalg_id[i]) == 0)
         {
-            return i;
+            return (minalg_no)i;
         }
     }
-    LATAN_ERROR("wrong minimizer name",LATAN_FAILURE);
+    LATAN_ERROR_VAL("wrong minimizer name",LATAN_EINVAL,(minalg_no)0);
 }
 
 latan_errno minalg_id_get(strbuf m_id, const minalg_no n)
 {
-    if (n >= NMINALG)
+    if ((unsigned int)n >= NMINALG)
     {
         LATAN_ERROR("wrong minimizer flag",LATAN_EINVAL);
     }

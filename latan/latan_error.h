@@ -104,7 +104,7 @@ LATAN_ERROR_VAL(reason,no,NULL)
 #define LATAN_UPDATE_STATUS(status,instruction)\
 {\
     latan_errno _cstat;\
-    _cstat = instruction;\
+    _cstat = (latan_errno)instruction;\
     status = LATAN_ERROR_SELECT_2(status,_cstat);\
 }
 

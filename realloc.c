@@ -1,11 +1,10 @@
 #include <config.h>
 #include <stdlib.h>
+#ifdef realloc
 #undef realloc
+#endif
 #include <sys/types.h>
-
-void *malloc(size_t n);
-void *realloc(void *pt, size_t n);
-void *rpl_realloc (void *pt, size_t n);
+#include <alloc.h>
 
 /* Reallocate an N-byte block of memory from the heap. If N is zero, allocate a 1-byte block. */
 void *rpl_realloc (void *pt, size_t n) 

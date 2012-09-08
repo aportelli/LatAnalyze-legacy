@@ -194,7 +194,7 @@ latan_errno mat_get_subm(mat *m, const mat *n, const size_t k1,           \
                     ,LATAN_EBADLEN);
     }
     
-    status = gsl_matrix_memcpy(m->data_cpu,&(nview.matrix));
+    status = (latan_errno)gsl_matrix_memcpy(m->data_cpu,&(nview.matrix));
     
     return status;
 }
@@ -217,7 +217,7 @@ latan_errno mat_set_subm(mat *m, const mat *n, const size_t k1,          \
     
     mview  = gsl_matrix_submatrix(m->data_cpu,(size_t)(k1),(size_t)(l1),\
                                   (size_t)(k2-k1+1),(size_t)(l2-l1+1));
-    status = gsl_matrix_memcpy(&(mview.matrix),n->data_cpu);
+    status = (latan_errno)gsl_matrix_memcpy(&(mview.matrix),n->data_cpu);
     
     return status;
 }
@@ -286,7 +286,7 @@ latan_errno mat_set_from_ar(mat *m, const double *ar)
                                                                 ncol(m));
     latan_errno status;
     
-    status = gsl_matrix_memcpy(m->data_cpu,&(ar_view.matrix));
+    status = (latan_errno)gsl_matrix_memcpy(m->data_cpu,&(ar_view.matrix));
     
     return status;
 }
@@ -638,7 +638,7 @@ latan_errno mat_eqtranspose(mat *m)
         LATAN_ERROR("cannot auto-transpose a non-square matrix",LATAN_ENOTSQR);
     }
     
-    status = gsl_matrix_transpose(m->data_cpu);
+    status = (latan_errno)gsl_matrix_transpose(m->data_cpu);
     
     return status;
 }
@@ -653,7 +653,7 @@ latan_errno mat_transpose(mat *m, const mat *n)
                     LATAN_EBADLEN);
     }
     
-    status = gsl_matrix_transpose_memcpy(m->data_cpu,n->data_cpu);
+    status = (latan_errno)gsl_matrix_transpose_memcpy(m->data_cpu,n->data_cpu);
     
     return status;
 }

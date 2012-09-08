@@ -73,10 +73,14 @@ LDFLAGS="$AM_LDFLAGS $LDFLAGS"
 AX_COMPILER_VENDOR
 AC_DEFINE_UNQUOTED([C_COMP_VENDOR],["$ax_cv_c_compiler_vendor"],
 			[vendor of C compiler that will compile the code])
+AM_CONDITIONAL([CC_GNU],[test $ax_cv_c_compiler_vendor = "gnu"])
+AM_CONDITIONAL([CC_INTEL],[test $ax_cv_c_compiler_vendor = "intel"])
 AC_LANG([C++])
 AX_COMPILER_VENDOR
 AC_DEFINE_UNQUOTED([CXX_COMP_VENDOR],["$ax_cv_cxx_compiler_vendor"],
 			[vendor of C++ compiler that will compile the code])
+AM_CONDITIONAL([CXX_GNU],[test $ax_cv_cxx_compiler_vendor = "gnu"])
+AM_CONDITIONAL([CXX_INTEL],[test $ax_cv_cxx_compiler_vendor = "intel"])
 AC_LANG([C])
 AX_GCC_VERSION
 AC_DEFINE_UNQUOTED([GCC_VERSION],["$GCC_VERSION"],

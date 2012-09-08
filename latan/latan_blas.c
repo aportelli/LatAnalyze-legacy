@@ -126,7 +126,8 @@ latan_errno latan_blas_ddot(const mat *x, const mat *y, double *res)
         LATAN_ERROR("operation between vectors with dimension mismatch",\
                     LATAN_EBADLEN);
     }
-    status = gsl_blas_ddot(&(x_vview.vector),&(y_vview.vector),res);
+    status = (latan_errno)gsl_blas_ddot(&(x_vview.vector),&(y_vview.vector),\
+                                        res);
 
     return status;
 }
@@ -148,7 +149,7 @@ double latan_blas_dnrm2(const mat *x)
         LATAN_ERROR_VAL("vector operation on matrix",LATAN_EBADLEN,GSL_NAN);
     }
     
-    return gsl_blas_dnrm2(&(x_vview.vector));
+    return (latan_errno)gsl_blas_dnrm2(&(x_vview.vector));
 }
 
 /*                              level 2                                     */

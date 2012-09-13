@@ -162,12 +162,16 @@ __BEGIN_DECLS
 /* LatAnalyze environment access */
 void latan_get_name(strbuf name);
 void latan_get_version(strbuf version);
+void latan_get_msg_prefix(strbuf msg_prefix);
+void latan_set_msg_prefix(const strbuf msg_prefix);
 int  latan_get_verb(void);
 #ifdef LATAN_ERRNO_DEF
 latan_errno latan_set_verb(const int verb);
 #endif
 bool latan_get_warn(void);
 void latan_set_warn(const bool warn);
+bool latan_get_use_car_ret(void);
+void latan_set_use_car_ret(const bool use_car_ret);
 
 
 /* LatAnalyze message function */

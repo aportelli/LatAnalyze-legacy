@@ -1667,17 +1667,25 @@ latan_errno rs_data_fit(rs_sample *p, const mat *p_limit, rs_sample * const *x,\
         USTAT(latan_set_verb(verb_backup));
         if (latan_get_verb() == VERB)
         {
-            printf("[");
-            for (i=0;i<60*(s+1)/nsample;i++)
+            if (latan_get_use_car_ret())
             {
-                printf("=");
+                printf("[");
+                for (i=0;i<60*(s+1)/nsample;i++)
+                {
+                    printf("=");
+                }
+                for (i=60*(s+1)/nsample;i<60;i++)
+                {
+                    printf(" ");
+                }
+                printf("]  %d/%d\r",(int)s+1,(int)nsample);
+                fflush(stdout);
             }
-            for (i=60*(s+1)/nsample;i<60;i++)
+            else
             {
-                printf(" ");
+                latan_printf(VERB,"fit: sample %d/%d chi^2/dof = %e\n",    \
+                             (int)s+1,(int)nsample,fit_data_get_chi2pdof(d));
             }
-            printf("]  %d/%d\r",(int)s+1,(int)nsample);
-            fflush(stdout);
         }
         latan_printf(DEBUG2,"fit: sample %d/%d chi^2/dof = %e\n",(int)s+1,\
                      (int)nsample,fit_data_get_chi2pdof(d));

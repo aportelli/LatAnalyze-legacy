@@ -24,15 +24,19 @@ typedef struct
 {
     strbuf name;
     strbuf version;
+    strbuf msg_prefix;
     int verb;
     bool warn;
+    bool use_car_ret;
 } latan_env;
 
 static latan_env env = 
 {
     PACKAGE_NAME,       \
     PACKAGE_VERSION,    \
+    "",                 \
     QUIET,              \
+    true,               \
     true
 };
 
@@ -46,6 +50,16 @@ void latan_get_name(strbuf name)
 void latan_get_version(strbuf version)
 {
     strbufcpy(version,env.version);
+}
+
+void latan_get_msg_prefix(strbuf msg_prefix)
+{
+    strbufcpy(msg_prefix,env.msg_prefix);
+}
+
+void latan_set_msg_prefix(const strbuf msg_prefix)
+{
+    strbufcpy(env.msg_prefix,msg_prefix);
 }
 
 int latan_get_verb(void)
@@ -75,17 +89,28 @@ void latan_set_warn(const bool warn)
     env.warn = warn;
 }
 
+bool latan_get_use_car_ret(void)
+{
+    return env.use_car_ret;
+}
+
+void latan_set_use_car_ret(const bool use_car_ret)
+{
+    env.use_car_ret = use_car_ret;
+}
+
 /*                        LatAnalyze message function                         */
 /******************************************************************************/
 void latan_printf(const int verb, const strbuf fmt, ...)
 {
     va_list args;
-    strbuf head,tail,name,debug,version;
+    strbuf head,tail,name,debug,version,prefix;
     
     if ((latan_get_verb() >= verb)&&(verb >= VERB))
     {
         latan_get_name(name);
         latan_get_version(version);
+        latan_get_msg_prefix(prefix);
         if (verb >= DEBUG1)
         {
             strbufcpy(debug," - DEBUG");
@@ -95,7 +120,7 @@ void latan_printf(const int verb, const strbuf fmt, ...)
             strbufcpy(debug,"");
         }
         
-        sprintf(head,"[%s v%s%s]",name,version,debug);
+        sprintf(head,"%s[%s v%s%s]",prefix,name,version,debug);
         va_start(args,fmt);
         vsprintf(tail,fmt,args);
         va_end(args);

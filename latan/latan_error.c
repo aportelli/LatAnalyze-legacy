@@ -32,7 +32,7 @@ static long unsigned int warn_time = 0;
 void latan_error(const char *reason, const char *file, int line,\
                  int no)
 {
-    strbuf name,version;
+    strbuf name,version,prefix;
     
     if (latan_error_handler) 
     {
@@ -42,7 +42,8 @@ void latan_error(const char *reason, const char *file, int line,\
     
     latan_get_name(name);
     latan_get_version(version);
-    fprintf(stderr,"%s v%s error %d: %s (%s:%d)\n",name,version,\
+    latan_get_msg_prefix(prefix);
+    fprintf(stderr,"%s%s v%s error %d: %s (%s:%d)\n",prefix,name,version,\
             no,reason,file,line);
     fflush(stderr);
     abort();
@@ -51,7 +52,7 @@ void latan_error(const char *reason, const char *file, int line,\
 void latan_warning(const char *reason, const char *file, int line,\
                    int no)
 {
-    strbuf name,version;
+    strbuf name,version,prefix;
 
     if (latan_get_warn())
     {
@@ -68,16 +69,17 @@ void latan_warning(const char *reason, const char *file, int line,\
         warn_count++;
         latan_get_name(name);
         latan_get_version(version);
+        latan_get_msg_prefix(prefix);
         if (warn_count <= LATAN_MAX_WARNING)
         {
-            fprintf(stderr,"%s v%s warning %d: %s (%s:%d)\n",name,version,\
-                    no,reason,file,line);
+            fprintf(stderr,"%s%s v%s warning %d: %s (%s:%d)\n",prefix,name,\
+                    version,no,reason,file,line);
             fflush(stderr);
         }
         else if (warn_count == LATAN_MAX_WARNING+1)
         {
-            fprintf(stderr,"%s v%s warning: to much warnings in the last %d seconds\n",\
-                    name,version,WARNING_DUR);
+            fprintf(stderr,"%s%s v%s warning: to much warnings in the last %d seconds\n",\
+                    prefix,name,version,WARNING_DUR);
         }
     }
 }

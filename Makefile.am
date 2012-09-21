@@ -1,3 +1,3 @@
-SUBDIRS = latan utils examples doc
+SUBDIRS = latan utils examples
 
 ACLOCAL_AMFLAGS = -I .buildutils/m4

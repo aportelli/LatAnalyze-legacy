@@ -160,8 +160,6 @@ AC_CHECK_HEADERS([unistd.h])
 AC_TYPE_SIZE_T
 
 # Checks for library functions.
-AC_FUNC_MALLOC
-AC_FUNC_REALLOC
 AC_CHECK_FUNCS([sqrt],[],[AC_MSG_ERROR([sqrt function not found])])
 AC_CHECK_FUNCS([acosh])
 AC_CHECK_FUNCS([strtok_r])

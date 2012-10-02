@@ -51,10 +51,7 @@ liblatan_la_SOURCES =       \
     latan_tabfunc.c         \
 	latan_xml.h             \
 	latan_xml.c             \
-	../config.h             \
-    ../alloc.h              \
-    ../malloc.c             \
-    ../realloc.c            
+	../config.h
 liblatan_ladir = $(includedir)/latan
 liblatan_la_HEADERS =       \
 	latan_error.h           \

@@ -27,6 +27,14 @@ AC_ARG_ENABLE([Accelerate],
 	[],
 	[]
 )
+AC_ARG_ENABLE([SSE],
+	[AS_HELP_STRING([--enable-SSE],
+		[compiles SSE version of ranlux random generator])],
+	[AC_DEFINE([HAVE_SSE],
+				[1],
+				[Define to 1 if your CPU support SSE instructions.])],
+	[]
+)
 
 # Configure parameters non-standard install prefix and name of libs
 AC_ARG_WITH([gsl],
@@ -88,25 +96,6 @@ AC_DEFINE_UNQUOTED([GCC_VERSION],["$GCC_VERSION"],
 AX_GXX_VERSION
 AC_DEFINE_UNQUOTED([GXX_VERSION],["$GXX_VERSION"],
 			[version of g++ that will compile the code])
-
-
-# Check for SSE
-AC_MSG_CHECKING([if CPU support SSE instructions])
-AC_RUN_IFELSE(
-	[AC_LANG_PROGRAM([],[
-		int ax,bx,cx,dx;
-		int func = 0x1;
-		
-		__asm__ __volatile__("cpuid":\
-		"=a" (ax), "=b" (bx), "=c" (cx), "=d" (dx) :\
-                "a" (func));
-
-		return 1-(dx >> 25)&0x1;])],
-	[AC_DEFINE([HAVE_SSE],
-				[1],
-				[Define to 1 if your CPU support SSE instructions.])]
-	[AC_MSG_RESULT([yes])],
-	[AC_MSG_RESULT([no])])
 
 # Check for OpenMP
 AC_OPENMP

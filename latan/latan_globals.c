@@ -162,3 +162,72 @@ bool   latan_isnan(const double x)
     return gsl_isnan(x);
 }
 
+/*                          endianness management                             */
+/******************************************************************************/
+endian_no latan_get_endianness(void)
+{
+    const int i = 1;
+    
+    if ((*(const char*)&i) == 0)
+    {
+        return BE;
+    }
+    else
+    {
+        return LE;
+    }
+}
+
+int latan_swap_byte_i(int x)
+{
+    unsigned char b1, b2, b3, b4;
+    
+    b1 = ( x >> 0  ) & 0x000000FF;
+    b2 = ( x >> 8  ) & 0x000000FF;
+    b3 = ( x >> 16 ) & 0x000000FF;
+    b4 = ( x >> 24 ) & 0x000000FF;
+    
+    return ((int)b1 << 24) + ((int)b2 << 16) + ((int)b3 << 8) + b4;
+}
+
+double latan_swap_byte_d(double x)
+{
+    double y;
+    unsigned char *dst = (unsigned char *)&y;
+    unsigned char *src = (unsigned char *)&x;
+    
+    dst[0] = src[7];
+    dst[1] = src[6];
+    dst[2] = src[5];
+    dst[3] = src[4];
+    dst[4] = src[3];
+    dst[5] = src[2];
+    dst[6] = src[1];
+    dst[7] = src[0];
+    
+    return y;
+}
+
+int  latan_conv_endianness_i(int x, endian_no source)
+{
+    if (latan_get_endianness() == source)
+    {
+        return x;
+    }
+    else
+    {
+        return latan_swap_byte_i(x);
+    }
+}
+
+double latan_conv_endianness_d(double x, endian_no source)
+{
+    if (latan_get_endianness() == source)
+    {
+        return x;
+    }
+    else
+    {
+        return latan_swap_byte_d(x);
+    }
+}

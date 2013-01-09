@@ -62,6 +62,13 @@ __END_DECLS
 #define DEBUG1 2
 #define DEBUG2 3
 
+/* endianness flags */
+typedef enum
+{
+    LE = 0,\
+    BE = 1
+} endian_no;
+
 /* size_t type */
 #include <sys/types.h>
 
@@ -173,7 +180,6 @@ void latan_set_warn(const bool warn);
 bool latan_get_use_car_ret(void);
 void latan_set_use_car_ret(const bool use_car_ret);
 
-
 /* LatAnalyze message function */
 void latan_printf(const int verb, const strbuf fmt, ...);
 
@@ -182,10 +188,16 @@ char * strbufcat(strbuf a, const strbuf b);
 int    strbufcmp(const strbuf a, const strbuf b);
 char * strbufcpy(strbuf a, const strbuf b);
 
-
 /* NaN */
 double latan_nan(void);
 bool   latan_isnan(const double x);
+
+/* endianness management */
+endian_no latan_get_endianness(void);
+int       latan_swap_byte_i(int x);
+double    latan_swap_byte_d(double x);
+int       latan_conv_endianness_i(int x, endian_no source);
+double    latan_conv_endianness_d(double x, endian_no source);
 
 __END_DECLS
 

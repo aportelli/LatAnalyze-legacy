@@ -30,6 +30,10 @@
 #define LATAN_PATH_SEP ':'
 #endif
 
+/* include for text loop macros */
+#include <stdio.h>
+#include <string.h>
+
 /* loop on the lines of a file */
 #define BEGIN_FOR_LINE_F(str,f,lc)\
 {\

@@ -1559,11 +1559,11 @@ latan_errno rs_data_fit(rs_sample *p, const mat *p_limit, rs_sample * const *x,\
                         const cor_flag flag, const bool *use_x_var)
 {
     latan_errno status;
-    mat *pbuf,*comp_backup,*x_k;
+    mat *pbuf,*plimbuf,*pinit,*comp_backup,*x_k;
     size_t npt,ndata,nxdim,nydim,npar,nsample,Xsize,Ysize,px_ind;
     size_t i,k,k_i,s;
     int verb_backup;
-    double chi2_backup;
+    double p_i,chi2_backup;
     
     verb_backup  = latan_get_verb();
     status       = LATAN_SUCCESS;
@@ -1582,10 +1582,17 @@ latan_errno rs_data_fit(rs_sample *p, const mat *p_limit, rs_sample * const *x,\
     /* central value fit */
     d->s        = 0;
     pbuf        = mat_create(npar+Xsize,1);
+    plimbuf     = mat_create(npar+Xsize,2);
+    pinit       = mat_create_from_mat(rs_sample_pt_cent_val(p));
     comp_backup = mat_create(Xsize+Ysize+2,1);
     
     /** setting data and initial parameters **/
-    USTAT(mat_set_subm(pbuf,rs_sample_pt_cent_val(p),0,0,npar-1,0));
+    USTAT(mat_set_subm(pbuf,pinit,0,0,npar-1,0));
+    mat_cst(plimbuf,latan_nan());
+    if (p_limit)
+    {
+        USTAT(mat_set_subm(plimbuf,p_limit,0,0,npar-1,1));
+    }
     for (k=0;k<nydim;k++)
     {
         USTAT(fit_data_set_y_k(d,k,rs_sample_pt_cent_val(data[k])));
@@ -1616,21 +1623,28 @@ latan_errno rs_data_fit(rs_sample *p, const mat *p_limit, rs_sample * const *x,\
     latan_printf(VERB,"starting chi^2/dof = %f\n",         \
                  chi2(pbuf,d)/((double)fit_data_get_dof(d)));
     /**  fit **/
-    USTAT(data_fit(pbuf,p_limit,d));
+    USTAT(data_fit(pbuf,plimbuf,d));
     USTAT(mat_get_subm(rs_sample_pt_cent_val(p),pbuf,0,0,npar-1,0));
     chi2_backup = fit_data_get_chi2(d);
     fit_data_get_chi2_comp(comp_backup,d);
-    latan_printf(VERB,"fit: central value chi^2/dof= %e (p-value= %e)\n",\
-                 fit_data_get_chi2pdof(d),fit_data_get_pvalue(d));
+    latan_printf(VERB,"fit: central value chi^2/dof= %e ( dof= %d p-value= %e )\n",\
+                 fit_data_get_chi2pdof(d),(int)fit_data_get_dof(d),\
+                 fit_data_get_pvalue(d));
     latan_printf(VERB,"     matrix perf= %f Gflop/s -- model call= %f s^-1\n",\
                  d->matperf/(1.0e+09),d->callps);
     
     /* sample fits */
+    for (i=0;i<npar;i++)
+    {
+        p_i = mat_get(pbuf,i,0);
+        mat_set(plimbuf,i,0,p_i-3.0*fabs(p_i));
+        mat_set(plimbuf,i,1,p_i+3.0*fabs(p_i));
+    }
     for (s=0;s<nsample;s++)
     {
         (d->s)++;
         /** setting data and initial parameters **/
-        USTAT(mat_set_subm(pbuf,rs_sample_pt_cent_val(p),0,0,npar-1,0));
+        USTAT(mat_set_subm(pbuf,pinit,0,0,npar-1,0));
         for (k=0;k<nydim;k++)
         {
             USTAT(fit_data_set_y_k(d,k,rs_sample_pt_sample(data[k],s)));
@@ -1663,7 +1677,7 @@ latan_errno rs_data_fit(rs_sample *p, const mat *p_limit, rs_sample * const *x,\
         {
             USTAT(latan_set_verb(QUIET));
         }
-        USTAT(data_fit(pbuf,p_limit,d));
+        USTAT(data_fit(pbuf,plimbuf,d));
         USTAT(latan_set_verb(verb_backup));
         if (latan_get_verb() == VERB)
         {
@@ -1710,6 +1724,8 @@ latan_errno rs_data_fit(rs_sample *p, const mat *p_limit, rs_sample * const *x,\
     }
     
     mat_destroy(pbuf);
+    mat_destroy(plimbuf);
+    mat_destroy(pinit);
     mat_destroy(comp_backup);
     
     return status;

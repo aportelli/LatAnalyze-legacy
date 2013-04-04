@@ -61,7 +61,7 @@ void latan_warning(const char *reason, const char *file, int line,\
             warn_count = 0;
             warn_time = (long unsigned int)time(NULL);
         }
-        else if ((long unsigned int)time(NULL) - warn_time > WARNING_DUR)
+        else if ((long unsigned int)time(NULL) - warn_time > 4*WARNING_DUR)
         {
             warn_count = 0;
             warn_time = (long unsigned int)time(NULL);

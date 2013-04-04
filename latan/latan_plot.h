@@ -130,7 +130,11 @@ void plot_add_fit(plot *p, const fit_data *d, const size_t ky, const mat *x_ex,\
                   const unsigned int obj,  const strbuf dat_title,             \
                   const strbuf fit_title, const strbuf dat_color,              \
                   const strbuf fit_color);
-
+void plot_add_fit_predband(plot *p, const fit_data *d, const size_t ky,\
+                           const mat *x_ex, const size_t kx,           \
+                           const rs_sample *par, const double xmin,    \
+                           const double xmax, const size_t npt,        \
+                           const strbuf color);
 /* plot parsing */
 void plot_parse(FILE* outstr, const plot *p);
 #define plot_print(p) plot_parse(stdout,p);

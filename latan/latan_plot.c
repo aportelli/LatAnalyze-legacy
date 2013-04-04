@@ -23,6 +23,7 @@
 #include <latan/latan_includes.h>
 #include <latan/latan_io.h>
 #include <latan/latan_math.h>
+#include <latan/latan_statistics.h>
 
 enum
 {
@@ -729,6 +730,49 @@ void plot_add_fit(plot *p, const fit_data *d, const size_t ky, const mat *x_ex,\
     mat_destroy(y);
     mat_destroy(y_err);
     mat_destroy(cor_data);
+}
+
+void plot_add_fit_predband(plot *p, const fit_data *d, const size_t ky,\
+                           const mat *x_ex, const size_t kx,           \
+                           const rs_sample *par, const double xmin,    \
+                           const double xmax, const size_t npt,        \
+                           const strbuf color)
+{
+    mat *x,*yp,*ym,*y_i_err,*X;
+    rs_sample *s_y_i;
+    size_t i;
+    double x_i,yp_i,ym_i;
+    
+    x       = mat_create(npt,1);
+    yp      = mat_create(npt,1);
+    ym      = mat_create(npt,1);
+    y_i_err = mat_create(1,1);
+    s_y_i   = rs_sample_create(1,1,rs_sample_get_nsample(par));
+    X       = mat_create_from_mat(x_ex);
+    
+    for (i=0;i<npt;i++)
+    {
+        x_i = xmin + (xmax-xmin)*DRATIO(i,npt-1);
+        mat_set(X,kx,0,x_i);
+        fit_data_model_rs_xeval(s_y_i,d,ky,X,par);
+        rs_sample_var(y_i_err,s_y_i);
+        mat_eqsqrt(y_i_err);
+        yp_i = mat_get(rs_sample_pt_cent_val(s_y_i),0,0) + mat_get(y_i_err,0,0);
+        ym_i = mat_get(rs_sample_pt_cent_val(s_y_i),0,0) - mat_get(y_i_err,0,0);
+        mat_set(yp,i,0,yp_i);
+        mat_set(ym,i,0,ym_i);
+        mat_set(x,i,0,x_i);
+    }
+    
+    plot_add_line(p,x,yp,"",color);
+    plot_add_line(p,x,ym,"",color);
+    
+    mat_destroy(x);
+    mat_destroy(yp);
+    mat_destroy(ym);
+    mat_destroy(y_i_err);
+    rs_sample_destroy(s_y_i);
+    mat_destroy(X);
 }
 
 /*                              plot parsing                                */

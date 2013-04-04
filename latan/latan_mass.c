@@ -259,6 +259,8 @@ else IF_NAME(pname)
 
 latan_errno get_mass(double mass[2], const strbuf name)
 {
+    strbuf err_msg;
+    
     IF_NAME(pi_p)
     ELIF_NAME(pi_0)
     ELIF_NAME(pi_m)
@@ -306,7 +308,8 @@ latan_errno get_mass(double mass[2], const strbuf name)
     ELIF_NAME(Omega)
     else
     {
-        LATAN_ERROR("particle name unknown",LATAN_EINVAL);
+        sprintf(err_msg,"particle '%s' unknown",name);
+        LATAN_ERROR(err_msg,LATAN_EINVAL);
     }
     
     return LATAN_SUCCESS;

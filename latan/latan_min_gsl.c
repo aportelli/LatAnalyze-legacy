@@ -174,7 +174,7 @@ latan_errno minimize_gsl(mat *x, const mat *x_limit, double *f_min,\
             break;
         case GSL_SIMPLEX_NM:
             need_df = false;
-            minimizer_f_t = gsl_multimin_fminimizer_nmsimplex2;
+            minimizer_f_t   = gsl_multimin_fminimizer_nmsimplex2;
             break;
         default:
             LATAN_ERROR("invalid GSL minimization algorithm flag",\

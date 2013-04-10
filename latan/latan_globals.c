@@ -19,6 +19,7 @@
 
 #include <latan/latan_globals.h>
 #include <latan/latan_includes.h>
+#include <gsl/gsl_nan.h>
 
 typedef struct
 {
@@ -162,6 +163,15 @@ bool   latan_isnan(const double x)
     return gsl_isnan(x);
 }
 
+double latan_inf(void)
+{
+    return GSL_POSINF;
+}
+
+bool   latan_isinf(const double x)
+{
+    return gsl_isinf(x);
+}
 /*                          endianness management                             */
 /******************************************************************************/
 endian_no latan_get_endianness(void)

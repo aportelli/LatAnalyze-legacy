@@ -188,9 +188,11 @@ char * strbufcat(strbuf a, const strbuf b);
 int    strbufcmp(const strbuf a, const strbuf b);
 char * strbufcpy(strbuf a, const strbuf b);
 
-/* NaN */
+/* nan/inf */
 double latan_nan(void);
 bool   latan_isnan(const double x);
+double latan_inf(void);
+bool   latan_isinf(const double x);
 
 /* endianness management */
 endian_no latan_get_endianness(void);

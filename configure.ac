@@ -7,10 +7,12 @@ AC_CONFIG_AUX_DIR([.buildutils])
 AC_CONFIG_SRCDIR([latan/latan_globals.c])
 AC_CONFIG_SRCDIR([utils/latan_info.c])
 AC_CONFIG_SRCDIR([examples/ex_mat.c])
+AC_CONFIG_SRCDIR([doc/latanalyze.texi])
 AC_CONFIG_MACRO_DIR([.buildutils/m4])
 AM_INIT_AUTOMAKE([-Wall -Werror])
+AM_SILENT_RULES([yes])
 
-AM_CONFIG_HEADER([config.h])
+AC_CONFIG_HEADERS([config.h])
 
 # Checks for programs.
 m4_ifdef([AM_PROG_AR],[AM_PROG_AR])

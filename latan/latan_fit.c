@@ -1563,7 +1563,7 @@ latan_errno rs_data_fit(rs_sample *p, const mat *p_limit, rs_sample * const *x,\
     size_t npt,ndata,nxdim,nydim,npar,nsample,Xsize,Ysize,px_ind;
     size_t i,k,k_i,s;
     int verb_backup;
-    double p_i,chi2_backup;
+    double chi2_backup;
     
     verb_backup  = latan_get_verb();
     status       = LATAN_SUCCESS;
@@ -1634,12 +1634,6 @@ latan_errno rs_data_fit(rs_sample *p, const mat *p_limit, rs_sample * const *x,\
                  d->matperf/(1.0e+09),d->callps);
     
     /* sample fits */
-    for (i=0;i<npar;i++)
-    {
-        p_i = mat_get(pbuf,i,0);
-        mat_set(plimbuf,i,0,p_i-3.0*fabs(p_i));
-        mat_set(plimbuf,i,1,p_i+3.0*fabs(p_i));
-    }
     for (s=0;s<nsample;s++)
     {
         (d->s)++;

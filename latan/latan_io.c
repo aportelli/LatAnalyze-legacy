@@ -427,9 +427,40 @@ latan_errno rs_sample_load(rs_sample *s, size_t *nsample, size_t *dim,\
 {
     latan_errno status;
     strbuf fname,elname;
+    size_t tmp_nsample,tmp_dim[2];
+    size_t j;
+    rs_sample *s_buf,*s_pt;
+    
+    status = LATAN_SUCCESS;
+    s_pt   = NULL;
     
     FUNC_INIT(fname,elname);
-    status = rs_sample_load_pt(s,nsample,dim,fname,elname);
+    USTAT(rs_sample_load_pt(NULL,&tmp_nsample,tmp_dim,fname,elname));
+    if (s)
+    {
+        if(rs_sample_get_nsample(s) != tmp_nsample)
+        {
+            s_buf = rs_sample_create(tmp_dim[0],tmp_dim[1],tmp_nsample);
+            s_pt  = s_buf;
+        }
+        else
+        {
+            s_buf = NULL;
+            s_pt  = s;
+        }
+    }
+    USTAT(rs_sample_load_pt(s_pt,nsample,dim,fname,elname));
+    if (s)
+    {
+        if(rs_sample_get_nsample(s) != tmp_nsample)
+        {
+            USTAT(mat_cp(rs_sample_pt_cent_val(s),rs_sample_pt_cent_val(s_buf)));
+            for (j=0;j<rs_sample_get_nsample(s);j++)
+            {
+                USTAT(mat_cp(rs_sample_pt_sample(s,j),rs_sample_pt_sample(s_buf,j)));
+            }
+        }
+    }
     
     return status;
 }
@@ -442,9 +473,11 @@ latan_errno rs_sample_load_subsamp(rs_sample *s, const strbuf latan_path,\
     rs_sample *big_s;
     size_t dim[2],nsample;
     
-    status = LATAN_SUCCESS;
+    status  = LATAN_SUCCESS;
+    dim[0]  = nrow(rs_sample_pt_cent_val(s));
+    dim[1]  = ncol(rs_sample_pt_cent_val(s));
+    nsample = rs_sample_get_nsample(s);
     
-    USTAT(rs_sample_load(NULL,&nsample,dim,latan_path));
     big_s = rs_sample_create(dim[0],dim[1],nsample);
     USTAT(rs_sample_load(big_s,NULL,NULL,latan_path));
     USTAT(rs_sample_get_subsamp(s,big_s,k1,l1,k2,l2));

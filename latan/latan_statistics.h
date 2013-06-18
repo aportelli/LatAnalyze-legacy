@@ -33,8 +33,9 @@ typedef latan_errno rs_func(mat *res, mat **dat, const size_t ndat,\
                             void *param);
 
 /* elementary estimators */
-double mat_elsum(const mat *m);
-double mat_elmean(const mat *m);
+double mat_elsum(const mat *m, const mat *w);
+double mat_elmean(const mat *m, const mat *w);
+double mat_elvar(const mat *m, const mat *w);
 
 latan_errno mat_mean(mat *mean, mat **m, const size_t size);
 latan_errno mat_cov(mat *cov, mat **m, mat **n, const size_t size);

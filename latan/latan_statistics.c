@@ -42,28 +42,67 @@ static latan_errno resample_jackknife(mat *cent_val, mat **sample,         \
 
 /*                      elementary estimators                               */
 /****************************************************************************/
-double mat_elsum(const mat *m)
+double mat_elsum(const mat *m, const mat *w)
 {
     size_t i,j;
-    double sum;
+    double sum,w_ij;
+    bool have_w;
     
-    sum = 0.0;
+    sum    = 0.0;
+    have_w = (w != NULL);
     
     FOR_VAL(m,i,j)
     {
-        sum += mat_get(m,i,j);
+        w_ij = (have_w) ? mat_get(w,i,j) : 1.0;
+        sum += w_ij*mat_get(m,i,j);
     }
     
     return sum;
 }
 
-double mat_elmean(const mat *m)
+double mat_elmean(const mat *m, const mat *w)
 {
-    double mean;
+    double mean,w_totsum;
     
-    mean = mat_elsum(m)/((double)(nel(m)));
+    if (w)
+    {
+        w_totsum = mat_elsum(w,NULL);
+    }
+    else
+    {
+        w_totsum = (double)(nel(m));
+    }
+    mean = mat_elsum(m,w)/w_totsum;
     
     return mean;
+}
+
+double mat_elvar(const mat *m, const mat *w)
+{
+    size_t i,j;
+    double sum,sqsum,w_ij,w_totsum;
+    bool have_w;
+    
+    sum    = 0.0;
+    sqsum  = 0.0;
+    have_w = (w != NULL);
+    
+    if (have_w)
+    {
+        w_totsum = mat_elsum(w,NULL);
+    }
+    else
+    {
+        w_totsum = (double)(nel(m));
+    }
+    FOR_VAL(m,i,j)
+    {
+        w_ij = (have_w) ? mat_get(w,i,j) : 1.0;
+        sum   += w_ij*mat_get(m,i,j);
+        sqsum += w_ij*SQ(mat_get(m,i,j));
+    }
+    
+    return sqsum/w_totsum - SQ(sum/w_totsum);
 }
 
 latan_errno mat_mean(mat *mean, mat **m, const size_t size)

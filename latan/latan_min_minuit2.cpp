@@ -133,21 +133,8 @@ latan_errno minimize_minuit2(mat *x, const mat *x_limit, double *f_min,\
     }
 
     Minuit2MinFunc F(f,param);
-    MnMigrad Migrad1(F,Init_x,0);
     MnSimplex Simplex1(F,Init_x,0);
-    switch (minimizer_get_alg())
-    {
-        case MIN_MIGRAD:
-            Minimizer = &Migrad1;
-            break;
-        case MIN_SIMPLEX:
-            Minimizer = &Simplex1;
-            break;
-        default:
-            LATAN_ERROR("invalid MINUIT minimization algorithm flag",
-                        LATAN_EINVAL);
-            break;
-    }
+    Minimizer = &Simplex1;
     latan_printf(DEBUG2,"(MINUIT) Minimizing...\n");
     FunctionMinimum Min = (*Minimizer)();
     latan_printf(DEBUG2,"(MINUIT) Pre-minimizer call :\n");

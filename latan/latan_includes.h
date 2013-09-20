@@ -63,4 +63,93 @@ extern double acosh(double x); /* acosh is not ANSI compliant */
 /* alias for status update */
 #define USTAT(inst) LATAN_UPDATE_STATUS(status,inst)
 
+/* memory allocation */
+#define MALLOC(pt,typ,size)\
+{\
+    pt = (typ)(malloc((size_t)(size)*sizeof(*pt)));\
+    if (pt == NULL)\
+    {\
+        LATAN_ERROR("memory allocation failed",LATAN_ENOMEM);\
+    }\
+}
+#define MALLOC_ERRVAL(pt,typ,size,value)\
+{\
+    pt = (typ)(malloc((size_t)(size)*sizeof(*pt)));\
+    if (pt == NULL)\
+    {\
+        LATAN_ERROR_VAL("memory allocation failed",LATAN_ENOMEM,value);\
+    }\
+}
+#define MALLOC_NOERRET(pt,typ,size)\
+{\
+    pt = (typ)(malloc((size_t)(size)*sizeof(*pt)));\
+    if (pt == NULL)\
+    {\
+        LATAN_ERROR_NORET("memory allocation failed",LATAN_ENOMEM);\
+    }\
+}
+#define REALLOC(pt,pt_old,typ,size)\
+{\
+    pt = (typ)(realloc(pt_old,(size_t)(size)*sizeof(*pt)));\
+    if (pt == NULL)\
+    {\
+        LATAN_ERROR("memory reallocation failed",LATAN_ENOMEM);\
+    }\
+}
+#define REALLOC_ERRVAL(pt,pt_old,typ,size,value)\
+{\
+    pt = (typ)(realloc(pt_old,(size_t)(size)*sizeof(*pt)));\
+    if (pt == NULL)\
+    {\
+        LATAN_ERROR_VAL("memory reallocation failed",LATAN_ENOMEM,value);\
+    }\
+}
+#define REALLOC_NOERRET(pt,pt_old,typ,size)\
+{\
+    pt = (typ)(realloc(pt_old,(size_t)(size)*sizeof(*pt)));\
+    if (pt == NULL)\
+    {\
+        LATAN_ERROR_NORET("memory reallocation failed",LATAN_ENOMEM);\
+    }\
+}
+#define FREE(pt)\
+{\
+    if (pt != NULL)\
+    {\
+        free(pt);\
+        pt = NULL;\
+    }\
+}
+/* file opening */
+#define FOPEN(f,fname,mode)\
+{\
+    f = fopen(fname,mode);\
+    if (f == NULL)\
+    {\
+        strbuf _errmsg;\
+        sprintf(_errmsg,"error opening file %s",fname);\
+        LATAN_ERROR(_errmsg,LATAN_EFAULT);\
+    }\
+}
+#define FOPEN_ERRVAL(f,fname,mode,value)\
+{\
+    f = fopen(fname,mode);\
+    if (f == NULL)\
+    {\
+        strbuf _errmsg;\
+        sprintf(_errmsg,"error opening file %s",fname);\
+        LATAN_ERROR_VAL(_errmsg,LATAN_EFAULT,value);\
+    }\
+}
+#define FOPEN_NOERRET(f,fname,mode)\
+{\
+    f = fopen(fname,mode);\
+    if (f == NULL)\
+    {\
+        strbuf _errmsg;\
+        sprintf(_errmsg,"error opening file %s",fname);\
+        LATAN_ERROR_NORET(_errmsg,LATAN_EFAULT);\
+    }\
+}
+
 #endif

@@ -59,10 +59,21 @@
     }\
 }
 
+#define _FOPEN_NOERRET(f,fname,mode)\
+{\
+    f = fopen(fname,mode);\
+    if (f == NULL)\
+    {\
+        strbuf _errmsg;\
+        sprintf(_errmsg,"error opening file %s",fname);\
+        LATAN_ERROR_NORET(_errmsg,LATAN_EFAULT);\
+    }\
+}
+
 #define BEGIN_FOR_LINE(str,f_name,lc)\
 {\
     FILE* _f;\
-    FOPEN_NOERRET(_f,f_name,"r");\
+    _FOPEN_NOERRET(_f,f_name,"r");\
     BEGIN_FOR_LINE_F(str,_f,lc)\
     {
 
@@ -74,6 +85,15 @@
 
 /* loop on the lines of a file with tokenization of each line (thread safe) */
 /* field is assumed to be a non allocated strbuf*                           */
+#define _REALLOC_NOERRET(pt,pt_old,typ,size)\
+{\
+    pt = (typ)(realloc(pt_old,(size_t)(size)*sizeof(*pt)));\
+    if (pt == NULL)\
+    {\
+        LATAN_ERROR_NORET("memory reallocation failed",LATAN_ENOMEM);\
+    }\
+}
+
 #define BEGIN_FOR_LINE_TOK_F(field,f,tok,nf,lc)\
 {\
     strbuf _line,_line_buf;\
@@ -85,7 +105,7 @@
         nf        = 0;\
         while(_line_ptr != NULL)\
         {\
-            REALLOC_NOERRET(field,field,strbuf *,(size_t)(nf+1));\
+            _REALLOC_NOERRET(field,field,strbuf *,(size_t)(nf+1));\
             strbufcpy(field[nf],_line_ptr);\
             _line_ptr = strtok_r(NULL,tok,&_save_ptr);\
             nf++;\
@@ -98,13 +118,17 @@
         }\
     }\
     END_FOR_LINE_F;\
-    FREE(field);\
+    if (field != NULL)\
+    {\
+        free(field);\
+        field = NULL;\
+    }\
 }
 
 #define BEGIN_FOR_LINE_TOK(field,f_name,tok,nf,lc)\
 {\
     FILE* _f;\
-    FOPEN_NOERRET(_f,f_name,"r");\
+    _FOPEN_NOERRET(_f,f_name,"r");\
     BEGIN_FOR_LINE_TOK_F(field,_f,tok,nf,lc)\
     {
 

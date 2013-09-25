@@ -790,3 +790,102 @@ latan_errno rs_sample_binops(rs_sample *s_a, const rs_sample *s_b,\
 
 #undef CENT_VAL
 #undef ELEMENT
+
+latan_errno rs_sample_subsamp_unop(rs_sample *s_a, const rs_sample *s_b,\
+                                   const size_t k1, const size_t l1,    \
+                                   const size_t k2, const size_t l2,    \
+                                   mat_unop *f)
+{
+    size_t nsample;
+    latan_errno status;
+    rs_sample *s_buf;
+    const rs_sample *s_b_pt;
+    
+    nsample = rs_sample_get_nsample(s_a);
+    status  = LATAN_SUCCESS;
+    
+    s_buf = rs_sample_create(k2-k1+1,l2-l1+1,nsample);
+    
+    s_b_pt = (s_a == s_b) ? s_buf : s_b;
+    rs_sample_get_subsamp(s_buf,s_a,k1,l1,k2,l2);
+    rs_sample_unop(s_buf,s_b_pt,f);
+    rs_sample_set_subsamp(s_a,s_buf,k1,l1,k2,l2);
+    
+    rs_sample_destroy(s_buf);
+    
+    return status;
+}
+
+latan_errno rs_sample_subsamp_unops(rs_sample *s_a, const double s,\
+                                   const size_t k1, const size_t l1,\
+                                   const size_t k2, const size_t l2,\
+                                   mat_unops *f)
+{
+    size_t nsample;
+    latan_errno status;
+    rs_sample *s_buf;
+    
+    nsample = rs_sample_get_nsample(s_a);
+    status  = LATAN_SUCCESS;
+    
+    s_buf = rs_sample_create(k2-k1+1,l2-l1+1,nsample);
+    
+    rs_sample_get_subsamp(s_buf,s_a,k1,l1,k2,l2);
+    rs_sample_unops(s_buf,s,f);
+    rs_sample_set_subsamp(s_a,s_buf,k1,l1,k2,l2);
+    
+    rs_sample_destroy(s_buf);
+    
+    return status;
+}
+
+latan_errno rs_sample_subsamp_binop(rs_sample *s_a, const rs_sample *s_b, \
+                                    const rs_sample *s_c, const size_t k1,\
+                                    const size_t l1, const size_t k2,     \
+                                    const size_t l2, mat_binop *f)
+{
+    size_t nsample;
+    latan_errno status;
+    rs_sample *s_buf;
+    const rs_sample *s_b_pt,*s_c_pt;
+    
+    nsample = rs_sample_get_nsample(s_a);
+    status  = LATAN_SUCCESS;
+    
+    s_buf = rs_sample_create(k2-k1+1,l2-l1+1,nsample);
+    
+    s_b_pt = (s_a == s_b) ? s_buf : s_b;
+    s_c_pt = (s_a == s_c) ? s_buf : s_c;
+    rs_sample_get_subsamp(s_buf,s_a,k1,l1,k2,l2);
+    rs_sample_binop(s_buf,s_b_pt,s_c_pt,f);
+    rs_sample_set_subsamp(s_a,s_buf,k1,l1,k2,l2);
+    
+    rs_sample_destroy(s_buf);
+    
+    return status;
+}
+
+latan_errno rs_sample_subsamp_binops(rs_sample *s_a, const rs_sample *s_b,\
+                                     const double s, const size_t k1,     \
+                                     const size_t l1, const size_t k2,    \
+                                     const size_t l2, mat_binops *f)
+{
+    size_t nsample;
+    latan_errno status;
+    rs_sample *s_buf;
+    const rs_sample *s_b_pt;
+    
+    nsample = rs_sample_get_nsample(s_a);
+    status  = LATAN_SUCCESS;
+    
+    s_buf = rs_sample_create(k2-k1+1,l2-l1+1,nsample);
+    
+    s_b_pt = (s_a == s_b) ? s_buf : s_b;
+    rs_sample_get_subsamp(s_buf,s_a,k1,l1,k2,l2);
+    rs_sample_binops(s_buf,s_b_pt,s,f);
+    rs_sample_set_subsamp(s_a,s_buf,k1,l1,k2,l2);
+    
+    rs_sample_destroy(s_buf);
+    
+    return status;
+}

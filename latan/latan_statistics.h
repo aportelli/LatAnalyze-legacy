@@ -144,6 +144,64 @@ latan_errno rs_sample_binops(rs_sample *s_a, const rs_sample *s_b,\
 #define rs_sample_eqexpp(s_a)       rs_sample_expp(s_a,s_a)
 #define rs_sample_sub(s_a,s_b,s_c)  rs_sample_binop(s_a,s_b,s_c,&mat_sub)
 #define rs_sample_eqsub(s_a,s_b)    rs_sample_sub(s_a,s_a,s_b)
+latan_errno rs_sample_subsamp_unop(rs_sample *s_a, const rs_sample *s_b,\
+                                   const size_t k1, const size_t l1,    \
+                                   const size_t k2, const size_t l2,    \
+                                   mat_unop *f);
+latan_errno rs_sample_subsamp_unops(rs_sample *s_a, const double s,\
+                                    const size_t k1, const size_t l1,\
+                                    const size_t k2, const size_t l2,\
+                                    mat_unops *f);
+latan_errno rs_sample_subsamp_binop(rs_sample *s_a, const rs_sample *s_b, \
+                                    const rs_sample *s_c, const size_t k1,\
+                                    const size_t l1, const size_t k2,     \
+                                    const size_t l2, mat_binop *f);
+latan_errno rs_sample_subsamp_binops(rs_sample *s_a, const rs_sample *s_b,\
+                                     const double s, const size_t k1,     \
+                                     const size_t l1, const size_t k2,    \
+                                     const size_t l2, mat_binops *f);
+#define rs_sample_subsamp_abs(s_a,s_b,k1,l1,k2,l2)     \
+rs_sample_subsamp_unop(s_a,s_b,,k1,l1,k2,l2,&mat_abs)
+#define rs_sample_subsamp_eqabs(s_a,k1,l1,k2,l2)       \
+rs_sample_subsamp_abs(s_a,s_a,k1,l1,k2,l2)
+#define rs_sample_subsamp_add(s_a,s_b,s_c,k1,l1,k2,l2) \
+rs_sample_subsamp_binop(s_a,s_b,s_c,k1,l1,k2,l2,&mat_add)
+#define rs_sample_subsamp_eqadd(s_a,s_b,k1,l1,k2,l2)   \
+rs_sample_subsamp_add(s_a,s_a,s_b,k1,l1,k2,l2)
+#define rs_sample_subsamp_adds(s_a,s_b,s,k1,l1,k2,l2)  \
+rs_sample_subsamp_binops(s_a,s_b,s,k1,l1,k2,l2,&mat_adds)
+#define rs_sample_subsamp_eqadds(s_a,s,k1,l1,k2,l2)    \
+rs_sample_subsamp_adds(s_a,s_a,s,k1,l1,k2,l2)
+#define rs_sample_subsamp_cst(s_a,s,k1,l1,k2,l2)       \
+rs_sample_subsamp_unops(s_a,s,k1,l1,k2,l2,&mat_cst)
+#define rs_sample_subsamp_divp(s_a,s_b,s_c,k1,l1,k2,l2)\
+rs_sample_subsamp_binop(s_a,s_b,s_c,k1,l1,k2,l2,&mat_divp)
+#define rs_sample_subsamp_eqdivp(s_a,s_b,k1,l1,k2,l2)  \
+rs_sample_subsamp_divp(s_a,s_a,s_b,k1,l1,k2,l2)
+#define rs_sample_subsamp_mulp(s_a,s_b,s_c,k1,l1,k2,l2)\
+rs_sample_subsamp_binop(s_a,s_b,s_c,k1,l1,k2,l2,&mat_mulp)
+#define rs_sample_subsamp_eqmulp(s_a,s_b,k1,l1,k2,l2)  \
+rs_sample_subsamp_mulp(s_a,s_a,s_b,k1,l1,k2,l2)
+#define rs_sample_subsamp_invp(s_a,s_b,k1,l1,k2,l2)    \
+rs_sample_subsamp_unop(s_a,s_b,k1,l1,k2,l2,&mat_invp)
+#define rs_sample_subsamp_eqinvp(s_a,k1,l1,k2,l2)      \
+rs_sample_subsamp_invp(s_a,s_a,k1,l1,k2,l2)
+#define rs_sample_subsamp_muls(s_a,s_b,s,k1,l1,k2,l2)  \
+rs_sample_subsamp_binops(s_a,s_b,s,k1,l1,k2,l2,&mat_muls)
+#define rs_sample_subsamp_eqmuls(s_a,s,k1,l1,k2,l2)    \
+rs_sample_subsamp_muls(s_a,s_a,s,k1,l1,k2,l2)
+#define rs_sample_subsamp_sqrt(s_a,s_b,k1,l1,k2,l2)    \
+rs_sample_subsamp_unop(s_a,s_b,k1,l1,k2,l2,&mat_sqrt)
+#define rs_sample_subsamp_eqsqrt(s_a,k1,l1,k2,l2)      \
+rs_sample_subsamp_sqrt(s_a,s_a,k1,l1,k2,l2)
+#define rs_sample_subsamp_expp(s_a,s_b,k1,l1,k2,l2)    \
+rs_sample_subsamp_unop(s_a,s_b,k1,l1,k2,l2,&mat_expp)
+#define rs_sample_subsamp_eqexpp(s_a,k1,l1,k2,l2)      \
+rs_sample_subsamp_expp(s_a,s_a,k1,l1,k2,l2)
+#define rs_sample_subsamp_sub(s_a,s_b,s_c,k1,l1,k2,l2) \
+rs_sample_subsamp_binop(s_a,s_b,s_c,k1,l1,k2,l2,&mat_sub)
+#define rs_sample_subsamp_eqsub(s_a,s_b,k1,l1,k2,l2)   \
+rs_sample_sub(s_a,s_a,s_b,k1,l1,k2,l2)
 
 __END_DECLS
 

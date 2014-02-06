@@ -425,6 +425,21 @@ latan_errno mat_cp(mat *m, const mat *n)
     return status;
 }
 
+latan_errno mat_sum(mat *m, const mat *n)
+{
+    size_t i,j;
+    double sum;
+    
+    sum = 0.0;
+    FOR_VAL(n,i,j)
+    {
+        sum += mat_get(n,i,j);
+    }
+    mat_set(m,0,0,sum);
+    
+    return LATAN_SUCCESS;
+}
+
 latan_errno mat_eqadd(mat *m, const mat *n)
 {
     latan_errno status;

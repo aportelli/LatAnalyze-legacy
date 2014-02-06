@@ -98,6 +98,8 @@ latan_errno mat_cst(mat *m, const double x);
 void mat_rand_u(mat *m, const double a, const double b);
 void mat_id(mat *m);
 latan_errno mat_cp(mat *m, const mat *n);
+latan_errno mat_sum(mat *m, const mat *n);
+#define mat_eqsum(m) mat_sum(m,m)
 latan_errno mat_eqadd(mat *m, const mat *n);
 latan_errno mat_add(mat *m, const mat *n, const mat *o);
 #define mat_eqadds(m,s) mat_adds(m,m,s)

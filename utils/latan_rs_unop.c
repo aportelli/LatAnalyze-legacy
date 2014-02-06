@@ -8,10 +8,13 @@
 #error UNOP macro must be defined to compile this program (use -DUNOP=<op> option)
 #endif
 
+#define _STR(x) #x
+#define STR(x) _STR(x)
+
 int main(int argc, char *argv[])
 {
     rs_sample *s1,*res;
-    size_t s1_dim[2],s1_nsample;
+    size_t s1_dim[2],res_dim[2],s1_nsample;
     int i,j;
     mat *sig;
     bool do_save_res, show_usage;
@@ -102,11 +105,21 @@ int main(int argc, char *argv[])
     
     /* getting sizes */
     rs_sample_load(NULL,&s1_nsample,s1_dim,in_path);
+    if (strbufcmp(STR(UNOP),"mat_sum") == 0)
+    {
+        res_dim[0] = 1;
+        res_dim[1] = 1;
+    }
+    else
+    {
+        res_dim[0] = s1_dim[0];
+        res_dim[1] = s1_dim[1];
+    }
     
     /* allocation */
     s1  = rs_sample_create(s1_dim[0],s1_dim[1],s1_nsample);
-    res = rs_sample_create(s1_dim[0],s1_dim[1],s1_nsample);
-    sig = mat_create(s1_dim[0],s1_dim[1]);
+    res = rs_sample_create(res_dim[0],res_dim[1],s1_nsample);
+    sig = mat_create(res_dim[0],res_dim[1]);
     
     /* loading samples */
     printf("-- loading sample from %s...\n",in_path);

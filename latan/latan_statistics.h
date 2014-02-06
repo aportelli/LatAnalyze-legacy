@@ -125,6 +125,8 @@ latan_errno rs_sample_binops(rs_sample *s_a, const rs_sample *s_b,\
                              const double s, mat_binops *f);
 #define rs_sample_abs(s_a,s_b)      rs_sample_unop(s_a,s_b,&mat_abs)
 #define rs_sample_eqabs(s_a)        rs_sample_abs(s_a,s_a)
+#define rs_sample_sum(s_a,s_b)      rs_sample_unop(s_a,s_b,&mat_sum)
+#define rs_sample_eqsum(s_a)        rs_sample_sum(s_a,s_a)
 #define rs_sample_add(s_a,s_b,s_c)  rs_sample_binop(s_a,s_b,s_c,&mat_add)
 #define rs_sample_eqadd(s_a,s_b)    rs_sample_add(s_a,s_a,s_b)
 #define rs_sample_adds(s_a,s_b,s)   rs_sample_binops(s_a,s_b,s,&mat_adds)

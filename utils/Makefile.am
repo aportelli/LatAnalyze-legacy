@@ -23,6 +23,7 @@ bin_PROGRAMS =              \
 	latan_rs_muls           \
     latan_rs_read           \
 	latan_rs_sub            \
+    latan_rs_subsamp        \
     latan_rs_sum            \
 	latan_rs_sqrt
 
@@ -69,6 +70,10 @@ latan_rs_read_LDFLAGS = -llatan -L../latan/.libs
 latan_rs_sub_SOURCES = latan_rs_binop.c
 latan_rs_sub_CFLAGS  = $(COM_CFLAGS) -DBINOP=mat_sub
 latan_rs_sub_LDFLAGS = -llatan -L../latan/.libs
+
+latan_rs_subsamp_SOURCES = latan_rs_subsamp.c
+latan_rs_subsamp_CFLAGS  = $(COM_CFLAGS)
+latan_rs_subsamp_LDFLAGS = -llatan -L../latan/.libs
 
 latan_rs_sum_SOURCES = latan_rs_unop.c
 latan_rs_sum_CFLAGS  = $(COM_CFLAGS) -DUNOP=mat_sum

@@ -42,7 +42,6 @@ int main(void)
     xerr[0] = 0.2;
     xerr[1] = 0.5;
     
-    plot_set_term(p,"aqua");
     plot_set_scale_ymanual(p,0.0,16.0);
     plot_add_vlineaerr(p,3,xerr,"rgb 'green'");
     plot_add_plot(p,"x**2 lc rgb 'red'","");

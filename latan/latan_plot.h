@@ -26,7 +26,7 @@
 
 /* system dependant gnuplot terminal setting */
 #ifdef __APPLE__
-#define DEFTERM "aqua"
+#define DEFTERM "x11"
 #else
 #define DEFTERM "x11"
 #endif

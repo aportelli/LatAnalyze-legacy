@@ -20,7 +20,7 @@
 #ifndef LATAN_INCLUDES_H_
 #define LATAN_INCLUDES_H_
 
-#include "../config.h"
+#include <config.h>
 
 /* replacement functions */
 #ifndef HAVE_ACOSH

@@ -1,24 +1,22 @@
 if CC_GNU
     COM_CFLAGS = -Wall -Wmissing-prototypes -Wstrict-prototypes			\
         -Wshadow -Wpointer-arith -Wcast-qual -Wcast-align               \
-        -Wwrite-strings -Wnested-externs -W -fPIC -fno-common -O2		\
-        -g -ansi -pedantic
+        -Wwrite-strings -Wnested-externs -W -fPIC -fno-common -ansi
 else
 if CC_INTEL
     COM_CFLAGS = -Wall -Wmissing-prototypes -Wstrict-prototypes         \
         -Wshadow -Wpointer-arith -Wcast-qual -Wwrite-strings -fPIC      \
-        -fno-common -O2 -g -ansi
+        -fno-common -ansi
 endif
 endif
 
 if CXX_GNU
     COM_CXXFLAGS = -Wall -Wshadow -Wpointer-arith -Wcast-qual           \
-        -Wcast-align -Wwrite-strings -fPIC -fno-common -O2 -g		    \
-        -pedantic
+        -Wcast-align -Wwrite-strings -fPIC -fno-common
 else
 if CXX_INTEL
     COM_CXXFLAGS = -Wall -Wshadow -Wpointer-arith -Wcast-qual           \
-        -Wwrite-strings -fPIC -fno-common -O2 -g
+        -Wwrite-strings -fPIC -fno-common
 endif
 endif
 

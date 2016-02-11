@@ -125,7 +125,7 @@ AS_IF([test "x$enable_Accelerate" = "xyes"],
 				[AC_MSG_ERROR([CBLAS library not found])])])])
 		
 AC_CHECK_LIB([gsl],[gsl_blas_dgemm],[],[AC_MSG_ERROR([GSL library not found])])
-AC_CHECK_LIB([xml2],[xmlFree],[],[])
+AC_CHECK_LIB([xml2],[xmlFree],[AM_CFLAGS="$AM_CFLAGS `xml2-config --cflags`"],[])
 AC_LANG([C++])
 AC_CHECK_LIB([stdc++],[main],[LIBS="-lstdc++ $LIBS"],[AC_MSG_ERROR([libstdc++ library not found])])
 SAVED_LDFLAGS=$LDFLAGS
